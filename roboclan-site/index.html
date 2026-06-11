@@ -1,0 +1,680 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Roboclan · Every robot, compared</title>
+<link rel="icon" type="image/png" href="favicon.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+
+<style>
+  :root{
+    --bg:#f5f6f8;--card:#fff;--ink:#14152a;--sub:#6b7280;--line:#e8eaef;
+    --brand:#475569;--brand-soft:#eef1f5;--accent:#16a34a;--warn:#f59e0b;--red:#ef4444;
+    --grad:linear-gradient(135deg,#334155 0%,#475569 60%,#64748b 100%);
+    --shadow:0 1px 2px rgba(20,21,42,.06),0 14px 36px rgba(20,21,42,.07);--radius:18px;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:-apple-system,"Segoe UI",Roboto,system-ui,sans-serif;background:
+    radial-gradient(760px 480px at 2% -12%,rgba(124,58,237,.07),transparent 56%),
+    radial-gradient(640px 440px at 52% -14%,rgba(234,88,12,.06),transparent 54%),
+    radial-gradient(760px 520px at 104% 0%,rgba(37,65,196,.07),transparent 55%),
+    radial-gradient(720px 600px at 38% 122%,rgba(15,138,126,.06),transparent 60%),
+    var(--bg);background-attachment:fixed;color:var(--ink);line-height:1.55;-webkit-font-smoothing:antialiased}
+  a{color:inherit;text-decoration:none}
+  .wrap{max-width:1120px;margin:0 auto;padding:0 20px}
+  header{position:sticky;top:0;z-index:50;background:rgba(255,255,255,.9);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+  .nav{display:flex;align-items:center;gap:18px;height:62px}
+  .logo{font-weight:800;font-size:21px;letter-spacing:-.5px;display:flex;align-items:center;gap:8px;cursor:pointer}
+  .logo .bot{width:31px;height:31px;border-radius:9px;background:var(--grad);display:grid;place-items:center;color:#fff;font-size:17px;box-shadow:0 4px 12px rgba(51,65,85,.35)}
+  .logo span.n{background:linear-gradient(90deg,#4f46e5,#7c3aed);-webkit-background-clip:text;background-clip:text;color:transparent}
+  .mainnav{display:flex;gap:22px;margin-left:6px}
+  .mainnav a{font-size:14px;font-weight:600;color:var(--sub);cursor:pointer;padding:4px 0;transition:.15s}
+  .mainnav a:hover{color:var(--ink)}
+  @media(max-width:880px){.mainnav{display:none}}
+  .search{flex:1;max-width:440px;position:relative}
+  .search input{width:100%;height:38px;border:1px solid var(--line);border-radius:20px;padding:0 16px 0 38px;font-size:14px;background:#fff;outline:none}
+  .search input:focus{border-color:var(--brand)}
+  .search svg{position:absolute;left:13px;top:11px;color:var(--sub)}
+  .cmpbtn{margin-left:auto;background:var(--grad);color:#fff;border:none;cursor:pointer;height:38px;padding:0 16px;border-radius:20px;font-size:14px;font-weight:700;position:relative;box-shadow:0 6px 16px rgba(51,65,85,.3)}
+  .cmpbtn .badge{position:absolute;top:-6px;right:-6px;background:var(--warn);color:#fff;font-size:11px;min-width:18px;height:18px;border-radius:9px;display:grid;place-items:center;padding:0 4px}
+  .hero{padding:34px 0 8px}
+  .hero h1{font-size:36px;letter-spacing:-1.3px;margin-bottom:7px;font-weight:800;background:linear-gradient(115deg,#14152a 0%,#334155 60%,#64748b 100%);-webkit-background-clip:text;background-clip:text;color:transparent}
+  .hero p{color:var(--sub);font-size:15px}
+  .newsband{margin:20px 0 4px;background:#fff;border:1px solid var(--line);border-radius:14px;padding:12px 16px;display:flex;align-items:center;gap:12px;box-shadow:var(--shadow)}
+  .newsband .lab{background:var(--red);color:#fff;font-size:12px;font-weight:700;padding:3px 9px;border-radius:8px;white-space:nowrap}
+  .ticker{flex:1;overflow:hidden;height:22px;position:relative}
+  .ticker ul{list-style:none;position:absolute;animation:roll 16s linear infinite}
+  .ticker li{height:22px;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:pointer}
+  .ticker li b{color:var(--red);margin-right:6px}
+  @keyframes roll{0%,25%{top:0}33%,58%{top:-22px}66%,91%{top:-44px}100%{top:-44px}}
+  .newsmore{font-size:13px;color:var(--brand);cursor:pointer;white-space:nowrap;font-weight:600}
+  .seclbl{font-size:12px;font-weight:700;color:var(--sub);text-transform:uppercase;letter-spacing:.5px;margin:22px 0 8px}
+  .tabs{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 6px}
+  .tab{padding:8px 15px 8px 13px;border-radius:20px;background:#fff;border:1px solid var(--line);cursor:pointer;font-size:14px;font-weight:600;color:var(--sub);transition:.15s;display:flex;align-items:center;gap:6px}
+  .tab .ic{font-size:13px;width:14px;text-align:center;color:#a3a8b3}
+  .tab.on{background:var(--grad);color:#fff;border-color:transparent;box-shadow:0 6px 16px rgba(51,65,85,.28)}
+  .tab.on .ic{color:#fff}
+  .tab:hover:not(.on){border-color:var(--brand);color:var(--brand)}
+  .filters{margin:8px 0 10px}
+  .fgroup{display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin:8px 0;font-size:13px;color:var(--sub)}
+  .fgroup>b{color:var(--ink);margin-right:2px;width:54px;display:inline-block}
+  .chip{padding:4px 11px 4px 9px;border-radius:14px;background:#fff;border:1px solid var(--line);cursor:pointer;color:var(--sub);display:inline-flex;align-items:center;gap:5px}
+  .chip .ic{font-size:12px;color:#b4b8c2}
+  .chip.on{background:var(--brand-soft);border-color:var(--brand);color:var(--brand);font-weight:600}
+  .chip.on .ic{color:var(--brand)}
+  .resbar{display:flex;align-items:center;gap:12px;margin:6px 0 16px;font-size:13px;color:var(--sub)}
+  .resbar .reset{color:var(--brand);cursor:pointer;font-weight:600}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(255px,1fr));gap:18px;padding-bottom:50px}
+  .card{background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden;cursor:pointer;transition:transform .2s,box-shadow .2s,border-color .2s;border:1px solid #e7eaef;position:relative}
+  .card:hover{transform:translateY(-4px);box-shadow:0 20px 42px rgba(51,65,85,.17);border-color:#cdd5df}
+  .thumb{height:152px;display:grid;place-items:center;font-size:66px;position:relative}
+  .cat-pill{position:absolute;top:10px;left:10px;background:rgba(0,0,0,.55);color:#fff;font-size:11px;padding:3px 9px;border-radius:11px;font-weight:700;text-shadow:0 1px 3px rgba(0,0,0,.45)}
+  .cmpadd{position:absolute;top:10px;right:10px;width:28px;height:28px;border-radius:8px;background:rgba(255,255,255,.92);display:grid;place-items:center;border:none;cursor:pointer;font-size:16px;color:var(--brand);font-weight:700}
+  .cmpadd.added{background:var(--brand);color:#fff}
+  .cbody{padding:14px 16px 16px}
+  .cbody h3{font-size:16px;margin-bottom:2px}
+  .cbody .brand{font-size:12px;color:var(--sub);margin-bottom:8px}
+  .price{font-size:17px;font-weight:800;color:var(--brand)}
+  .price small{font-size:12px;color:var(--sub);font-weight:500}
+  .pcompare{display:inline-flex;align-items:center;gap:5px;margin-top:9px;font-size:12px;font-weight:700;color:var(--accent);background:#ecfdf3;border:1px solid #bbf7d0;border-radius:10px;padding:4px 9px;cursor:pointer;transition:.15s}
+  .pcompare:hover{background:#dcfce7;border-color:#86efac}
+  .pcompare.na{color:var(--sub);background:#f3f4f6;border-color:var(--line)}
+  .pcompare.biz{color:#475569;background:#eef1f5;border-color:#cbd5e1}
+  .tabgroup{flex-basis:100%;font-size:11px;font-weight:800;color:#9aa0b3;text-transform:uppercase;letter-spacing:.7px;margin:12px 0 1px}
+  .specrow{display:flex;gap:14px;margin-top:10px;font-size:12px;color:var(--sub);flex-wrap:wrap}
+  .specrow span b{color:var(--ink)}
+  .score{position:absolute;bottom:13px;right:15px;font-weight:800;font-size:15px;background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
+  .score small{font-size:11px;color:var(--sub);font-weight:500;-webkit-text-fill-color:var(--sub)}
+  .overlay{position:fixed;inset:0;background:rgba(18,20,26,.5);z-index:100;display:none;align-items:flex-start;justify-content:center;padding:34px 16px;overflow:auto}
+  .overlay.show{display:flex}
+  .modal{background:#fff;border-radius:20px;max-width:840px;width:100%;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.3)}
+  .mhead{height:172px;display:grid;place-items:center;font-size:90px;position:relative}
+  .mclose{position:absolute;top:14px;right:14px;width:34px;height:34px;border-radius:50%;background:rgba(255,255,255,.92);border:none;cursor:pointer;font-size:18px}
+  .mtop{padding:20px 28px 0}
+  .mtop .brand{color:var(--sub);font-size:13px}
+  .mtop h2{font-size:26px;margin:2px 0 4px}
+  .mtags{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0 14px}
+  .mtag{font-size:12px;background:var(--brand-soft);color:var(--brand);padding:3px 11px;border-radius:12px;font-weight:600}
+  .mprice{font-size:24px;font-weight:800;color:var(--brand);margin-bottom:6px}
+  .mprice small{font-size:13px;color:var(--sub);font-weight:500}
+  .dtabs{display:flex;gap:4px;border-bottom:1px solid var(--line);padding:0 28px;margin-top:14px;overflow-x:auto}
+  .dtab{padding:11px 14px;font-size:14px;font-weight:600;color:var(--sub);cursor:pointer;border-bottom:2px solid transparent;white-space:nowrap}
+  .dtab.on{color:var(--brand);border-color:var(--brand)}
+  .dpane{padding:22px 28px 30px;display:none}.dpane.on{display:block}
+  .radarwrap{display:flex;gap:26px;align-items:center;flex-wrap:wrap}
+  .radarwrap svg{flex-shrink:0;max-width:100%;height:auto;overflow:visible}
+  .radarlegend{flex:1;min-width:210px}
+  .rl-item{display:flex;align-items:center;gap:10px;margin:7px 0;font-size:14px}
+  .rl-bar{flex:1;height:7px;background:var(--line);border-radius:4px;overflow:hidden}
+  .rl-bar i{display:block;height:100%;background:var(--grad);border-radius:4px}
+  .rl-val{font-weight:700;width:30px;text-align:right}
+  .verdict{background:var(--bg);border-radius:14px;padding:14px 16px;margin:18px 0 4px;font-size:14px}
+  .verdict b{display:block;margin-bottom:4px;font-size:13px;color:var(--brand)}
+  .secttl{font-weight:700;font-size:15px;margin:20px 0 10px;display:flex;align-items:center;gap:8px}
+  .specgrid{display:grid;grid-template-columns:1fr 1fr;gap:0 30px}
+  .spec{display:flex;justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--line);font-size:14px}
+  .spec span:first-child{color:var(--sub)}.spec span:last-child{font-weight:600}
+  .prosconrow{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:6px}
+  .pc{border-radius:12px;padding:12px 14px;font-size:13px}
+  .pc.pro{background:#ecfdf3}.pc.con{background:#fef2f2}
+  .pc b{font-size:13px}.pc ul{margin:6px 0 0 16px}.pc li{margin:3px 0}
+  .ko-sum{display:flex;align-items:center;gap:20px;background:var(--bg);border-radius:14px;padding:16px 20px;margin-bottom:14px}
+  .ko-big{font-size:40px;font-weight:800;color:var(--warn);line-height:1}
+  .ko-big small{font-size:14px;color:var(--sub);font-weight:500}
+  .srcgrid{flex:1;display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+  .srcbox{background:#fff;border:1px solid var(--line);border-radius:10px;padding:8px 10px;text-align:center}
+  .srcbox .s{font-weight:800;font-size:16px}.srcbox .l{font-size:11px;color:var(--sub)}
+  .ko{border:1px solid var(--line);border-radius:12px;padding:13px 15px;margin-bottom:10px}
+  .ko .top{display:flex;align-items:center;gap:8px;margin-bottom:5px}
+  .ko .src{font-size:11px;font-weight:700;padding:2px 8px;border-radius:8px;color:#fff}
+  .ko .st{color:var(--warn);font-size:13px}.ko .dt{margin-left:auto;color:var(--sub);font-size:12px}
+  .ko .tx{font-size:14px;color:#333}
+  .ptable{width:100%;border-collapse:collapse;font-size:14px}
+  .ptable th,.ptable td{padding:11px 12px;text-align:left;border-bottom:1px solid var(--line)}
+  .ptable th{color:var(--sub);font-weight:600;font-size:13px}
+  .ptable .pr{font-weight:800;color:var(--ink)}
+  .ptable tr.best{background:#ecfdf3}
+  .ptable .bestlbl{font-size:11px;color:var(--accent);font-weight:700}
+  .deal{background:var(--grad);color:#fff;border:none;border-radius:9px;padding:7px 14px;font-size:13px;font-weight:700;cursor:pointer;box-shadow:0 4px 12px rgba(51,65,85,.28)}
+  .pnote{font-size:12px;color:var(--sub);margin-top:10px}
+  .vrow{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  .vcard{border-radius:12px;overflow:hidden;border:1px solid var(--line);cursor:pointer;transition:.15s}
+  .vcard:hover{box-shadow:var(--shadow)}
+  .vthumb{height:120px;display:grid;place-items:center;font-size:34px;position:relative;color:#fff}
+  .vthumb .play{width:46px;height:46px;border-radius:50%;background:rgba(0,0,0,.5);display:grid;place-items:center;font-size:18px}
+  .vthumb .dur{position:absolute;bottom:8px;right:8px;background:rgba(0,0,0,.7);color:#fff;font-size:11px;padding:2px 6px;border-radius:5px}
+  .vmeta{padding:9px 12px}.vmeta .t{font-size:13px;font-weight:600;line-height:1.4;margin-bottom:3px}.vmeta .a{font-size:12px;color:var(--sub)}
+  .maddcmp{width:calc(100% - 56px);margin:0 28px 26px;height:46px;border:none;border-radius:12px;background:var(--grad);color:#fff;font-size:15px;font-weight:700;cursor:pointer;box-shadow:0 8px 20px rgba(51,65,85,.3)}
+  .cmpdrawer{position:fixed;inset:0;background:rgba(18,20,26,.5);z-index:120;display:none}
+  .cmpdrawer.show{display:block}
+  .cmppanel{position:absolute;bottom:0;left:0;right:0;background:#fff;border-radius:20px 20px 0 0;max-height:88vh;overflow:auto;padding:22px 0 30px}
+  .cmptop{display:flex;align-items:center;padding:0 22px 14px;border-bottom:1px solid var(--line)}
+  .cmptop h2{font-size:20px}.cmptop button{margin-left:auto;background:none;border:none;font-size:22px;cursor:pointer;color:var(--sub)}
+  .cmptable{width:100%;border-collapse:collapse;font-size:14px}
+  .cmptable th,.cmptable td{padding:13px 14px;text-align:left;border-bottom:1px solid var(--line);vertical-align:top}
+  .cmptable th.rowlbl,.cmptable td.rowlbl{color:var(--sub);font-weight:600;width:140px;background:#fafbfc}
+  .cmphead{text-align:center!important}.cmphead .emoji{font-size:42px}.cmphead .nm{font-weight:700;margin-top:4px}
+  .cmphead .rm{font-size:13px;cursor:pointer;color:#cbd0d8;border:none;background:none}
+  .best2{color:var(--accent);font-weight:800}
+  .cmpempty{padding:50px 22px;text-align:center;color:var(--sub)}
+  .cmpnote{padding:10px 22px 0;font-size:12px;color:var(--sub)}
+  .nitem{border-bottom:1px solid var(--line);padding:14px 0}
+  
+  .nitem .nt{font-size:15px;font-weight:600;margin-bottom:3px}
+  .nitem .nm2{font-size:12px;color:var(--sub)}.nitem .nm2 .hot{color:var(--red);font-weight:700;margin-right:8px}
+  .adslot{position:relative;margin:16px 0 4px;border:1px dashed #c4cbd9;background:repeating-linear-gradient(45deg,#fafbfd,#fafbfd 11px,#f2f4f9 11px,#f2f4f9 22px);border-radius:14px;min-height:92px;display:flex;align-items:center;justify-content:center;color:#9aa0b3;font-size:13px;font-weight:600;text-align:center;padding:0 12px}
+  .adslot .adtag{position:absolute;top:8px;left:10px;font-size:10px;font-weight:800;letter-spacing:.6px;color:#fff;background:#9aa0b3;padding:2px 8px;border-radius:6px}
+  .adslot .adx{position:absolute;top:7px;right:11px;color:#b6bccb;cursor:pointer;font-size:14px}
+  .foot{text-align:center;color:var(--sub);font-size:12px;padding:30px 0;line-height:1.8}
+  @media(max-width:640px){.specgrid,.prosconrow,.vrow,.srcgrid{grid-template-columns:1fr}.search{display:none}.radarwrap{justify-content:center}}
+</style>
+</head>
+<body>
+<header>
+  <div class="wrap nav">
+    <div class="logo" onclick="goHome()"><span class="bot">🤖</span><span class="n">Roboclan</span></div>
+    <nav class="mainnav"><a onclick="goHome()">Reviews</a><a onclick="goHome()">Guides</a><a onclick="openNews()">News</a><a onclick="goHome()">About</a></nav>
+    <div class="search">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4-4"/></svg>
+      <input id="q" placeholder="Search robots, brands…">
+    </div>
+    <button class="cmpbtn" onclick="openCmp()">Compare<span class="badge" id="cmpBadge">0</span></button>
+  </div>
+</header>
+<div class="wrap">
+  <div class="hero">
+    <h1>Every robot, compared. In plain English.</h1>
+    <p>Specs · 5-point ratings · aggregated reviews · price tracking — across every robot category.</p>
+  </div>
+  <div class="newsband">
+    <span class="lab">LIVE</span>
+    <div class="ticker"><ul id="ticker"></ul></div>
+    <span class="newsmore" onclick="openNews()">All headlines ›</span>
+  </div>
+  <div class="adslot"><span class="adtag">SPONSORED</span><span class="adx" onclick="this.parentNode.style.display='none'">✕</span>Leaderboard ad · e.g. 970×90 banner</div>
+  <div class="seclbl">Categories · tap ＋ to stack multiple</div>
+  <div class="tabs" id="tabs"></div>
+  <div class="filters" id="filters"></div>
+  <div class="resbar" id="resbar"></div>
+  <div class="grid" id="grid"></div>
+</div>
+<div class="foot">
+  Roboclan · Product prototype v3　|　Sample data for demonstration only<br>
+  ⚡ Prices &amp; reviews are placeholders; production version aggregates live data from retailers, Reddit, YouTube &amp; Amazon
+</div>
+<div class="overlay" id="overlay" onclick="if(event.target===this)closeModal()"><div class="modal" id="modal"></div></div>
+<div class="cmpdrawer" id="cmpdrawer" onclick="if(event.target===this)closeCmp()"><div class="cmppanel" id="cmppanel"></div></div>
+<script>
+const CONSUMER_CATS=["Humanoids","Robot Vacuums","Robot Mowers","Pool Robots"];
+const COMMERCIAL_CATS=["Warehouse Logistics","Commercial Cleaning","Restaurant Service","Hotel Delivery"];
+const CATS=[...CONSUMER_CATS,...COMMERCIAL_CATS];
+const COMMERCIAL=new Set(COMMERCIAL_CATS);
+const AXES={
+  "Humanoids":["Mobility","Manipulation","Intelligence","Battery","Value"],
+  "Robot Vacuums":["Cleaning Power","Navigation","Self-Maintenance","Quietness","Value"],
+  "Robot Mowers":["Cut Quality","Terrain","Navigation","Safety","Value"],
+  "Pool Robots":["Coverage","Wall & Waterline","Filtration","Ease of Use","Value"],
+  "Warehouse Logistics":["Throughput","Payload","Navigation","Uptime","ROI"],
+  "Commercial Cleaning":["Cleaning","Area Coverage","Autonomy","Uptime","ROI"],
+  "Restaurant Service":["Carry Capacity","Navigation","Uptime","Interaction","ROI"],
+  "Hotel Delivery":["Cabin Capacity","Building Integration","Navigation","Guest Experience","ROI"],
+};
+const SRC={"Reddit":"#ff4500","YouTube":"#ff0000","Amazon":"#ff9900"};
+const CATCOLOR={"Humanoids":"linear-gradient(135deg,#7c3aed,#a855f7)","Robot Vacuums":"linear-gradient(135deg,#ea580c,#f97316)","Robot Mowers":"linear-gradient(135deg,#0f766e,#14b8a6)","Pool Robots":"linear-gradient(135deg,#1e3a8a,#2d4ed6)","Warehouse Logistics":"linear-gradient(135deg,#475569,#64748b)","Commercial Cleaning":"linear-gradient(135deg,#0891b2,#22d3ee)","Restaurant Service":"linear-gradient(135deg,#be123c,#e11d48)","Hotel Delivery":"linear-gradient(135deg,#a16207,#ca8a04)"};
+const CATBG={"Humanoids":"#f0eef7","Robot Vacuums":"#f3efe9","Robot Mowers":"#eaf1ee","Pool Robots":"#edeff5","Warehouse Logistics":"#eef0f3","Commercial Cleaning":"#e8f2f4","Restaurant Service":"#f7ecee","Hotel Delivery":"#f3efe4"};
+const CATSOLID={"Humanoids":"#7c3aed","Robot Vacuums":"#ea580c","Robot Mowers":"#0f8a7e","Pool Robots":"#2541c4","Warehouse Logistics":"#475569","Commercial Cleaning":"#0891b2","Restaurant Service":"#be123c","Hotel Delivery":"#a16207"};
+const NEWS=[
+ {hot:"HOT",title:"1X NEO opens U.S. pre-orders: $20,000 outright or $499/month subscription",src:"2h ago"},
+ {hot:"NEW",title:"Unitree R1 undercuts the field at $5,900, shipping starts Q2 2026",src:"5h ago"},
+ {hot:"",title:"Roborock unveils Saros 10 with retractable arm at CES",src:"today"},
+ {hot:"HOT",title:"Tesla Optimus production timeline slips again, deliveries eyed for 2027",src:"yesterday"},
+ {hot:"NEW",title:"Beatbot AquaSense Pro wins pool-robot shootout in independent tests",src:"2d ago"},
+ {hot:"",title:"Mammotion Luba 2 gets RTK firmware update for steeper slopes",src:"3d ago"},
+];
+const DATA=[
+ {id:1,name:"1X NEO",brand:"1X Technologies",cat:"Humanoids",emoji:"🤖",bg:"#eef0ff",
+  price:"$20,000",sub:"or $499/mo",priceNum:20000,
+  specs:{"Height":"167 cm","Weight":"30 kg","Payload":"~20 kg","Runtime":"~2–4 hrs","Hands":"5-finger","Use":"Home assistant"},
+  tags:["Pre-order open","Home-focused","Subscription option"],score:8.4,radar:[8,8.5,8,6.5,7.5],
+  verdict:"The first humanoid you can actually order for the home. Soft, safe design and a teleop-to-autonomy plan. Real autonomous chores are still maturing, and $499/mo adds up.",
+  pros:["Genuinely orderable for home use","Subscription lowers entry barrier","Safety-first soft design"],
+  cons:["Autonomy still partly tele-operated","Subscription cost compounds","Limited proven chore set"],
+  koMean:8.3,sources:{Reddit:8.2,YouTube:8.6,Amazon:0},
+  ko:[{s:"Reddit",r:4,d:"3d",t:"The home-first angle is the smartest play here. Teleop fallback is honest, not a gimmick."},
+      {s:"YouTube",r:5,d:"1w",t:"Hands-on demo was the most natural humanoid I've filmed. Quiet and unthreatening."}],
+  prices:[{ch:"1X Official",p:"$20,000",pn:20000},{ch:"Subscription plan",p:"$499/mo",pn:null}],
+  videos:[{t:"1X NEO in a real home: 1 week test",a:"Marques Brownlee",dur:"16:22",bg:"#4f46e5"},{t:"NEO vs Optimus: which is closer to shipping?",a:"Two Minute Papers",dur:"11:08",bg:"#3730a3"}]},
+ {id:2,name:"Unitree R1",brand:"Unitree",cat:"Humanoids",emoji:"🦾",bg:"#e8efff",
+  price:"$5,900",sub:"",priceNum:5900,
+  specs:{"Height":"121 cm","Weight":"25 kg","DOF":"26","Runtime":"~2 hrs","Speed":"2 m/s","Use":"Dev / hobby"},
+  tags:["Price disruptor","Developer-friendly","Compact"],score:8.1,radar:[8.5,6.5,6.5,5.5,9.5],
+  verdict:"Blows up the price floor at $5,900. Incredible value for makers and researchers; not a turnkey home helper yet. If you want to tinker, nothing else is close on price.",
+  pros:["Unbeatable price for a humanoid","Strong, agile movement","Open SDK, big dev community"],
+  cons:["Hobby/dev focus, not home chores","Short battery life","Limited dexterous manipulation"],
+  koMean:8.0,sources:{Reddit:8.4,YouTube:8.1,Amazon:0},
+  ko:[{s:"Reddit",r:5,d:"4d",t:"At $5,900 this is an impulse buy for a robotics lab. Wild that we're here already."},
+      {s:"YouTube",r:4,d:"2w",t:"Movement is impressive for the price. Hands are basic — manage expectations."}],
+  prices:[{ch:"Unitree Official",p:"$5,900",pn:5900},{ch:"Authorized reseller",p:"$6,400",pn:6400},{ch:"eBay (new)",p:"$6,750",pn:6750}],
+  videos:[{t:"$5,900 humanoid?! Unitree R1 first look",a:"Linus Tech Tips",dur:"14:40",bg:"#1d4ed8"}]},
+ {id:3,name:"Optimus Gen 2",brand:"Tesla",cat:"Humanoids",emoji:"🧍",bg:"#fdeaea",
+  price:"~$20–30k",sub:"",priceNum:25000,
+  specs:{"Height":"173 cm","Weight":"~57 kg","Hands":"11-DOF","Runtime":"n/a","Speed":"~2.2 m/s","Use":"General"},
+  tags:["Most hyped","Dexterous hands","Timeline uncertain"],score:8.0,radar:[8,9,8.5,6,6.5],
+  verdict:"The most-watched humanoid, with the best hands in the business and Tesla's AI behind it. But it isn't for sale, and the timeline keeps slipping. Buy on hype at your own risk.",
+  pros:["Class-leading hand dexterity","Tesla AI & manufacturing scale","Strong long-term cost trajectory"],
+  cons:["Not actually purchasable","Repeated timeline slips","Mostly demo footage so far"],
+  koMean:7.9,sources:{Reddit:7.5,YouTube:8.3,Amazon:0},
+  ko:[{s:"Reddit",r:3,d:"5d",t:"Hands are real, the ship date isn't. Believe it when you can add to cart."},
+      {s:"YouTube",r:4,d:"1w",t:"Frame-by-frame, the manipulation is genuinely ahead. Production is the question."}],
+  prices:[{ch:"Tesla (announced)",p:"Not for sale yet",pn:null}],
+  videos:[{t:"Optimus Gen 2 hands explained",a:"Veritasium",dur:"12:18",bg:"#dc2626"}]},
+ {id:4,name:"Roomba j9+",brand:"iRobot",cat:"Robot Vacuums",emoji:"🧹",bg:"#eef0ff",
+  price:"$899",sub:"",priceNum:899,
+  specs:{"Suction":"Strong","Mapping":"vSLAM camera","Self-empty":"Yes (60 days)","Mopping":"Yes","Max runtime":"~120 min","Bin":"Auto-empty base"},
+  tags:["Trusted brand","Dirt Detective","Obstacle avoidance"],score:8.4,radar:[8.5,8,8.5,7,7],
+  verdict:"The safe, reliable pick. Excellent obstacle avoidance and a 'never touch it' base. Mopping is basic vs newer rivals, and you pay the iRobot brand premium.",
+  pros:["Best-in-class obstacle avoidance","Hands-off 60-day auto-empty base","Mature, reliable app"],
+  cons:["Mopping is an afterthought","Pricey for the specs","No lidar (camera nav)"],
+  koMean:8.3,sources:{Reddit:8.0,YouTube:8.4,Amazon:8.5},
+  ko:[{s:"Amazon",r:5,d:"1w",t:"Dodges my dog's toys every time. The base means I deal with it once a month."},
+      {s:"Reddit",r:4,d:"2w",t:"Solid vac, weak mop. If you need real mopping look at Roborock."}],
+  prices:[{ch:"Amazon",p:"$899",pn:899},{ch:"Walmart",p:"$929",pn:929},{ch:"Best Buy",p:"$949",pn:949},{ch:"Target",p:"$949",pn:949},{ch:"iRobot.com",p:"$999",pn:999},{ch:"Costco (bundle)",p:"$1,049",pn:1049}],
+  videos:[{t:"Roomba j9+ long-term review",a:"Vacuum Wars",dur:"13:02",bg:"#4f46e5"}]},
+ {id:5,name:"Roborock Saros 10",brand:"Roborock",cat:"Robot Vacuums",emoji:"🤖",bg:"#e8f6ee",
+  price:"$1,599",sub:"",priceNum:1599,
+  specs:{"Suction":"22,000 Pa","Mapping":"Lidar + AI","Self-empty":"Yes","Mopping":"Retractable + hot wash","Max runtime":"~180 min","Bin":"All-in-one dock"},
+  tags:["Spec king","Hot-water mop","Retractable arm"],score:8.8,radar:[9.5,9,9.5,7.5,7],
+  verdict:"The do-everything flagship. Top suction, lidar nav, self-washing hot-water mop — it's the most capable vacuum you can buy. The only real downside is the price and the big dock.",
+  pros:["Highest suction & cleaning power","Self-washing/-drying hot-water mop","Excellent lidar navigation"],
+  cons:["Expensive","Large dock footprint","App can overwhelm beginners"],
+  koMean:8.7,sources:{Reddit:8.8,YouTube:8.9,Amazon:8.5},
+  ko:[{s:"Reddit",r:5,d:"3d",t:"Replaced my j9+. The mop actually mops. Dock is huge though — measure your space."},
+      {s:"YouTube",r:5,d:"1w",t:"Currently the top performer in my cleaning tests, full stop."}],
+  prices:[{ch:"Newegg",p:"$1,629",pn:1629},{ch:"Amazon",p:"$1,599",pn:1599},{ch:"Roborock.com",p:"$1,599",pn:1599},{ch:"Walmart",p:"$1,649",pn:1649},{ch:"Best Buy",p:"$1,699",pn:1699}],
+  videos:[{t:"Roborock Saros 10 vs Roomba j9+",a:"Vacuum Wars",dur:"16:44",bg:"#16a34a"}]},
+ {id:6,name:"Eufy X10 Pro Omni",brand:"Eufy",cat:"Robot Vacuums",emoji:"🧽",bg:"#fff4e6",
+  price:"$799",sub:"",priceNum:799,
+  specs:{"Suction":"8,000 Pa","Mapping":"Lidar","Self-empty":"Yes","Mopping":"Dual spinning pads","Max runtime":"~160 min","Bin":"Wash/dry dock"},
+  tags:["Value pick","Spinning mop","Full dock under $800"],score:8.2,radar:[8,8,8.5,7.5,9],
+  verdict:"The value champion. You get a self-washing mop dock and lidar for hundreds less than the flagships. Suction trails the Saros, but for most homes it's more than enough.",
+  pros:["Full self-wash dock under $800","Spinning mop pads clean well","Great lidar mapping for the price"],
+  cons:["Lower suction than flagships","Brand support less proven","Occasional app hiccups"],
+  koMean:8.1,sources:{Reddit:8.0,YouTube:8.2,Amazon:8.2},
+  ko:[{s:"Amazon",r:5,d:"5d",t:"80% of the Roborock for half the price. No regrets."},
+      {s:"Reddit",r:4,d:"2w",t:"Great value. Suction is fine for hardwood + low pile; deep carpet less so."}],
+  prices:[{ch:"Amazon",p:"$799",pn:799},{ch:"Walmart",p:"$799",pn:799},{ch:"Target",p:"$829",pn:829},{ch:"Best Buy",p:"$849",pn:849},{ch:"eufy.com",p:"$849",pn:849}],
+  videos:[{t:"Best value robot vacuum? Eufy X10 Pro Omni",a:"Vacuum Wars",dur:"12:30",bg:"#f59e0b"}]},
+ {id:7,name:"Navimow i110",brand:"Segway",cat:"Robot Mowers",emoji:"🌱",bg:"#e8f6ee",
+  price:"$1,299",sub:"",priceNum:1299,
+  specs:{"Coverage":"Up to 1/4 acre","Navigation":"RTK, no wire","Slope":"Up to 45%","Cut height":"1–2.4 in","Anti-theft":"GPS + PIN","Rain sensor":"Yes"},
+  tags:["No boundary wire","RTK GPS","Easy setup"],score:8.3,radar:[8,7.5,8.5,8,8.5],
+  verdict:"The easiest entry into wire-free mowing. RTK setup is genuinely simple and the cut is clean for small-to-mid yards. Struggles in tight, tree-heavy lots where GPS drops.",
+  pros:["No boundary wire to bury","Simple RTK app setup","Good anti-theft suite"],
+  cons:["GPS struggles under dense trees","Smaller coverage area","Bumps on very uneven ground"],
+  koMean:8.2,sources:{Reddit:8.3,YouTube:8.1,Amazon:8.1},
+  ko:[{s:"Reddit",r:4,d:"4d",t:"Setup took 30 minutes, no wire. Loses signal near my big oak but recovers."},
+      {s:"YouTube",r:4,d:"2w",t:"Clean cut on open lawn. For complex yards, look at the Luba."}],
+  prices:[{ch:"Amazon",p:"$1,299",pn:1299},{ch:"Best Buy",p:"$1,299",pn:1299},{ch:"Lowe's",p:"$1,329",pn:1329},{ch:"Home Depot",p:"$1,349",pn:1349},{ch:"Segway.com",p:"$1,349",pn:1349}],
+  videos:[{t:"Segway Navimow i110: wire-free mowing tested",a:"Robot Mower Reviews",dur:"15:10",bg:"#16a34a"}]},
+ {id:8,name:"Automower 430X",brand:"Husqvarna",cat:"Robot Mowers",emoji:"🚜",bg:"#fff0e6",
+  price:"$2,799",sub:"",priceNum:2799,
+  specs:{"Coverage":"Up to 0.8 acre","Navigation":"Boundary wire + GPS","Slope":"Up to 45%","Cut height":"0.8–2.4 in","Anti-theft":"PIN + alarm","Weather":"All-weather"},
+  tags:["Premium","Proven reliability","Big lawns"],score:8.6,radar:[9,9,7,8.5,7],
+  verdict:"The reliability benchmark. Husqvarna's years of refinement show in the flawless cut and all-weather toughness. The catch: it still uses a buried boundary wire and costs a premium.",
+  pros:["Best-in-class cut quality","Handles large, complex lawns","Extremely reliable, all-weather"],
+  cons:["Requires buried boundary wire","Expensive","Install is more involved"],
+  koMean:8.5,sources:{Reddit:8.6,YouTube:8.6,Amazon:8.3},
+  ko:[{s:"Reddit",r:5,d:"1w",t:"Five seasons, zero issues. The wire is annoying once, then you forget it exists."},
+      {s:"YouTube",r:4,d:"3w",t:"Gold standard cut. Wire-free rivals are catching up on convenience, not quality."}],
+  prices:[{ch:"Tractor Supply",p:"$2,799",pn:2799},{ch:"Husqvarna dealer",p:"$2,799",pn:2799},{ch:"Lowe's",p:"$2,849",pn:2849},{ch:"Amazon",p:"$2,899",pn:2899}],
+  videos:[{t:"Husqvarna Automower 430X 5-year review",a:"Robot Mower Reviews",dur:"18:22",bg:"#ea580c"}]},
+ {id:9,name:"Luba 2 AWD",brand:"Mammotion",cat:"Robot Mowers",emoji:"🤖",bg:"#eef0ff",
+  price:"$2,999",sub:"",priceNum:2999,
+  specs:{"Coverage":"Up to 1.25 acre","Navigation":"RTK, no wire","Slope":"Up to 80%","Cut height":"1.1–2.95 in","Drive":"All-wheel drive","Anti-theft":"GPS + 4G"},
+  tags:["AWD, steep slopes","No wire","Big coverage"],score:8.4,radar:[8.5,9.5,8.5,7.5,7],
+  verdict:"The off-road champion. All-wheel drive plus 80% slope rating tackles hills nothing else will, all without a wire. Premium price, and the app/RTK can need patience on first setup.",
+  pros:["Conquers very steep, uneven terrain","No boundary wire, large coverage","AWD traction is unmatched"],
+  cons:["Premium price","RTK setup learning curve","Occasional firmware quirks"],
+  koMean:8.3,sources:{Reddit:8.4,YouTube:8.3,Amazon:8.0},
+  ko:[{s:"Reddit",r:5,d:"6d",t:"My yard has a brutal slope. The Luba just climbs it. Nothing else could."},
+      {s:"YouTube",r:4,d:"2w",t:"Terrain monster. Spend time on the RTK setup and it pays off."}],
+  prices:[{ch:"Mammotion.com",p:"$2,999",pn:2999},{ch:"Best Buy",p:"$3,049",pn:3049},{ch:"Amazon",p:"$3,099",pn:3099}],
+  videos:[{t:"Mammotion Luba 2 AWD on an 80% slope",a:"Robot Mower Reviews",dur:"14:05",bg:"#4f46e5"}]},
+ {id:10,name:"AquaSense Pro",brand:"Beatbot",cat:"Pool Robots",emoji:"🌊",bg:"#eaf7ff",
+  price:"$1,499",sub:"",priceNum:1499,
+  specs:{"Cleaning":"Floor+wall+waterline+surface","Navigation":"AI, 5 motors","Power":"Cordless","Filter":"Fine + ultra-fine","Runtime":"~3 hrs","Extra":"Water clarification"},
+  tags:["Flagship","Cleans everything","Cordless"],score:8.5,radar:[9,8.5,9,8,7],
+  verdict:"The most complete pool robot. It does floor, walls, waterline and even surface skimming with smart navigation. It's pricey, but it replaces several single-purpose tools.",
+  pros:["Cleans floor, walls, waterline & surface","Smart multi-motor navigation","Strong fine-particle filtration"],
+  cons:["Premium price","Heavy to lift out","App features still maturing"],
+  koMean:8.4,sources:{Reddit:8.3,YouTube:8.6,Amazon:8.2},
+  ko:[{s:"YouTube",r:5,d:"4d",t:"Won my pool-robot shootout. The waterline scrub is the real differentiator."},
+      {s:"Reddit",r:4,d:"2w",t:"Does it all. Wish it were lighter to pull out, but cleaning is excellent."}],
+  prices:[{ch:"Beatbot.com",p:"$1,499",pn:1499},{ch:"Amazon",p:"$1,499",pn:1499},{ch:"Best Buy",p:"$1,549",pn:1549},{ch:"Leslie's",p:"$1,549",pn:1549}],
+  videos:[{t:"Beatbot AquaSense Pro: pool robot shootout winner",a:"Pool Care Guide",dur:"13:40",bg:"#0ea5e9"}]},
+ {id:11,name:"Nautilus CC Plus",brand:"Dolphin",cat:"Pool Robots",emoji:"🐬",bg:"#eef0ff",
+  price:"$799",sub:"",priceNum:799,
+  specs:{"Cleaning":"Floor + walls","Navigation":"CleverClean","Power":"Corded","Filter":"Large top-load basket","Runtime":"2 hr cycle","Pool size":"Up to 50 ft"},
+  tags:["Best value","Proven","Easy filter"],score:8.2,radar:[8,7.5,8,8.5,9],
+  verdict:"The reliable value default. For years the go-to recommendation: cleans floor and walls well, easy top-load filter, and a price everyone can stomach. Corded and no waterline scrub.",
+  pros:["Excellent value & track record","Easy top-load filter basket","Climbs walls reliably"],
+  cons:["Corded (tangle management)","No waterline/surface cleaning","Basic navigation"],
+  koMean:8.1,sources:{Reddit:8.2,YouTube:8.1,Amazon:8.1},
+  ko:[{s:"Amazon",r:5,d:"1w",t:"Three seasons of flawless service. The default rec for a reason."},
+      {s:"Reddit",r:4,d:"3w",t:"No frills, just works. Cord can tangle in odd-shaped pools."}],
+  prices:[{ch:"Amazon",p:"$799",pn:799},{ch:"Walmart",p:"$815",pn:815},{ch:"Best Buy",p:"$829",pn:829},{ch:"In-The-Swim",p:"$839",pn:839},{ch:"Leslie's",p:"$849",pn:849}],
+  videos:[{t:"Dolphin Nautilus CC Plus: still the value king?",a:"Pool Care Guide",dur:"11:15",bg:"#6366f1"}]},
+ {id:12,name:"Scuba S1",brand:"Aiper",cat:"Pool Robots",emoji:"🤿",bg:"#e8f6ee",
+  price:"$899",sub:"",priceNum:899,
+  specs:{"Cleaning":"Floor + walls","Navigation":"Path planning","Power":"Cordless","Filter":"Dual filtration","Runtime":"~90 min","Pool size":"Up to 1,600 sq ft"},
+  tags:["Cordless value","Quiet","App control"],score:8.0,radar:[7.5,7.5,7.5,8.5,8.5],
+  verdict:"A strong cordless value. Drops the cord hassle at a fair price with decent wall climbing and app control. Battery life and waterline cleaning aren't flagship-level, but it's an easy daily driver.",
+  pros:["Cordless at a reasonable price","Good app & path planning","Quiet operation"],
+  cons:["No waterline cleaning","~90 min runtime","Wall climb less consistent"],
+  koMean:7.9,sources:{Reddit:7.8,YouTube:8.0,Amazon:8.0},
+  ko:[{s:"Reddit",r:4,d:"5d",t:"Cordless for under a grand and it actually climbs walls. Good buy."},
+      {s:"Amazon",r:4,d:"2w",t:"Quiet and easy. Wish the battery lasted a bit longer on my bigger pool."}],
+  prices:[{ch:"Amazon",p:"$899",pn:899},{ch:"aiper.com",p:"$899",pn:899},{ch:"Walmart",p:"$919",pn:919},{ch:"Best Buy",p:"$929",pn:929}],
+  videos:[{t:"Aiper Scuba S1 cordless pool robot review",a:"Pool Care Guide",dur:"10:50",bg:"#16a34a"}]},
+ {id:13,name:"Geek+ RoboShuttle",brand:"Geek+",cat:"Warehouse Logistics",emoji:"📦",bg:"#eef0f3",
+  price:"Quote-based",sub:"",priceNum:9999999,
+  specs:{"Type":"Goods-to-person AMR","Payload":"up to ~1,400 kg (shuttle)","Navigation":"SLAM + QR","Speed":"~2 m/s","Charging":"Auto-charge","Deploy":"Warehouse / 3PL"},
+  tags:["Global AMR leader","Goods-to-person","Proven at scale"],score:8.8,radar:[9,8,8.5,9,8.5],
+  verdict:"One of the world's most deployed warehouse AMR systems. Massive throughput and uptime for e-commerce fulfillment; needs integration and is sold per-project, not off the shelf.",
+  pros:["Battle-tested at huge scale","High throughput & uptime","Strong global support"],
+  cons:["Project-based, needs integration","Enterprise pricing only","WMS integration effort"],
+  koMean:8.6,sources:{Reddit:8.5,YouTube:8.7,Amazon:0},
+  ko:[{s:"YouTube",r:5,d:"1w",t:"Fulfillment throughput is in another league once it's dialed in."}],
+  prices:[{ch:"Manufacturer · enterprise sales",p:"Request a quote",pn:null}],
+  videos:[{t:"Inside a Geek+ goods-to-person warehouse",a:"Logistics Insider",dur:"09:40",bg:"#475569"}]},
+ {id:14,name:"LocusBot",brand:"Locus Robotics",cat:"Warehouse Logistics",emoji:"🤖",bg:"#eef0f3",
+  price:"Quote-based / RaaS",sub:"",priceNum:9999999,
+  specs:{"Type":"Collaborative AMR","Payload":"~36 kg/bot","Navigation":"Autonomous SLAM","Model":"Robots-as-a-Service","Speed":"~1.8 m/s","Deploy":"Fulfillment / 3PL"},
+  tags:["Collaborative","RaaS pricing","Fast to deploy"],score:8.5,radar:[8.5,7,8.5,8.5,8],
+  verdict:"Worker-friendly collaborative bots with a pay-as-you-go RaaS model — lowers upfront cost and ramps fast. Per-bot payload is modest, so it's about fleets, not heavy loads.",
+  pros:["RaaS = low upfront cost","Works alongside people","Quick to scale up/down"],
+  cons:["Lower per-bot payload","Ongoing subscription cost","Best for piece-picking"],
+  koMean:8.4,sources:{Reddit:8.4,YouTube:8.4,Amazon:0},
+  ko:[{s:"Reddit",r:4,d:"2w",t:"RaaS made the pilot easy to justify. Pickers actually like working with them."}],
+  prices:[{ch:"Manufacturer · enterprise sales",p:"Request a quote",pn:null}],
+  videos:[{t:"Locus Robotics RaaS explained",a:"Warehouse Tech",dur:"07:55",bg:"#475569"}]},
+ {id:15,name:"Hikrobot AMR",brand:"Hikrobot",cat:"Warehouse Logistics",emoji:"🚚",bg:"#eef0f3",
+  price:"Quote-based",sub:"",priceNum:9999999,
+  specs:{"Type":"Latent/forklift AMR","Payload":"100–2,000 kg (range)","Navigation":"SLAM / vision","Speed":"~1.5 m/s","Charging":"Auto","Deploy":"Factory / warehouse"},
+  tags:["Broad lineup","Cost-effective","Factory + warehouse"],score:8.5,radar:[8.5,8.5,8,8.5,9],
+  verdict:"A very broad, cost-effective AMR/AGV lineup from latent-lift to forklift bots. Strong value, especially in Asia; ecosystem and support vary by region.",
+  pros:["Widest payload range","Excellent value","Factory + warehouse coverage"],
+  cons:["Support varies by region","Integration needed","Software less polished than leaders"],
+  koMean:8.3,sources:{Reddit:8.2,YouTube:8.4,Amazon:0},
+  ko:[{s:"Reddit",r:4,d:"3w",t:"Hard to beat on price for the payload. Did need local integrator help."}],
+  prices:[{ch:"Manufacturer · enterprise sales",p:"Request a quote",pn:null}],
+  videos:[{t:"Hikrobot AMR lineup tour",a:"Industrial Automation",dur:"10:20",bg:"#475569"}]},
+ {id:16,name:"Gausium Scrubber 75",brand:"Gausium",cat:"Commercial Cleaning",emoji:"🧼",bg:"#e8f2f4",
+  price:"Quote-based",sub:"",priceNum:9999999,
+  specs:{"Use":"Commercial floor scrubbing","Coverage":"up to ~2,800 m²/h","Autonomy":"Fully autonomous","Tank":"Large","Runtime":"~3–4 hrs","Deploy":"Malls/airports/offices"},
+  tags:["Cleaning leader","Unmanned","Big areas"],score:8.6,radar:[9,9,8.5,8.5,8],
+  verdict:"A market-leading autonomous scrubber for large commercial floors. Excellent coverage and unattended operation; ROI is clear where labor is scarce, deployment needs mapping.",
+  pros:["Top coverage per hour","Runs unattended","Clear labor-replacement ROI"],
+  cons:["Large-format spaces only","Upfront mapping/setup","Enterprise pricing"],
+  koMean:8.5,sources:{Reddit:8.4,YouTube:8.6,Amazon:0},
+  ko:[{s:"YouTube",r:5,d:"1w",t:"Cleans the concourse overnight with nobody there. ROI was obvious."}],
+  prices:[{ch:"Manufacturer · enterprise sales",p:"Request a quote",pn:null}],
+  videos:[{t:"Gausium autonomous scrubber at an airport",a:"Facility Ops",dur:"08:12",bg:"#0891b2"}]},
+ {id:17,name:"Avidbots Neo 2",brand:"Avidbots",cat:"Commercial Cleaning",emoji:"🧽",bg:"#e8f2f4",
+  price:"Quote-based",sub:"",priceNum:9999999,
+  specs:{"Use":"Autonomous floor scrubber","Coverage":"high","Autonomy":"Self-driving + reporting","Mapping":"AI auto-map","Runtime":"long","Deploy":"Airports/warehouses/retail"},
+  tags:["Self-mapping","Cleaning analytics","Global support"],score:8.4,radar:[8.5,9,8.5,8,7.5],
+  verdict:"A polished autonomous scrubber known for easy self-mapping and detailed cleaning reports. Strong in big facilities; premium positioning vs Asian rivals.",
+  pros:["Excellent self-mapping","Cleaning analytics dashboard","Strong global service"],
+  cons:["Premium price","Large facilities only","Setup lead time"],
+  koMean:8.3,sources:{Reddit:8.2,YouTube:8.4,Amazon:0},
+  ko:[{s:"Reddit",r:4,d:"2w",t:"The reporting dashboard sold our facilities team. Mapping was painless."}],
+  prices:[{ch:"Manufacturer · enterprise sales",p:"Request a quote",pn:null}],
+  videos:[{t:"Avidbots Neo self-mapping demo",a:"Facility Ops",dur:"06:48",bg:"#0891b2"}]},
+ {id:18,name:"Pudu CC1",brand:"PUDU",cat:"Commercial Cleaning",emoji:"🧹",bg:"#e8f2f4",
+  price:"Quote-based",sub:"",priceNum:9999999,
+  specs:{"Use":"4-in-1 commercial cleaner","Functions":"Sweep/scrub/vacuum/mop","Autonomy":"Autonomous","Runtime":"~ several hrs","Deploy":"Retail/dining/office","Extra":"Multi-mode"},
+  tags:["4-in-1","Value","SMB friendly"],score:8.2,radar:[8,8,8,8,8.5],
+  verdict:"A versatile 4-in-1 cleaner from a service-robot maker, more approachable for mid-size venues. Jack-of-all-trades; not as specialized as dedicated scrubbers.",
+  pros:["4 cleaning modes in one","More affordable entry","Good for mixed venues"],
+  cons:["Less specialized","Smaller coverage","Newer in cleaning category"],
+  koMean:8.1,sources:{Reddit:8.0,YouTube:8.2,Amazon:0},
+  ko:[{s:"YouTube",r:4,d:"3w",t:"Nice all-rounder for a mid-size store without buying four machines."}],
+  prices:[{ch:"Manufacturer · enterprise sales",p:"Request a quote",pn:null}],
+  videos:[{t:"Pudu CC1 four-in-one cleaning test",a:"Facility Ops",dur:"07:30",bg:"#0891b2"}]},
+ {id:19,name:"Pudu BellaBot",brand:"PUDU",cat:"Restaurant Service",emoji:"🍽️",bg:"#f7ecee",
+  price:"Quote-based",sub:"",priceNum:9999999,
+  specs:{"Use":"Food running / delivery","Trays":"4 tiers (~40 kg)","Navigation":"Multi-sensor SLAM","Runtime":"~12+ hrs","Interaction":"Cat-face display","Deploy":"Restaurants / hotels"},
+  tags:["Restaurant icon","Cat-face charm","Massively deployed"],score:8.6,radar:[8.5,8.5,9,9.5,8.5],
+  verdict:"The face of restaurant robots — the cute cat display makes guests love it and it runs all day reliably. Best on flat layouts with decent aisle width; needs a quick map first.",
+  pros:["Beloved, brandable interaction","All-day battery","Hugely proven in dining"],
+  cons:["Flat floors only","Needs aisle clearance","Pre-mapping required"],
+  koMean:8.6,sources:{Reddit:8.4,YouTube:8.7,Amazon:0},
+  ko:[{s:"YouTube",r:5,d:"1w",t:"Customers pet it and tip more. Runs lunch and dinner without a charge swap."}],
+  prices:[{ch:"Manufacturer · enterprise sales",p:"Request a quote",pn:null}],
+  videos:[{t:"BellaBot serving a full dinner rush",a:"Restaurant Tech",dur:"06:30",bg:"#be123c"}]},
+ {id:20,name:"Keenon T-series",brand:"KEENON",cat:"Restaurant Service",emoji:"🍱",bg:"#f7ecee",
+  price:"Quote-based",sub:"",priceNum:9999999,
+  specs:{"Use":"Delivery / bussing","Trays":"Multi-tier","Navigation":"Laser SLAM","Runtime":"long","Lineup":"Broad (T / W series)","Deploy":"Restaurants / hospitals"},
+  tags:["Broad lineup","Export leader","Reliable workhorse"],score:8.4,radar:[8.5,8.5,8.5,8,8.5],
+  verdict:"A reliable workhorse from a global export leader, with a wide lineup for delivery and bussing. Less of a 'personality' play than BellaBot, but dependable and well-supported.",
+  pros:["Wide model range","Strong global footprint","Dependable in high volume"],
+  cons:["Plainer guest interaction","Flat-floor venues","Setup/mapping needed"],
+  koMean:8.3,sources:{Reddit:8.3,YouTube:8.3,Amazon:0},
+  ko:[{s:"Reddit",r:4,d:"2w",t:"Two of them cover our whole floor at peak. Boringly reliable, which is what we wanted."}],
+  prices:[{ch:"Manufacturer · enterprise sales",p:"Request a quote",pn:null}],
+  videos:[{t:"Keenon delivery robots in a busy restaurant",a:"Restaurant Tech",dur:"07:10",bg:"#be123c"}]},
+ {id:21,name:"Bear Robotics Servi",brand:"Bear Robotics",cat:"Restaurant Service",emoji:"🍴",bg:"#f7ecee",
+  price:"Quote-based / RaaS",sub:"",priceNum:9999999,
+  specs:{"Use":"Food running / bussing","Trays":"3 trays","Navigation":"Lidar + 3D camera","Runtime":"~full shift","Model":"Often RaaS subscription","Deploy":"US restaurants / chains"},
+  tags:["US favorite","Easy setup","Chain-proven"],score:8.3,radar:[8,8.5,8.5,8,8],
+  verdict:"The popular pick for U.S. restaurants — easy to deploy, chain-proven, and often offered as a low-upfront subscription. Modest tray capacity, so it's a runner, not a heavy hauler.",
+  pros:["Strong U.S. presence & support","Low-upfront RaaS option","Simple to roll out"],
+  cons:["Modest tray capacity","Subscription adds up","Flat-floor venues only"],
+  koMean:8.2,sources:{Reddit:8.2,YouTube:8.2,Amazon:0},
+  ko:[{s:"Reddit",r:4,d:"2w",t:"Subscription made it a no-brainer to trial. Servers now do less running, more tables."}],
+  prices:[{ch:"Manufacturer · enterprise sales",p:"Request a quote",pn:null}],
+  videos:[{t:"Bear Robotics Servi at a US chain",a:"Restaurant Tech",dur:"06:05",bg:"#be123c"}]},
+ {id:22,name:"Yunji UP",brand:"Yunji",cat:"Hotel Delivery",emoji:"🛎️",bg:"#f3efe4",
+  price:"Quote-based",sub:"",priceNum:9999999,
+  specs:{"Use":"In-room delivery / runner","Cabin":"Enclosed compartment(s)","Integration":"Elevator + door + PMS/phone","Navigation":"Lidar SLAM","Runtime":"24/7 auto-charge","Deploy":"Hotels (very widely deployed)"},
+  tags:["Hotel delivery leader","Rides elevators","24/7 concierge"],score:8.5,radar:[8,9.5,8.5,8.5,8.5],
+  verdict:"The leading in-room delivery robot in hotels — deep elevator, auto-door and front-desk/phone integration lets it take amenities straight to the guest's door, around the clock.",
+  pros:["Best-in-class building integration","True 24/7 unattended runs","Proven across many hotels"],
+  cons:["Hotel-specific (needs elevator API)","Per-property setup","Single enclosed cabin"],
+  koMean:8.4,sources:{Reddit:8.3,YouTube:8.5,Amazon:0},
+  ko:[{s:"YouTube",r:5,d:"1w",t:"Calls the elevator itself and shows up at the room door. Guests love the novelty, front desk loves the time saved."}],
+  prices:[{ch:"Manufacturer · enterprise sales",p:"Request a quote",pn:null}],
+  videos:[{t:"Hotel delivery robot rides the elevator to your room",a:"Hospitality Tech",dur:"06:15",bg:"#a16207"}]},
+ {id:23,name:"Pudu FlashBot",brand:"PUDU",cat:"Hotel Delivery",emoji:"🧳",bg:"#f3efe4",
+  price:"Quote-based",sub:"",priceNum:9999999,
+  specs:{"Use":"Delivery (hotel/office/hospital)","Cabin":"Lidded compartments","Integration":"Elevator + auto-door","Navigation":"Multi-sensor SLAM","Interaction":"Large screen + voice","Deploy":"Hotels / offices"},
+  tags:["Versatile delivery","Screen interaction","Elevator-ready"],score:8.4,radar:[8.5,9,8.5,8.5,8],
+  verdict:"A versatile enclosed-delivery robot that works in hotels, offices and hospitals, with a big interactive screen. Slightly less hotel-specialized than Yunji but more flexible across venues.",
+  pros:["Works beyond just hotels","Friendly screen + voice UI","Solid elevator integration"],
+  cons:["Less hotel-tailored than Yunji","Setup per building","Premium positioning"],
+  koMean:8.3,sources:{Reddit:8.2,YouTube:8.4,Amazon:0},
+  ko:[{s:"Reddit",r:4,d:"2w",t:"We use it for room drops and office mail both. The screen makes hand-off easy for guests."}],
+  prices:[{ch:"Manufacturer · enterprise sales",p:"Request a quote",pn:null}],
+  videos:[{t:"Pudu FlashBot enclosed delivery demo",a:"Hospitality Tech",dur:"05:40",bg:"#a16207"}]},
+ {id:24,name:"Relay",brand:"Relay Robotics",cat:"Hotel Delivery",emoji:"🤖",bg:"#f3efe4",
+  price:"Quote-based / RaaS",sub:"",priceNum:9999999,
+  specs:{"Use":"Hotel room delivery","Cabin":"Secure lidded bin","Integration":"Elevator (US standard)","Navigation":"Autonomous","Origin":"US (Aloft-proven)","Deploy":"US hotels"},
+  tags:["US hotel pioneer","Secure bin","Chain-proven"],score:8.2,radar:[7.5,8.5,8.5,8,8],
+  verdict:"The U.S. hotel-delivery pioneer (the original Aloft 'Botlr'), known for reliable secure-bin room deliveries and easy U.S. elevator integration. Smaller cabin, but a safe, proven pick for American properties.",
+  pros:["Strong U.S. track record","Secure single-item bin","Easy U.S. elevator integration"],
+  cons:["Smaller payload/cabin","Single delivery at a time","Premium / subscription"],
+  koMean:8.1,sources:{Reddit:8.1,YouTube:8.1,Amazon:0},
+  ko:[{s:"Reddit",r:4,d:"3w",t:"Guests request it just to see it. Reliable for towels, water, late-night snacks."}],
+  prices:[{ch:"Manufacturer · enterprise sales",p:"Request a quote",pn:null}],
+  videos:[{t:"Relay the hotel butler robot in action",a:"Hospitality Tech",dur:"05:20",bg:"#a16207"}]},
+];
+const selCat=new Set(),selBrand=new Set(),selPrice=new Set();
+let curQuery="";
+const compare=new Set();
+function radarSVG(values,labels,size,color){
+  size=size||230;color=color||'#475569';const W=size+120,cx=W/2,cy=size/2,R=size/2-44,n=values.length,max=10;
+  function pt(i,r){const a=-Math.PI/2+i*2*Math.PI/n;return[cx+r*Math.cos(a),cy+r*Math.sin(a)];}
+  function poly(r){let s='';for(let i=0;i<n;i++){const[x,y]=pt(i,r);s+=x.toFixed(1)+','+y.toFixed(1)+' ';}return s.trim();}
+  let g='';
+  for(let ring=1;ring<=4;ring++) g+=`<polygon points="${poly(R*ring/4)}" fill="none" stroke="#e8eaed" stroke-width="1"/>`;
+  for(let i=0;i<n;i++){const[x,y]=pt(i,R);g+=`<line x1="${cx}" y1="${cy}" x2="${x.toFixed(1)}" y2="${y.toFixed(1)}" stroke="#e8eaed"/>`;
+    const[lx,ly]=pt(i,R+15);const anc=Math.abs(lx-cx)<6?'middle':(lx>cx?'start':'end');
+    g+=`<text x="${lx.toFixed(1)}" y="${(ly+4).toFixed(1)}" font-size="10.5" fill="#6b7280" text-anchor="${anc}">${labels[i]}</text>`;}
+  let dp='';for(let i=0;i<n;i++){const[x,y]=pt(i,R*values[i]/max);dp+=x.toFixed(1)+','+y.toFixed(1)+' ';}
+  g+=`<polygon points="${dp.trim()}" fill="${color}30" stroke="${color}" stroke-width="2"/>`;
+  for(let i=0;i<n;i++){const[x,y]=pt(i,R*values[i]/max);g+=`<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="3" fill="${color}"/>`;}
+  return `<svg width="${W}" height="${size}" viewBox="0 0 ${W} ${size}">${g}</svg>`;
+}
+const tk=document.getElementById('ticker');
+NEWS.slice(0,3).forEach(n=>{const li=document.createElement('li');li.innerHTML=(n.hot?`<b>[${n.hot}]</b>`:'')+n.title;tk.appendChild(li);});
+function buckets(){return["Under $1k","$1k–$3k","$3k+"];}
+function inB(n,b){if(b==="Under $1k")return n<1000;if(b==="$1k–$3k")return n>=1000&&n<3000;return n>=3000;}
+function toggle(set,val){set.has(val)?set.delete(val):set.add(val);rebuild();}
+function rebuild(){buildCats();buildFilters();render();}
+function buildCats(){
+  const t=document.getElementById('tabs');t.innerHTML='';
+  const all=document.createElement('div');all.className='tab'+(selCat.size===0?' on':'');
+  all.innerHTML='<span class="ic">'+(selCat.size===0?'✓':'＋')+'</span>All';
+  all.onclick=()=>{selCat.clear();rebuild();};t.appendChild(all);
+  const grp=(label,arr)=>{const lb=document.createElement('span');lb.className='tabgroup';lb.textContent=label;t.appendChild(lb);
+    arr.forEach(c=>{const on=selCat.has(c);const b=document.createElement('div');b.className='tab'+(on?' on':'');
+      b.innerHTML='<span class="ic">'+(on?'✓':'＋')+'</span>'+c;b.onclick=()=>toggle(selCat,c);t.appendChild(b);});};
+  grp('Consumer',CONSUMER_CATS);grp('Commercial & Industrial',COMMERCIAL_CATS);
+}
+function buildFilters(){
+  const pool=DATA.filter(d=>selCat.size===0||selCat.has(d.cat));
+  const brands=Array.from(new Set(pool.map(d=>d.brand)));
+  const f=document.getElementById('filters');f.innerHTML='';
+  const g1=document.createElement('div');g1.className='fgroup';g1.innerHTML='<b>Brand</b>';
+  brands.forEach(br=>{const on=selBrand.has(br);const c=document.createElement('span');c.className='chip'+(on?' on':'');
+    c.innerHTML='<span class="ic">'+(on?'✓':'＋')+'</span>'+br;c.onclick=()=>toggle(selBrand,br);g1.appendChild(c);});
+  const g2=document.createElement('div');g2.className='fgroup';g2.innerHTML='<b>Price</b>';
+  buckets().forEach(p=>{const on=selPrice.has(p);const c=document.createElement('span');c.className='chip'+(on?' on':'');
+    c.innerHTML='<span class="ic">'+(on?'✓':'＋')+'</span>'+p;c.onclick=()=>toggle(selPrice,p);g2.appendChild(c);});
+  f.appendChild(g1);f.appendChild(g2);
+}
+function curList(){
+  return DATA.filter(d=>
+    (selCat.size===0||selCat.has(d.cat))&&
+    (selBrand.size===0||selBrand.has(d.brand))&&
+    (selPrice.size===0||[...selPrice].some(b=>inB(d.priceNum,b)))&&
+    (curQuery===""||(d.name+d.brand).toLowerCase().includes(curQuery.toLowerCase())));
+}
+function sponsoredCard(){const c=document.createElement('div');c.className='card';c.style.cursor='default';
+  c.innerHTML=`<div class="thumb" style="background:linear-gradient(135deg,#eef1f5,#e2e6ee)"><span class="cat-pill" style="background:#9aa0b3;text-shadow:none">SPONSORED</span>📢</div>
+    <div class="cbody"><h3>Your robot here</h3><div class="brand">Reach high-intent buyers</div>
+    <div class="price" style="color:#8089a0">Native ad slot</div>
+    <div class="pcompare na" style="cursor:default">Sponsored placement ›</div>
+    <div class="specrow"><span>Blends in with results, clearly labeled</span></div></div>`;
+  return c;}
+function render(){
+  const grid=document.getElementById('grid');grid.innerHTML='';
+  const list=curList();
+  const active=selCat.size+selBrand.size+selPrice.size>0||curQuery!=="";
+  const rb=document.getElementById('resbar');
+  rb.innerHTML=`<span>${list.length} robot${list.length!==1?'s':''}</span>`+(active?'<span class="reset" onclick="resetAll()">✕ Reset filters</span>':'');
+  if(!list.length){grid.innerHTML='<div style="color:var(--sub);padding:40px">No matches — try removing a filter.</div>';return;}
+  list.forEach((d,idx)=>{const added=compare.has(d.id);const c=document.createElement('div');c.className='card';
+    const valid=d.prices.filter(p=>p.pn!=null);const nstore=d.prices.length;
+    const lowest=valid.length?valid.reduce((a,b)=>a.pn<b.pn?a:b):null;
+    const pill=COMMERCIAL.has(d.cat)
+      ?`<div class="pcompare biz" onclick="event.stopPropagation();openModal(${d.id},'prices')">💼 Request a quote ›</div>`
+      :lowest
+      ?`<div class="pcompare" onclick="event.stopPropagation();openModal(${d.id},'prices')">🏷️ Compare ${nstore} prices · from ${lowest.p} ›</div>`
+      :`<div class="pcompare na" onclick="event.stopPropagation();openModal(${d.id},'prices')">🏷️ See availability ›</div>`;
+    c.innerHTML=`<div class="thumb" style="background:${CATBG[d.cat]||d.bg}"><span class="cat-pill" style="background:${CATCOLOR[d.cat]||'rgba(0,0,0,.55)'}">${d.cat}</span>
+      <button class="cmpadd ${added?'added':''}" onclick="event.stopPropagation();toggleCmp(${d.id})">${added?'✓':'+'}</button>${d.emoji}</div>
+      <div class="cbody"><h3>${d.name}</h3><div class="brand">${d.brand}</div>
+      <div class="price">${d.price} ${d.sub?`<small>${d.sub}</small>`:''}</div>
+      ${pill}
+      <div class="specrow">${Object.entries(d.specs).slice(0,2).map(([k,v])=>`<span>${k} <b>${v}</b></span>`).join('')}</div>
+      <div class="score">${d.score}<small>/10</small></div></div>`;
+    c.onclick=()=>openModal(d.id);grid.appendChild(c);if(idx===5)grid.appendChild(sponsoredCard());});
+}
+function resetAll(){selCat.clear();selBrand.clear();selPrice.clear();curQuery="";document.getElementById('q').value='';rebuild();}
+function openModal(id,initialTab){
+  initialTab=initialTab||'overview';
+  const d=DATA.find(x=>x.id===id);const axes=AXES[d.cat];const added=compare.has(d.id);const m=document.getElementById('modal');
+  const srcKeys=Object.keys(d.sources).filter(k=>d.sources[k]>0);
+  const valid=d.prices.filter(p=>p.pn!=null);const minPn=valid.length?Math.min(...valid.map(p=>p.pn)):null;
+  const sorted=[...d.prices].sort((a,b)=>(a.pn==null?1e9:a.pn)-(b.pn==null?1e9:b.pn));
+  m.innerHTML=`<div class="mhead" style="background:${CATBG[d.cat]||d.bg}"><button class="mclose" onclick="closeModal()">✕</button>${d.emoji}</div>
+   <div class="mtop"><div class="brand">${d.brand}</div><h2>${d.name}</h2>
+   <div class="mtags">${d.tags.map(t=>`<span class="mtag">${t}</span>`).join('')}</div>
+   <div class="mprice">${d.price} <small>${d.sub?'· '+d.sub+' ':''}· ${d.score}/10 editor · ${d.koMean} community</small></div></div>
+   <div class="dtabs">${dt('overview','Ratings',initialTab)}${dt('spec','Specs',initialTab)}${dt('reviews','Reviews',initialTab)}${dt('prices','Prices ('+d.prices.length+')',initialTab)}${dt('video','Videos',initialTab)}</div>
+   <div class="dpane ${initialTab==='overview'?'on':''}" data-p="overview">
+     <div class="radarwrap">${radarSVG(d.radar,axes,230,CATSOLID[d.cat])}
+       <div class="radarlegend">${axes.map((a,i)=>`<div class="rl-item"><span style="width:112px;color:var(--sub)">${a}</span><span class="rl-bar"><i style="width:${d.radar[i]*10}%;background:${CATSOLID[d.cat]}"></i></span><span class="rl-val">${d.radar[i]}</span></div>`).join('')}</div>
+     </div>
+     <div class="verdict"><b>The verdict</b>${d.verdict}</div>
+     <div class="prosconrow"><div class="pc pro"><b>👍 Pros</b><ul>${d.pros.map(p=>`<li>${p}</li>`).join('')}</ul></div>
+       <div class="pc con"><b>👎 Cons</b><ul>${d.cons.map(p=>`<li>${p}</li>`).join('')}</ul></div></div>
+   </div>
+   <div class="dpane ${initialTab==='spec'?'on':''}" data-p="spec"><div class="secttl">📋 Specifications</div>
+     <div class="specgrid">${Object.entries(d.specs).map(([k,v])=>`<div class="spec"><span>${k}</span><span>${v}</span></div>`).join('')}</div></div>
+   <div class="dpane ${initialTab==='reviews'?'on':''}" data-p="reviews">
+     <div class="ko-sum"><div class="ko-big">${d.koMean}<small>/10</small></div>
+       <div class="srcgrid">${srcKeys.map(k=>`<div class="srcbox"><div class="s" style="color:${SRC[k]}">${d.sources[k]}</div><div class="l">${k}</div></div>`).join('')}</div></div>
+     ${d.ko.map(k=>`<div class="ko"><div class="top"><span class="src" style="background:${SRC[k.s]}">${k.s}</span><span class="st">${'★'.repeat(k.r)}${'☆'.repeat(5-k.r)}</span><span class="dt">${k.d} ago</span></div><div class="tx">${k.t}</div></div>`).join('')}
+     <div class="pnote">＊ Aggregated from Reddit, YouTube &amp; Amazon. Production version pulls and scores these live.</div></div>
+   <div class="dpane ${initialTab==='prices'?'on':''}" data-p="prices"><div class="secttl">💰 Pricing &amp; availability</div>
+     <table class="ptable"><thead><tr><th>Retailer</th><th>Price</th><th></th><th></th></tr></thead><tbody>
+       ${sorted.map(p=>{const best=p.pn!=null&&p.pn===minPn;return `<tr class="${best?'best':''}"><td>${p.ch}</td><td class="pr">${p.p}</td><td>${best?'<span class="bestlbl">★ Lowest</span>':''}</td><td><button class="deal" onclick="alert('Demo: in production this opens the retailer link or a quote/lead form')">${p.pn!=null?'View deal':'Request quote'}</button></td></tr>`;}).join('')}
+     </tbody></table>
+     <div class="pnote">＊ Sample prices, sorted low→high. Production version tracks every retailer's live price daily and earns affiliate revenue on outbound clicks.</div></div>
+   <div class="dpane ${initialTab==='video'?'on':''}" data-p="video"><div class="vrow">
+     ${d.videos.map(v=>`<div class="vcard" onclick="alert('Demo: production version embeds &quot;${v.t}&quot;')"><div class="vthumb" style="background:${v.bg}"><div class="play">▶</div><span class="dur">${v.dur}</span></div><div class="vmeta"><div class="t">${v.t}</div><div class="a">by ${v.a}</div></div></div>`).join('')}
+   </div></div>
+   <div class="adslot" style="margin:4px 28px 0;min-height:74px"><span class="adtag">SPONSORED</span>You might also consider — partner placement</div>
+   <button class="maddcmp" onclick="toggleCmp(${d.id});">${added?'Remove from compare':'＋ Add to compare'}</button>`;
+  m.querySelectorAll('.dtab').forEach(t=>t.onclick=()=>{const p=t.dataset.t;m.querySelectorAll('.dtab').forEach(x=>x.classList.remove('on'));t.classList.add('on');m.querySelectorAll('.dpane').forEach(x=>x.classList.toggle('on',x.dataset.p===p));});
+  document.getElementById('overlay').classList.add('show');
+}
+function dt(id,label,init){return `<div class="dtab ${id===(init||'overview')?'on':''}" data-t="${id}">${label}</div>`;}
+function closeModal(){document.getElementById('overlay').classList.remove('show');}
+function toggleCmp(id){
+  if(compare.has(id))compare.delete(id);else{if(compare.size>=4){alert('Compare up to 4');return;}compare.add(id);}
+  document.getElementById('cmpBadge').textContent=compare.size;render();
+  const btn=document.querySelector('.maddcmp');if(btn&&document.getElementById('overlay').classList.contains('show')){btn.textContent=compare.has(id)?'Remove from compare':'＋ Add to compare';}
+}
+function openCmp(){
+  const p=document.getElementById('cmppanel');const items=DATA.filter(d=>compare.has(d.id));
+  if(!items.length){p.innerHTML=`<div class="cmptop"><h2>Compare</h2><button onclick="closeCmp()">✕</button></div><div class="cmpempty">No robots added yet.<br>Tap the <b style="color:var(--brand)">＋</b> on any card (up to 4).</div>`;}
+  else{
+    const same=items.every(d=>d.cat===items[0].cat);const keys=Array.from(new Set(items.flatMap(d=>Object.keys(d.specs))));const best=Math.max(...items.map(d=>d.score));
+    let h=`<div class="cmptop"><h2>Compare (${items.length})</h2><button onclick="closeCmp()">✕</button></div>`;
+    if(same){const axes=AXES[items[0].cat];h+=`<div class="cmpnote">Same category — comparing the 5 ${items[0].cat} ratings (best in green)</div>`;
+      h+=`<table class="cmptable"><thead><tr><th class="rowlbl"></th>`;items.forEach(d=>{h+=`<th class="cmphead"><div class="emoji">${d.emoji}</div><div class="nm">${d.name}</div><button class="rm" onclick="toggleCmp(${d.id});openCmp()">remove ✕</button></th>`;});h+=`</tr></thead><tbody>`;
+      axes.forEach((a,i)=>{const mx=Math.max(...items.map(d=>d.radar[i]));h+=`<tr><td class="rowlbl">${a}</td>${items.map(d=>`<td class="${d.radar[i]===mx?'best2':''}">${d.radar[i]}</td>`).join('')}</tr>`;});
+      h+=`<tr><td class="rowlbl">Overall</td>${items.map(d=>`<td class="${d.score===best?'best2':''}">${d.score}${d.score===best?' 🏆':''}</td>`).join('')}</tr>`;
+    }else{h+=`<div class="cmpnote">Cross-category — showing shared fields (same-category picks unlock the 5-point rating compare)</div>`;
+      h+=`<table class="cmptable"><thead><tr><th class="rowlbl"></th>`;items.forEach(d=>{h+=`<th class="cmphead"><div class="emoji">${d.emoji}</div><div class="nm">${d.name}</div><button class="rm" onclick="toggleCmp(${d.id});openCmp()">remove ✕</button></th>`;});h+=`</tr></thead><tbody>`;
+      h+=`<tr><td class="rowlbl">Overall</td>${items.map(d=>`<td class="${d.score===best?'best2':''}">${d.score}${d.score===best?' 🏆':''}</td>`).join('')}</tr>`;}
+    h+=`<tr><td class="rowlbl">Brand</td>${items.map(d=>`<td>${d.brand}</td>`).join('')}</tr>`;
+    h+=`<tr><td class="rowlbl">Category</td>${items.map(d=>`<td>${d.cat}</td>`).join('')}</tr>`;
+    h+=`<tr><td class="rowlbl">Price (from)</td>${items.map(d=>`<td>${d.price}</td>`).join('')}</tr>`;
+    h+=`<tr><td class="rowlbl">Community score</td>${items.map(d=>`<td>${d.koMean}/10</td>`).join('')}</tr>`;
+    keys.forEach(k=>{h+=`<tr><td class="rowlbl">${k}</td>${items.map(d=>`<td>${d.specs[k]||'—'}</td>`).join('')}</tr>`;});
+    h+=`</tbody></table>`;p.innerHTML=h;
+  }
+  document.getElementById('cmpdrawer').classList.add('show');
+}
+function closeCmp(){document.getElementById('cmpdrawer').classList.remove('show');}
+function openNews(){
+  const m=document.getElementById('modal');
+  m.innerHTML=`<div class="mhead" style="background:#eef1f5;font-size:60px"><button class="mclose" onclick="closeModal()">✕</button>📰</div>
+   <div class="mtop"><div class="brand">Roboclan · News</div><h2>Robot News</h2></div>
+   <div class="dpane on" style="padding-top:6px">
+     ${NEWS.map(n=>`<div class="nitem"><div class="nt">${n.title}</div><div class="nm2">${n.hot?`<span class="hot">[${n.hot}]</span>`:''}${n.src}</div></div>`).join('')}
+     <div class="pnote" style="margin-top:14px">＊ Headlines are curated and refreshed periodically. Roboclan shows titles only and does not host full articles.</div></div>`;
+  document.getElementById('overlay').classList.add('show');
+}
+function goHome(){closeModal();closeCmp();resetAll();window.scrollTo(0,0);}
+document.getElementById('q').addEventListener('input',e=>{curQuery=e.target.value;render();});
+rebuild();
+</script>
+</body>
+</html>
