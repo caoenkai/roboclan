@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Roboclan · Admin</title>
+<link rel="icon" type="image/png" href="favicon.png">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+  :root{--bg:#f5f6f8;--card:#fff;--ink:#14152a;--sub:#6b7280;--line:#e6e8ef;--brand:#5b54e6;
+    --grad:linear-gradient(135deg,#6a5ad6,#3f6fce,#2f93bd);--accent:#16a34a;--red:#ef4444;--radius:14px}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:-apple-system,"Segoe UI",Roboto,system-ui,sans-serif;background:var(--bg);color:var(--ink);line-height:1.5}
+  .wrap{max-width:920px;margin:0 auto;padding:24px 20px 80px}
+  header{display:flex;align-items:center;gap:12px;margin-bottom:20px}
+  .logo{font-weight:800;font-size:20px}.logo span{background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
+  header .sp{flex:1}
+  button{font-family:inherit;cursor:pointer;border:none;border-radius:10px;font-weight:600}
+  .btn{background:var(--grad);color:#fff;padding:9px 16px;font-size:14px}
+  .btn.ghost{background:#fff;color:var(--ink);border:1px solid var(--line)}
+  .btn.danger{background:#fff;color:var(--red);border:1px solid #f2c2c2}
+  .btn.sm{padding:5px 10px;font-size:12px}
+  input,select,textarea{font-family:inherit;font-size:14px;width:100%;padding:8px 10px;border:1px solid var(--line);border-radius:9px;background:#fff;color:var(--ink);outline:none}
+  input:focus,select:focus,textarea:focus{border-color:var(--brand)}
+  textarea{resize:vertical;min-height:54px}
+  label{display:block;font-size:12px;font-weight:600;color:var(--sub);margin:0 0 4px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:20px;margin-bottom:16px}
+  /* login */
+  #login{max-width:380px;margin:80px auto;text-align:center}
+  #login .card{padding:28px}
+  #login h1{font-size:22px;margin-bottom:6px}#login p{color:var(--sub);font-size:13px;margin-bottom:18px}
+  #login input{margin-bottom:10px}
+  .msg{font-size:13px;margin-top:10px;min-height:18px}.msg.err{color:var(--red)}.msg.ok{color:var(--accent)}
+  /* list */
+  .rrow{display:flex;align-items:center;gap:10px;padding:10px 12px;border:1px solid var(--line);border-radius:10px;margin-bottom:8px}
+  .rrow .em{font-size:22px}.rrow .nm{font-weight:600}.rrow .meta{font-size:12px;color:var(--sub)}
+  .rrow .sp{flex:1}
+  .pill{font-size:11px;padding:2px 8px;border-radius:8px;background:#eef0ff;color:var(--brand);font-weight:700}
+  .pill.draft{background:#fff3df;color:#b45309}
+  /* form */
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
+  .fld{margin-bottom:12px}
+  .secttl{font-weight:700;font-size:14px;margin:18px 0 8px;color:var(--ink)}
+  .radarrow{display:flex;align-items:center;gap:10px;margin:6px 0}
+  .radarrow label{width:120px;margin:0;color:var(--ink)}
+  .radarrow input[type=range]{flex:1}
+  .radarrow .v{width:30px;text-align:right;font-weight:700}
+  .dynrow{display:flex;gap:8px;margin-bottom:6px;align-items:center}
+  .dynrow button{flex-shrink:0}
+  .hint{font-size:12px;color:var(--sub);margin-top:3px}
+  .hidden{display:none}
+</style>
+</head>
+<body>
+
+<div id="login">
+  <div class="logo" style="font-size:24px;margin-bottom:14px">🤖 <span>Roboclan</span> Admin</div>
+  <div class="card">
+    <h1>Sign in</h1>
+    <p>Admin access only</p>
+    <input id="email" type="email" placeholder="Email" autocomplete="username">
+    <input id="pass" type="password" placeholder="Password" autocomplete="current-password">
+    <button class="btn" style="width:100%" onclick="signIn()">Sign in</button>
+    <div class="msg" id="loginMsg"></div>
+  </div>
+</div>
+
+<div id="app" class="wrap hidden">
+  <header>
+    <div class="logo">🤖 <span>Roboclan</span> Admin</div>
+    <div class="sp"></div>
+    <a class="btn ghost sm" href="/" target="_blank" style="text-decoration:none;display:inline-block">View site ↗</a>
+    <button class="btn ghost sm" onclick="signOut()">Sign out</button>
+  </header>
+
+  <div id="listView">
+    <div style="display:flex;align-items:center;margin-bottom:12px">
+      <h2 style="font-size:18px">Robots <span id="rcount" style="color:var(--sub);font-weight:500;font-size:14px"></span></h2>
+      <div class="sp" style="flex:1"></div>
+      <button class="btn" onclick="newRobot()">+ Add robot</button>
+    </div>
+    <div id="rlist"></div>
+  </div>
+
+  <div id="formView" class="hidden">
+    <div class="card">
+      <div style="display:flex;align-items:center;margin-bottom:14px">
+        <h2 style="font-size:18px" id="formTitle">Add robot</h2>
+        <div class="sp" style="flex:1"></div>
+        <button class="btn ghost sm" onclick="showList()">← Back</button>
+      </div>
+      <input type="hidden" id="rid">
+
+      <div class="grid2">
+        <div class="fld"><label>Category</label><select id="fcat" onchange="onCat()"></select></div>
+        <div class="fld"><label>Status</label><select id="fstatus"><option value="published">Published (live)</option><option value="draft">Draft (hidden)</option></select></div>
+      </div>
+      <div class="grid2">
+        <div class="fld"><label>Name</label><input id="fname" placeholder="e.g. Roomba j9+"></div>
+        <div class="fld"><label>Brand</label><input id="fbrand" placeholder="e.g. iRobot"></div>
+      </div>
+      <div class="grid3">
+        <div class="fld"><label>Emoji</label><input id="femoji" placeholder="🧹" maxlength="4"></div>
+        <div class="fld"><label>Price (shown)</label><input id="fprice" placeholder="$899 / Quote-based"></div>
+        <div class="fld"><label>Price # (for sort/filter)</label><input id="fpricenum" type="number" placeholder="899"></div>
+      </div>
+      <div class="grid3">
+        <div class="fld"><label>Sub-label (optional)</label><input id="fsub" placeholder="or $499/mo"></div>
+        <div class="fld"><label>Editor score (0–10)</label><input id="fscore" type="number" step="0.1" min="0" max="10" placeholder="8.5"></div>
+        <div class="fld"><label>Revenue type</label><select id="frev"><option value="affiliate">affiliate (consumer)</option><option value="lead">lead (commercial)</option><option value="traffic">traffic (hyped, ads)</option></select></div>
+      </div>
+      <div class="fld"><label>Verdict (plain-English summary)</label><textarea id="fsummary" placeholder="One honest paragraph..."></textarea></div>
+
+      <div class="secttl">⭐ Radar scores (0–10)</div>
+      <div id="radarBox"></div>
+
+      <div class="grid3" style="margin-top:8px">
+        <div class="fld"><label>Pros (one per line)</label><textarea id="fpros"></textarea></div>
+        <div class="fld"><label>Cons (one per line)</label><textarea id="fcons"></textarea></div>
+        <div class="fld"><label>Tags (one per line)</label><textarea id="ftags"></textarea></div>
+      </div>
+
+      <div class="secttl">📋 Specs</div>
+      <div id="specBox"></div>
+      <button class="btn ghost sm" onclick="addSpec()">+ Add spec</button>
+
+      <div class="secttl">💰 Prices / retailers <span class="hint">(leave empty for quote-based commercial robots)</span></div>
+      <div id="priceBox"></div>
+      <button class="btn ghost sm" onclick="addPrice()">+ Add price</button>
+
+      <div class="secttl">📊 Community score (optional)</div>
+      <div class="grid2">
+        <div class="fld"><label>Composite (0–10)</label><input id="fcomposite" type="number" step="0.1" min="0" max="10"></div>
+      </div>
+      <div class="grid3">
+        <div class="fld"><label>Reddit</label><input id="fred" type="number" step="0.1" min="0" max="10"></div>
+        <div class="fld"><label>YouTube</label><input id="fyt" type="number" step="0.1" min="0" max="10"></div>
+        <div class="fld"><label>Amazon</label><input id="famz" type="number" step="0.1" min="0" max="10"></div>
+      </div>
+
+      <div class="secttl">🎬 Videos (optional)</div>
+      <div id="videoBox"></div>
+      <button class="btn ghost sm" onclick="addVideo()">+ Add video</button>
+
+      <div style="display:flex;gap:10px;margin-top:22px">
+        <button class="btn" onclick="save()">Save</button>
+        <button class="btn ghost" onclick="showList()">Cancel</button>
+        <div class="sp" style="flex:1"></div>
+        <span class="msg" id="formMsg"></span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const SB_URL='https://vthiulsykmdnatwoqdat.supabase.co';
+const SB_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ0aGl1bHN5a21kbmF0d29xZGF0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODExOTM4NzksImV4cCI6MjA5Njc2OTg3OX0.TOHjT3wswV8F3juerFSci-OAa0Gz66nlbBQh7DwXdug';
+const sb=window.supabase.createClient(SB_URL,SB_ANON);
+let CATS=[]; // {id,name,radar_axes}
+const $=id=>document.getElementById(id);
+const slugify=x=>(x||'').toLowerCase().trim().replace(/[^a-z0-9]+/g,'-').replace(/(^-|-$)/g,'');
+
+// ---------- auth ----------
+async function boot(){
+  const {data:{session}}=await sb.auth.getSession();
+  if(session) showApp(); else $('login').classList.remove('hidden');
+}
+async function signIn(){
+  $('loginMsg').className='msg';$('loginMsg').textContent='Signing in...';
+  const {error}=await sb.auth.signInWithPassword({email:$('email').value.trim(),password:$('pass').value});
+  if(error){$('loginMsg').className='msg err';$('loginMsg').textContent=error.message;return;}
+  showApp();
+}
+async function signOut(){await sb.auth.signOut();location.reload();}
+async function showApp(){
+  $('login').classList.add('hidden');$('app').classList.remove('hidden');
+  await loadCats(); await loadRobots(); showList();
+}
+
+// ---------- data ----------
+async function loadCats(){
+  const {data}=await sb.from('categories').select('id,name,radar_axes,sort,sections(name,sort)').order('sort');
+  CATS=data||[];
+  $('fcat').innerHTML=CATS.map(c=>`<option value="${c.id}">${c.name}</option>`).join('');
+}
+async function loadRobots(){
+  const {data}=await sb.from('robots').select('id,name,emoji,status,categories(name)').order('name');
+  const list=data||[];
+  $('rcount').textContent='· '+list.length;
+  $('rlist').innerHTML=list.map(r=>`<div class="rrow">
+    <span class="em">${r.emoji||'🤖'}</span>
+    <div><div class="nm">${esc(r.name)}</div><div class="meta">${esc((r.categories&&r.categories.name)||'')}</div></div>
+    <div class="sp"></div>
+    <span class="pill ${r.status==='draft'?'draft':''}">${r.status}</span>
+    <button class="btn ghost sm" onclick="editRobot('${r.id}')">Edit</button>
+    <button class="btn danger sm" onclick="delRobot('${r.id}','${esc(r.name)}')">Delete</button>
+  </div>`).join('') || '<p style="color:var(--sub)">No robots yet. Click “Add robot”.</p>';
+}
+function esc(s){return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/'/g,'&#39;').replace(/"/g,'&quot;');}
+
+// ---------- views ----------
+function showList(){$('formView').classList.add('hidden');$('listView').classList.remove('hidden');loadRobots();}
+function showForm(){$('listView').classList.add('hidden');$('formView').classList.remove('hidden');$('formMsg').textContent='';}
+
+function onCat(){
+  const c=CATS.find(x=>x.id===$('fcat').value);
+  const axes=(c&&c.radar_axes)||["A","B","C","D","E"];
+  $('radarBox').innerHTML=axes.map((a,i)=>`<div class="radarrow"><label>${esc(a)}</label>
+    <input type="range" min="0" max="10" step="0.1" value="${$('rd'+i)?$('rd'+i).value:7}" id="rd${i}" oninput="$('rv'+${i}).textContent=this.value">
+    <span class="v" id="rv${i}">7</span></div>`).join('');
+  axes.forEach((a,i)=>{$('rv'+i).textContent=$('rd'+i).value;});
+}
+function radarVals(){return [0,1,2,3,4].map(i=>parseFloat($('rd'+i).value));}
+
+function addSpec(k,v){const d=document.createElement('div');d.className='dynrow';
+  d.innerHTML=`<input placeholder="Key (e.g. Suction)" value="${esc(k||'')}" style="flex:1">
+    <input placeholder="Value (e.g. 22000 Pa)" value="${esc(v||'')}" style="flex:1.4">
+    <button class="btn danger sm" onclick="this.parentNode.remove()">✕</button>`;
+  $('specBox').appendChild(d);}
+function addPrice(ch,p,pn,url){const d=document.createElement('div');d.className='dynrow';
+  d.innerHTML=`<input placeholder="Retailer" value="${esc(ch||'')}" style="flex:1.2">
+    <input placeholder="Price text ($899)" value="${esc(p||'')}" style="flex:1">
+    <input placeholder="# (899)" type="number" value="${pn==null?'':pn}" style="width:90px">
+    <input placeholder="URL (affiliate)" value="${esc(url||'')}" style="flex:1.4">
+    <button class="btn danger sm" onclick="this.parentNode.remove()">✕</button>`;
+  $('priceBox').appendChild(d);}
+function addVideo(t,a,dur){const d=document.createElement('div');d.className='dynrow';
+  d.innerHTML=`<input placeholder="Title" value="${esc(t||'')}" style="flex:1.6">
+    <input placeholder="Author" value="${esc(a||'')}" style="flex:1">
+    <input placeholder="Duration (12:30)" value="${esc(dur||'')}" style="width:120px">
+    <button class="btn danger sm" onclick="this.parentNode.remove()">✕</button>`;
+  $('videoBox').appendChild(d);}
+
+function resetForm(){
+  ['rid','fname','fbrand','femoji','fprice','fpricenum','fsub','fscore','fsummary','fpros','fcons','ftags','fcomposite','fred','fyt','famz'].forEach(i=>$(i).value='');
+  $('fstatus').value='published';$('frev').value='affiliate';
+  $('specBox').innerHTML='';$('priceBox').innerHTML='';$('videoBox').innerHTML='';
+  if(CATS[0])$('fcat').value=CATS[0].id; onCat();
+}
+function newRobot(){resetForm();$('formTitle').textContent='Add robot';showForm();}
+
+async function editRobot(id){
+  const {data:r}=await sb.from('robots').select('*,robot_specs(key,value,sort),robot_prices(retailer_name,price_text,price_num,url),community_score(composite),review_scores(source,score),videos(title,author,duration)').eq('id',id).single();
+  if(!r)return;
+  resetForm();
+  $('formTitle').textContent='Edit robot';
+  $('rid').value=r.id;$('fcat').value=r.category_id;$('fstatus').value=r.status||'published';
+  $('fname').value=r.name||'';$('femoji').value=r.emoji||'';$('fprice').value=r.price_text||'';
+  $('fpricenum').value=r.price_num??'';$('fsub').value=r.sub||'';$('fscore').value=r.editor_score??'';
+  $('frev').value=r.revenue_type||'affiliate';$('fsummary').value=r.summary||'';
+  $('fpros').value=(r.pros||[]).join('\n');$('fcons').value=(r.cons||[]).join('\n');$('ftags').value=(r.tags||[]).join('\n');
+  // brand name
+  if(r.brand_id){const {data:b}=await sb.from('brands').select('name').eq('id',r.brand_id).single();if(b)$('fbrand').value=b.name;}
+  onCat();
+  const rad=r.radar||[]; rad.forEach((v,i)=>{if($('rd'+i)){$('rd'+i).value=v;$('rv'+i).textContent=v;}});
+  (r.robot_specs||[]).sort((a,b)=>a.sort-b.sort).forEach(s=>addSpec(s.key,s.value));
+  (r.robot_prices||[]).forEach(p=>addPrice(p.retailer_name,p.price_text,p.price_num,p.url));
+  (r.videos||[]).forEach(v=>addVideo(v.title,v.author,v.duration));
+  const cs=Array.isArray(r.community_score)?r.community_score[0]:r.community_score;
+  if(cs)$('fcomposite').value=cs.composite??'';
+  (r.review_scores||[]).forEach(x=>{if(x.source==='reddit')$('fred').value=x.score;if(x.source==='youtube')$('fyt').value=x.score;if(x.source==='amazon')$('famz').value=x.score;});
+  showForm();
+}
+
+function lines(id){return $(id).value.split('\n').map(s=>s.trim()).filter(Boolean);}
+
+async function save(){
+  const msg=$('formMsg');msg.className='msg';msg.textContent='Saving...';
+  try{
+    const name=$('fname').value.trim();
+    if(!name){throw new Error('Name is required');}
+    // brand upsert
+    let brand_id=null;const bn=$('fbrand').value.trim();
+    if(bn){const {data:b,error:be}=await sb.from('brands').upsert({name:bn,slug:slugify(bn)},{onConflict:'slug'}).select('id').single();if(be)throw be;brand_id=b.id;}
+    const rec={category_id:$('fcat').value,brand_id,name,slug:slugify(name),emoji:$('femoji').value.trim()||null,
+      price_text:$('fprice').value.trim()||null,price_num:parseInt($('fpricenum').value)||0,sub:$('fsub').value.trim()||null,
+      editor_score:parseFloat($('fscore').value)||null,radar:radarVals(),summary:$('fsummary').value.trim()||null,
+      pros:lines('fpros'),cons:lines('fcons'),tags:lines('ftags'),revenue_type:$('frev').value,status:$('fstatus').value,updated_at:new Date().toISOString()};
+    let rid=$('rid').value;
+    if(rid){const {error}=await sb.from('robots').update(rec).eq('id',rid);if(error)throw error;}
+    else{const {data,error}=await sb.from('robots').insert(rec).select('id').single();if(error)throw error;rid=data.id;}
+    // children: clear + reinsert
+    await sb.from('robot_specs').delete().eq('robot_id',rid);
+    await sb.from('robot_prices').delete().eq('robot_id',rid);
+    await sb.from('review_scores').delete().eq('robot_id',rid);
+    await sb.from('videos').delete().eq('robot_id',rid);
+    const specs=[...$('specBox').querySelectorAll('.dynrow')].map((d,i)=>{const inp=d.querySelectorAll('input');return {robot_id:rid,key:inp[0].value.trim(),value:inp[1].value.trim(),sort:i};}).filter(s=>s.key);
+    if(specs.length)await sb.from('robot_specs').insert(specs);
+    const prices=[...$('priceBox').querySelectorAll('.dynrow')].map(d=>{const inp=d.querySelectorAll('input');return {robot_id:rid,retailer_name:inp[0].value.trim(),price_text:inp[1].value.trim(),price_num:inp[2].value===''?null:parseInt(inp[2].value),url:inp[3].value.trim()||null};}).filter(p=>p.retailer_name);
+    if(prices.length)await sb.from('robot_prices').insert(prices);
+    const vids=[...$('videoBox').querySelectorAll('.dynrow')].map(d=>{const inp=d.querySelectorAll('input');return {robot_id:rid,title:inp[0].value.trim(),author:inp[1].value.trim(),duration:inp[2].value.trim()};}).filter(v=>v.title);
+    if(vids.length)await sb.from('videos').insert(vids);
+    const rs=[];const add=(src,id)=>{const v=$(id).value;if(v!=='')rs.push({robot_id:rid,source:src,score:parseFloat(v)});};
+    add('reddit','fred');add('youtube','fyt');add('amazon','famz');
+    if(rs.length)await sb.from('review_scores').insert(rs);
+    if($('fcomposite').value!=='')await sb.from('community_score').upsert({robot_id:rid,composite:parseFloat($('fcomposite').value),updated_at:new Date().toISOString()},{onConflict:'robot_id'});
+    msg.className='msg ok';msg.textContent='Saved ✓';
+    setTimeout(showList,700);
+  }catch(e){msg.className='msg err';msg.textContent='Error: '+(e.message||e);}
+}
+
+async function delRobot(id,name){
+  if(!confirm('Delete "'+name+'"? This cannot be undone.'))return;
+  await sb.from('robots').delete().eq('id',id);
+  loadRobots();
+}
+
+$('pass').addEventListener('keydown',e=>{if(e.key==='Enter')signIn();});
+boot();
+</script>
+</body>
+</html>
