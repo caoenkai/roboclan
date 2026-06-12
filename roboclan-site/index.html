@@ -6,6 +6,7 @@
 <title>Roboclan · Every robot, compared</title>
 <link rel="icon" type="image/png" href="favicon.png">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <style>
   :root{
@@ -211,11 +212,11 @@
 <div class="overlay" id="overlay" onclick="if(event.target===this)closeModal()"><div class="modal" id="modal"></div></div>
 <div class="cmpdrawer" id="cmpdrawer" onclick="if(event.target===this)closeCmp()"><div class="cmppanel" id="cmppanel"></div></div>
 <script>
-const CONSUMER_CATS=["Humanoids","Robot Vacuums","Robot Mowers","Pool Robots"];
-const COMMERCIAL_CATS=["Warehouse Logistics","Commercial Cleaning","Restaurant Service","Hotel Delivery"];
-const CATS=[...CONSUMER_CATS,...COMMERCIAL_CATS];
-const COMMERCIAL=new Set(COMMERCIAL_CATS);
-const AXES={
+let CONSUMER_CATS=["Humanoids","Robot Vacuums","Robot Mowers","Pool Robots"];
+let COMMERCIAL_CATS=["Warehouse Logistics","Commercial Cleaning","Restaurant Service","Hotel Delivery"];
+let CATS=[...CONSUMER_CATS,...COMMERCIAL_CATS];
+let COMMERCIAL=new Set(COMMERCIAL_CATS);
+let AXES={
   "Humanoids":["Mobility","Manipulation","Intelligence","Battery","Value"],
   "Robot Vacuums":["Cleaning Power","Navigation","Self-Maintenance","Quietness","Value"],
   "Robot Mowers":["Cut Quality","Terrain","Navigation","Safety","Value"],
@@ -226,10 +227,10 @@ const AXES={
   "Hotel Delivery":["Cabin Capacity","Building Integration","Navigation","Guest Experience","ROI"],
 };
 const SRC={"Reddit":"#ff4500","YouTube":"#ff0000","Amazon":"#ff9900"};
-const CATCOLOR={"Humanoids":"linear-gradient(135deg,#7c3aed,#a855f7)","Robot Vacuums":"linear-gradient(135deg,#ea580c,#f97316)","Robot Mowers":"linear-gradient(135deg,#0f766e,#14b8a6)","Pool Robots":"linear-gradient(135deg,#1e3a8a,#2d4ed6)","Warehouse Logistics":"linear-gradient(135deg,#475569,#64748b)","Commercial Cleaning":"linear-gradient(135deg,#0891b2,#22d3ee)","Restaurant Service":"linear-gradient(135deg,#be123c,#e11d48)","Hotel Delivery":"linear-gradient(135deg,#a16207,#ca8a04)"};
-const CATBG={"Humanoids":"#f0eef7","Robot Vacuums":"#f3efe9","Robot Mowers":"#eaf1ee","Pool Robots":"#edeff5","Warehouse Logistics":"#eef0f3","Commercial Cleaning":"#e8f2f4","Restaurant Service":"#f7ecee","Hotel Delivery":"#f3efe4"};
-const CATSOLID={"Humanoids":"#7c3aed","Robot Vacuums":"#ea580c","Robot Mowers":"#0f8a7e","Pool Robots":"#2541c4","Warehouse Logistics":"#475569","Commercial Cleaning":"#0891b2","Restaurant Service":"#be123c","Hotel Delivery":"#a16207"};
-const NEWS=[
+let CATCOLOR={"Humanoids":"linear-gradient(135deg,#7c3aed,#a855f7)","Robot Vacuums":"linear-gradient(135deg,#ea580c,#f97316)","Robot Mowers":"linear-gradient(135deg,#0f766e,#14b8a6)","Pool Robots":"linear-gradient(135deg,#1e3a8a,#2d4ed6)","Warehouse Logistics":"linear-gradient(135deg,#475569,#64748b)","Commercial Cleaning":"linear-gradient(135deg,#0891b2,#22d3ee)","Restaurant Service":"linear-gradient(135deg,#be123c,#e11d48)","Hotel Delivery":"linear-gradient(135deg,#a16207,#ca8a04)"};
+let CATBG={"Humanoids":"#f0eef7","Robot Vacuums":"#f3efe9","Robot Mowers":"#eaf1ee","Pool Robots":"#edeff5","Warehouse Logistics":"#eef0f3","Commercial Cleaning":"#e8f2f4","Restaurant Service":"#f7ecee","Hotel Delivery":"#f3efe4"};
+let CATSOLID={"Humanoids":"#7c3aed","Robot Vacuums":"#ea580c","Robot Mowers":"#0f8a7e","Pool Robots":"#2541c4","Warehouse Logistics":"#475569","Commercial Cleaning":"#0891b2","Restaurant Service":"#be123c","Hotel Delivery":"#a16207"};
+let NEWS=[
  {hot:"HOT",title:"1X NEO opens U.S. pre-orders: $20,000 outright or $499/month subscription",src:"2h ago"},
  {hot:"NEW",title:"Unitree R1 undercuts the field at $5,900, shipping starts Q2 2026",src:"5h ago"},
  {hot:"",title:"Roborock unveils Saros 10 with retractable arm at CES",src:"today"},
@@ -237,7 +238,7 @@ const NEWS=[
  {hot:"NEW",title:"Beatbot AquaSense Pro wins pool-robot shootout in independent tests",src:"2d ago"},
  {hot:"",title:"Mammotion Luba 2 gets RTK firmware update for steeper slopes",src:"3d ago"},
 ];
-const DATA=[
+let DATA=[
  {id:1,name:"1X NEO",brand:"1X Technologies",cat:"Humanoids",emoji:"🤖",bg:"#eef0ff",
   price:"$20,000",sub:"or $499/mo",priceNum:20000,
   specs:{"Height":"167 cm","Weight":"30 kg","Payload":"~20 kg","Runtime":"~2–4 hrs","Hands":"5-finger","Use":"Home assistant"},
@@ -532,8 +533,7 @@ function radarSVG(values,labels,size,color){
   for(let i=0;i<n;i++){const[x,y]=pt(i,R*values[i]/max);g+=`<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="3" fill="${color}"/>`;}
   return `<svg width="${W}" height="${size}" viewBox="0 0 ${W} ${size}">${g}</svg>`;
 }
-const tk=document.getElementById('ticker');
-NEWS.slice(0,3).forEach(n=>{const li=document.createElement('li');li.innerHTML=(n.hot?`<b>[${n.hot}]</b>`:'')+n.title;tk.appendChild(li);});
+function buildTicker(){const tk=document.getElementById('ticker');if(!tk)return;tk.innerHTML='';NEWS.slice(0,3).forEach(n=>{const li=document.createElement('li');li.innerHTML=(n.hot?`<b>[${n.hot}]</b>`:'')+n.title;tk.appendChild(li);});}
 function buckets(){return["Under $1k","$1k–$3k","$3k+"];}
 function inB(n,b){if(b==="Under $1k")return n<1000;if(b==="$1k–$3k")return n>=1000&&n<3000;return n>=3000;}
 function toggle(set,val){set.has(val)?set.delete(val):set.add(val);rebuild();}
@@ -678,8 +678,42 @@ function openNews(){
   document.getElementById('overlay').classList.add('show');
 }
 function goHome(){closeModal();closeCmp();resetAll();window.scrollTo(0,0);}
+const SB_URL='https://vthiulsykmdnatwoqdat.supabase.co';
+const SB_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ0aGl1bHN5a21kbmF0d29xZGF0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODExOTM4NzksImV4cCI6MjA5Njc2OTg3OX0.TOHjT3wswV8F3juerFSci-OAa0Gz66nlbBQh7DwXdug';
+async function loadFromDB(){
+  if(!window.supabase) throw new Error('no sdk');
+  const sb=window.supabase.createClient(SB_URL,SB_ANON);
+  const [cz,rz,nz]=await Promise.all([
+    sb.from('categories').select('name,radar_axes,color_grad,color_solid,color_bg,sort,sections(name,sort)').order('sort'),
+    sb.from('robots').select('name,emoji,price_text,price_num,sub,editor_score,radar,summary,pros,cons,tags,revenue_type,categories(name,color_bg,color_solid),brands(name),robot_specs(key,value,sort),robot_prices(retailer_name,price_text,price_num),community_score(composite),review_scores(source,score),videos(title,author,duration)').eq('status','published'),
+    sb.from('news').select('title,hot_tag,sort').order('sort')
+  ]);
+  if(cz.error||rz.error||nz.error) throw (cz.error||rz.error||nz.error);
+  const cats=cz.data||[], robots=rz.data||[], news=nz.data||[];
+  if(!robots.length) throw new Error('empty');
+  const one=x=>Array.isArray(x)?(x[0]||null):(x||null);
+  const consumer=[],commercial=[];AXES={};CATCOLOR={};CATBG={};CATSOLID={};
+  cats.forEach(c=>{AXES[c.name]=c.radar_axes;CATCOLOR[c.name]=c.color_grad;CATBG[c.name]=c.color_bg;CATSOLID[c.name]=c.color_solid;
+    const sn=(one(c.sections)||{}).name||'Consumer';(sn.indexOf('Commercial')>=0?commercial:consumer).push(c.name);});
+  CONSUMER_CATS=consumer;COMMERCIAL_CATS=commercial;CATS=[...consumer,...commercial];COMMERCIAL=new Set(commercial);
+  let id=1;
+  DATA=robots.map(r=>{const cat=one(r.categories)||{};
+    const sources={Reddit:0,YouTube:0,Amazon:0};(r.review_scores||[]).forEach(x=>{const k={reddit:'Reddit',youtube:'YouTube',amazon:'Amazon'}[x.source];if(k)sources[k]=Number(x.score);});
+    const sol=cat.color_solid||'#5b54e6';const cs=one(r.community_score);
+    return {id:id++,name:r.name,brand:(one(r.brands)||{}).name||'',cat:cat.name||'',emoji:r.emoji||'🤖',bg:cat.color_bg||'#eee',
+      price:r.price_text||'',sub:r.sub||'',priceNum:Number(r.price_num)||0,score:Number(r.editor_score)||0,
+      radar:r.radar||[0,0,0,0,0],verdict:r.summary||'',pros:r.pros||[],cons:r.cons||[],tags:r.tags||[],
+      koMean:(cs&&cs.composite!=null)?Number(cs.composite):0,sources,ko:[],
+      specs:Object.fromEntries((r.robot_specs||[]).slice().sort((a,b)=>a.sort-b.sort).map(s=>[s.key,s.value])),
+      prices:(r.robot_prices||[]).map(p=>({ch:p.retailer_name,p:p.price_text,pn:p.price_num})),
+      videos:(r.videos||[]).map(v=>({t:v.title,a:v.author,dur:v.duration,bg:sol}))};
+  });
+  const ord={};CATS.forEach((c,i)=>ord[c]=i);DATA.sort((a,b)=>(ord[a.cat]-ord[b.cat])||(b.score-a.score));
+  NEWS=news.map(n=>({hot:n.hot_tag||'',title:n.title}));
+}
+async function init(){try{await loadFromDB();buildTicker();rebuild();}catch(e){console.warn('Roboclan: DB load failed, using built-in data.',e);}}
 document.getElementById('q').addEventListener('input',e=>{curQuery=e.target.value;render();});
-rebuild();
+buildTicker();rebuild();init();
 </script>
 </body>
 </html>
