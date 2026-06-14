@@ -7,6 +7,8 @@
 <link rel="icon" type="image/png" href="favicon.png">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>window.va=window.va||function(){(window.vaq=window.vaq||[]).push(arguments);};</script>
+<script defer src="/_vercel/insights/script.js"></script>
 
 <style>
   :root{
@@ -599,7 +601,7 @@ function render(){
       ${ps.pill}
       <div class="specrow">${cardSpecs(d).map(([k,v])=>`<span>${k} <b>${cleanVal(v)}</b></span>`).join('')}</div>
       <div class="score">${d.score}<small>/10</small></div></div>`;
-    c.onclick=()=>openModal(d.id);grid.appendChild(c);if(SHOW_SPONSOR&&idx===5)grid.appendChild(sponsoredCard());});
+    c.onclick=()=>{track(d.id,'view');openModal(d.id);};grid.appendChild(c);if(SHOW_SPONSOR&&idx===5)grid.appendChild(sponsoredCard());});
 }
 // Only show the sponsored card once a real ad is sold (flip to true / drive from ads table).
 var SHOW_SPONSOR=false;
@@ -639,33 +641,39 @@ function mPriceLabel(d){
   if(distinct.length>=2&&lowest) return 'from '+String(lowest.p).replace(/^from\s+/i,'');
   return d.price||(lowest?lowest.p:'—');
 }
+// Analytics: log product interactions to Vercel (quick dashboards) + Supabase (owned data).
+function track(id,kind){
+  const d=DATA.find(x=>x.id===id); if(!d) return;
+  try{ window.va&&window.va('event',{name:'robot_'+kind,robot:d.name,category:d.cat}); }catch(e){}
+  try{ window._sb&&window._sb.from('clicks').insert({robot_name:d.name,category:d.cat,kind:kind}); }catch(e){}
+}
 function priceStatus(d){
   const av=avOf(d);
   const valid=d.prices.filter(p=>p.pn!=null);
   const distinct=[...new Set(valid.map(p=>p.pn))];
   const lowest=valid.length?valid.reduce((a,b)=>a.pn<=b.pn?a:b):null;
-  const open=(tab)=>`event.stopPropagation();openModal(${d.id}${tab?",'"+tab+"'":''})`;
+  const open=(tab,kind)=>`event.stopPropagation();${kind?'track('+d.id+",'"+kind+"');":''}openModal(${d.id}${tab?",'"+tab+"'":''})`;
   const bare=p=>String(p||'').replace(/^from\s+/i,'');  // avoid "from from $X"
   if(av==='enterprise'||COMMERCIAL.has(d.cat))
     return {priceLine:`<span class="pstat">Enterprise</span>`,
-      pill:`<div class="pcompare biz" onclick="${open('prices')}">Request a quote ›</div>`};
+      pill:`<div class="pcompare biz" onclick="${open('prices','quote')}">Request a quote ›</div>`};
   if(av==='coming_soon')
     return {priceLine:`<span class="pstat soon">Coming soon</span>`,
-      pill:`<div class="pcompare soon" onclick="${open()}">Not yet on sale ›</div>`};
+      pill:`<div class="pcompare soon" onclick="${open('','soon')}">Not yet on sale ›</div>`};
   if(av==='intl')
     return {priceLine:`<span class="pstat intl">Not available in the U.S.</span>`,
-      pill:`<div class="pcompare intl" onclick="${open()}">Available abroad ›</div>`};
+      pill:`<div class="pcompare intl" onclick="${open('','intl')}">Available abroad ›</div>`};
   // US, sold
   if(distinct.length>=2 && lowest)
     return {priceLine:`<span class="pfrom">from</span> ${bare(lowest.p)}`,
-      pill:`<div class="pcompare" onclick="${open('prices')}">Compare ${valid.length} prices ›</div>`};
+      pill:`<div class="pcompare" onclick="${open('prices','compare')}">Compare ${valid.length} prices ›</div>`};
   if(lowest){
     const store=String(lowest.ch||'').split('·')[0].trim()||'retailer';
     return {priceLine:`${bare(lowest.p)}`,
-      pill:`<div class="pcompare" onclick="${open('prices')}">Buy at ${store} ›</div>`};
+      pill:`<div class="pcompare" onclick="${open('prices','buy')}">Buy at ${store} ›</div>`};
   }
   return {priceLine:`${d.price||'—'}`,
-    pill:`<div class="pcompare na" onclick="${open('prices')}">See details ›</div>`};
+    pill:`<div class="pcompare na" onclick="${open('prices','view')}">See details ›</div>`};
 }
 function resetAll(){selCat.clear();selBrand.clear();selPrice.clear();curQuery="";document.getElementById('q').value='';rebuild();}
 function openModal(id,initialTab){
@@ -751,7 +759,7 @@ const SB_URL='https://vthiulsykmdnatwoqdat.supabase.co';
 const SB_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ0aGl1bHN5a21kbmF0d29xZGF0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODExOTM4NzksImV4cCI6MjA5Njc2OTg3OX0.TOHjT3wswV8F3juerFSci-OAa0Gz66nlbBQh7DwXdug';
 async function loadFromDB(){
   if(!window.supabase) throw new Error('no sdk');
-  const sb=window.supabase.createClient(SB_URL,SB_ANON);
+  const sb=window.supabase.createClient(SB_URL,SB_ANON);window._sb=sb;
   const [cz,rz,nz]=await Promise.all([
     sb.from('categories').select('name,radar_axes,color_grad,color_solid,color_bg,sort,sections(name,sort)').order('sort'),
     sb.from('robots').select('name,emoji,price_text,price_num,sub,editor_score,radar,summary,pros,cons,tags,revenue_type,availability,categories(name,color_bg,color_solid),brands(name),robot_specs(key,value,sort),robot_prices(retailer_name,price_text,price_num),community_score(composite),review_scores(source,score),videos(title,author,duration)').eq('status','published'),
