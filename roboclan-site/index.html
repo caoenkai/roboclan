@@ -642,10 +642,15 @@ function mPriceLabel(d){
   return d.price||(lowest?lowest.p:'—');
 }
 // Analytics: log product interactions to Vercel (quick dashboards) + Supabase (owned data).
+var RC_SID=(function(){try{var s=localStorage.getItem('rc_sid');if(!s){s=Math.random().toString(36).slice(2)+Date.now().toString(36);localStorage.setItem('rc_sid',s);}return s;}catch(e){return 'anon';}})();
 function track(id,kind){
   const d=DATA.find(x=>x.id===id); if(!d) return;
   try{ window.va&&window.va('event',{name:'robot_'+kind,robot:d.name,category:d.cat}); }catch(e){}
-  try{ window._sb&&window._sb.from('clicks').insert({robot_name:d.name,category:d.cat,kind:kind}); }catch(e){}
+  try{ window._sb&&window._sb.from('clicks').insert({robot_name:d.name,category:d.cat,kind:kind,session:RC_SID}); }catch(e){}
+}
+function logPageview(){
+  try{ if(!window._sb && window.supabase) window._sb=window.supabase.createClient(SB_URL,SB_ANON);
+    window._sb && window._sb.from('clicks').insert({kind:'pageview',session:RC_SID}); }catch(e){}
 }
 function priceStatus(d){
   const av=avOf(d);
@@ -789,7 +794,7 @@ async function loadFromDB(){
   const ord={};CATS.forEach((c,i)=>ord[c]=i);DATA.sort((a,b)=>(ord[a.cat]-ord[b.cat])||(b.score-a.score));
   NEWS=news.map(n=>({hot:n.hot_tag||'',title:n.title}));
 }
-async function init(){try{await loadFromDB();buildTicker();rebuild();}catch(e){console.warn('Roboclan: DB load failed, using built-in data.',e);}}
+async function init(){try{await loadFromDB();buildTicker();rebuild();}catch(e){console.warn('Roboclan: DB load failed, using built-in data.',e);}finally{logPageview();}}
 document.getElementById('q').addEventListener('input',e=>{curQuery=e.target.value;render();});
 buildTicker();rebuild();init();
 </script>
