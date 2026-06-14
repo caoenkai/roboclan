@@ -91,7 +91,8 @@
   .pcompare{display:inline-flex;align-items:center;gap:5px;margin-top:9px;font-size:12px;font-weight:700;color:var(--accent);background:#ecfdf3;border:1px solid #bbf7d0;border-radius:10px;padding:4px 9px;cursor:pointer;transition:.15s}
   .pcompare:hover{background:#dcfce7;border-color:#86efac}
   .pcompare.na{color:var(--sub);background:#f3f4f6;border-color:var(--line)}
-  .pcompare.biz{color:#475569;background:#eef1f5;border-color:#cbd5e1}
+  .pcompare.biz{color:#92400e;background:#fef3c7;border-color:#fcd34d}
+  .pcompare.biz:hover{background:#fde68a;border-color:#fbbf24}
   .pcompare.soon{color:#b45309;background:#fff7ed;border-color:#fed7aa}
   .pcompare.intl{color:#475569;background:#f1f5f9;border-color:#cbd5e1}
   .tabgroup{flex-basis:100%;font-size:11px;font-weight:800;color:#9aa0b3;text-transform:uppercase;letter-spacing:.7px;margin:12px 0 1px}
@@ -591,8 +592,7 @@ function render(){
   if(!list.length){grid.innerHTML='<div style="color:var(--sub);padding:40px">No matches — try removing a filter.</div>';return;}
   list.forEach((d,idx)=>{const added=compare.has(d.id);const c=document.createElement('div');c.className='card';
     const ps=priceStatus(d);
-    const useTag=(d.specs&&d.specs['Use'])?`<span class="use-pill">${d.specs['Use']}</span>`:'';
-    c.innerHTML=`<div class="thumb" style="background:${CATBG[d.cat]||d.bg}"><span class="cat-pill" style="background:${CATCOLOR[d.cat]||'rgba(0,0,0,.55)'}">${d.cat}</span>${useTag}
+    c.innerHTML=`<div class="thumb" style="background:${CATBG[d.cat]||d.bg}"><span class="cat-pill" style="background:${CATCOLOR[d.cat]||'rgba(0,0,0,.55)'}">${d.cat}</span>
       <button class="cmpadd ${added?'added':''}" onclick="event.stopPropagation();toggleCmp(${d.id})">${added?'✓':'+'}</button>${d.emoji}</div>
       <div class="cbody"><h3>${d.name}</h3><div class="brand">${d.brand}</div>
       <div class="price">${ps.priceLine}</div>
@@ -604,7 +604,16 @@ function render(){
 // Only show the sponsored card once a real ad is sold (flip to true / drive from ads table).
 var SHOW_SPONSOR=false;
 // Consistent card specs per category (fall back to first two if missing).
-var CARD_SPECS={Humanoids:['Height','Weight']};
+var CARD_SPECS={
+  'Humanoids':['Height','Weight'],
+  'Robot Vacuums':['Suction','Navigation'],
+  'Robot Mowers':['Coverage','Navigation'],
+  'Pool Robots':['Type','Navigation'],
+  'Warehouse Logistics':['Type','Use'],
+  'Commercial Cleaning':['Type','Use'],
+  'Restaurant Service':['Type','Use'],
+  'Hotel Delivery':['Type','Use']
+};
 function cardSpecs(d){
   const want=CARD_SPECS[d.cat];
   if(want){const picked=want.map(k=>[k,d.specs[k]]).filter(([k,v])=>v!=null&&v!=='');if(picked.length>=2)return picked;}
