@@ -657,7 +657,7 @@ function priceStatus(d){
       pill:`<div class="pcompare intl" onclick="${open()}">Available abroad ›</div>`};
   // US, sold
   if(distinct.length>=2 && lowest)
-    return {priceLine:`<span class="pfrom">from</span>${bare(lowest.p)}`,
+    return {priceLine:`<span class="pfrom">from</span> ${bare(lowest.p)}`,
       pill:`<div class="pcompare" onclick="${open('prices')}">Compare ${valid.length} prices ›</div>`};
   if(lowest){
     const store=String(lowest.ch||'').split('·')[0].trim()||'retailer';
