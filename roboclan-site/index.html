@@ -81,14 +81,21 @@
   .cbody{padding:14px 16px 16px}
   .cbody h3{font-size:16px;margin-bottom:2px}
   .cbody .brand{font-size:12px;color:var(--sub);margin-bottom:8px}
-  .price{font-size:17px;font-weight:800;color:var(--brand)}
+  .price{font-size:17px;font-weight:800;color:var(--brand);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   .price small{font-size:12px;color:var(--sub);font-weight:500}
+  .price .pfrom{font-size:12px;color:var(--sub);font-weight:600;margin-right:2px}
+  .pstat{font-size:16px;font-weight:800;color:var(--ink)}
+  .pstat.soon{color:#b45309}
+  .pstat.intl{color:#475569}
   .pcompare{display:inline-flex;align-items:center;gap:5px;margin-top:9px;font-size:12px;font-weight:700;color:var(--accent);background:#ecfdf3;border:1px solid #bbf7d0;border-radius:10px;padding:4px 9px;cursor:pointer;transition:.15s}
   .pcompare:hover{background:#dcfce7;border-color:#86efac}
   .pcompare.na{color:var(--sub);background:#f3f4f6;border-color:var(--line)}
   .pcompare.biz{color:#475569;background:#eef1f5;border-color:#cbd5e1}
+  .pcompare.soon{color:#b45309;background:#fff7ed;border-color:#fed7aa}
+  .pcompare.intl{color:#475569;background:#f1f5f9;border-color:#cbd5e1}
   .tabgroup{flex-basis:100%;font-size:11px;font-weight:800;color:#9aa0b3;text-transform:uppercase;letter-spacing:.7px;margin:12px 0 1px}
-  .specrow{display:flex;gap:14px;margin-top:10px;font-size:12px;color:var(--sub);flex-wrap:wrap}
+  .specrow{display:flex;gap:14px;margin-top:10px;font-size:12px;color:var(--sub);flex-wrap:wrap;padding-right:46px}
+  .specrow span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
   .specrow span b{color:var(--ink)}
   .score{position:absolute;bottom:13px;right:15px;font-weight:800;font-size:15px;background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
   .score small{font-size:11px;color:var(--sub);font-weight:500;-webkit-text-fill-color:var(--sub)}
@@ -582,21 +589,61 @@ function render(){
   rb.innerHTML=`<span>${list.length} robot${list.length!==1?'s':''}</span>`+(active?'<span class="reset" onclick="resetAll()">✕ Reset filters</span>':'');
   if(!list.length){grid.innerHTML='<div style="color:var(--sub);padding:40px">No matches — try removing a filter.</div>';return;}
   list.forEach((d,idx)=>{const added=compare.has(d.id);const c=document.createElement('div');c.className='card';
-    const valid=d.prices.filter(p=>p.pn!=null);const nstore=d.prices.length;
-    const lowest=valid.length?valid.reduce((a,b)=>a.pn<b.pn?a:b):null;
-    const pill=COMMERCIAL.has(d.cat)
-      ?`<div class="pcompare biz" onclick="event.stopPropagation();openModal(${d.id},'prices')">💼 Request a quote ›</div>`
-      :lowest
-      ?`<div class="pcompare" onclick="event.stopPropagation();openModal(${d.id},'prices')">🏷️ Compare ${nstore} prices · from ${lowest.p} ›</div>`
-      :`<div class="pcompare na" onclick="event.stopPropagation();openModal(${d.id},'prices')">🏷️ See availability ›</div>`;
+    const ps=priceStatus(d);
     c.innerHTML=`<div class="thumb" style="background:${CATBG[d.cat]||d.bg}"><span class="cat-pill" style="background:${CATCOLOR[d.cat]||'rgba(0,0,0,.55)'}">${d.cat}</span>
       <button class="cmpadd ${added?'added':''}" onclick="event.stopPropagation();toggleCmp(${d.id})">${added?'✓':'+'}</button>${d.emoji}</div>
       <div class="cbody"><h3>${d.name}</h3><div class="brand">${d.brand}</div>
-      <div class="price">${d.price} ${d.sub?`<small>${d.sub}</small>`:''}</div>
-      ${pill}
+      <div class="price">${ps.priceLine}</div>
+      ${ps.pill}
       <div class="specrow">${Object.entries(d.specs).slice(0,2).map(([k,v])=>`<span>${k} <b>${v}</b></span>`).join('')}</div>
       <div class="score">${d.score}<small>/10</small></div></div>`;
     c.onclick=()=>openModal(d.id);grid.appendChild(c);if(idx===5)grid.appendChild(sponsoredCard());});
+}
+// Availability + price/compare display rule.
+// 'us'=sold in US, 'intl'=sold abroad only, 'coming_soon'=announced not on sale, 'enterprise'=B2B/quote only.
+function avOf(d){
+  if(d.availability) return d.availability;
+  if(COMMERCIAL.has(d.cat)) return 'enterprise';
+  if(d.rev==='traffic') return 'coming_soon';
+  return 'us';
+}
+function mPriceLabel(d){
+  const av=avOf(d);
+  if(av==='coming_soon') return 'Coming soon';
+  if(av==='intl') return 'Not available in the U.S.';
+  if(av==='enterprise'||COMMERCIAL.has(d.cat)) return 'Enterprise · request a quote';
+  const valid=d.prices.filter(p=>p.pn!=null);
+  const distinct=[...new Set(valid.map(p=>p.pn))];
+  const lowest=valid.length?valid.reduce((a,b)=>a.pn<b.pn?a:b):null;
+  if(distinct.length>=2&&lowest) return 'from '+lowest.p;
+  return d.price||(lowest?lowest.p:'—');
+}
+function priceStatus(d){
+  const av=avOf(d);
+  const valid=d.prices.filter(p=>p.pn!=null);
+  const distinct=[...new Set(valid.map(p=>p.pn))];
+  const lowest=valid.length?valid.reduce((a,b)=>a.pn<=b.pn?a:b):null;
+  const open=(tab)=>`event.stopPropagation();openModal(${d.id}${tab?",'"+tab+"'":''})`;
+  if(av==='enterprise'||COMMERCIAL.has(d.cat))
+    return {priceLine:`<span class="pstat">Enterprise</span>`,
+      pill:`<div class="pcompare biz" onclick="${open('prices')}">💼 Request a quote ›</div>`};
+  if(av==='coming_soon')
+    return {priceLine:`<span class="pstat soon">Coming soon</span>`,
+      pill:`<div class="pcompare soon" onclick="${open()}">🔜 Not yet on sale ›</div>`};
+  if(av==='intl')
+    return {priceLine:`<span class="pstat intl">Not available in the U.S.</span>`,
+      pill:`<div class="pcompare intl" onclick="${open()}">🌐 Available abroad ›</div>`};
+  // US, sold
+  if(distinct.length>=2 && lowest)
+    return {priceLine:`<span class="pfrom">from</span>${lowest.p}`,
+      pill:`<div class="pcompare" onclick="${open('prices')}">🏷️ Compare ${valid.length} prices ›</div>`};
+  if(lowest){
+    const store=String(lowest.ch||'').split('·')[0].trim()||'retailer';
+    return {priceLine:`${lowest.p}`,
+      pill:`<div class="pcompare" onclick="${open('prices')}">🛒 Buy at ${store} ›</div>`};
+  }
+  return {priceLine:`${d.price||'—'}`,
+    pill:`<div class="pcompare na" onclick="${open('prices')}">🏷️ See details ›</div>`};
 }
 function resetAll(){selCat.clear();selBrand.clear();selPrice.clear();curQuery="";document.getElementById('q').value='';rebuild();}
 function openModal(id,initialTab){
@@ -608,7 +655,7 @@ function openModal(id,initialTab){
   m.innerHTML=`<div class="mhead" style="background:${CATBG[d.cat]||d.bg}"><button class="mclose" onclick="closeModal()">✕</button>${d.emoji}</div>
    <div class="mtop"><div class="brand">${d.brand}</div><h2>${d.name}</h2>
    <div class="mtags">${d.tags.map(t=>`<span class="mtag">${t}</span>`).join('')}</div>
-   <div class="mprice">${d.price} <small>${d.sub?'· '+d.sub+' ':''}· ${d.score}/10 editor · ${d.koMean} community</small></div></div>
+   <div class="mprice">${mPriceLabel(d)} <small>${d.sub?'· '+d.sub+' ':''}· ${d.score}/10 editor · ${d.koMean} community</small></div></div>
    <div class="dtabs">${dt('overview','Ratings',initialTab)}${dt('spec','Specs',initialTab)}${dt('reviews','Reviews',initialTab)}${dt('prices','Prices ('+d.prices.length+')',initialTab)}${dt('video','Videos',initialTab)}</div>
    <div class="dpane ${initialTab==='overview'?'on':''}" data-p="overview">
      <div class="radarwrap">${radarSVG(d.radar,axes,230,CATSOLID[d.cat])}
@@ -685,7 +732,7 @@ async function loadFromDB(){
   const sb=window.supabase.createClient(SB_URL,SB_ANON);
   const [cz,rz,nz]=await Promise.all([
     sb.from('categories').select('name,radar_axes,color_grad,color_solid,color_bg,sort,sections(name,sort)').order('sort'),
-    sb.from('robots').select('name,emoji,price_text,price_num,sub,editor_score,radar,summary,pros,cons,tags,revenue_type,categories(name,color_bg,color_solid),brands(name),robot_specs(key,value,sort),robot_prices(retailer_name,price_text,price_num),community_score(composite),review_scores(source,score),videos(title,author,duration)').eq('status','published'),
+    sb.from('robots').select('name,emoji,price_text,price_num,sub,editor_score,radar,summary,pros,cons,tags,revenue_type,availability,categories(name,color_bg,color_solid),brands(name),robot_specs(key,value,sort),robot_prices(retailer_name,price_text,price_num),community_score(composite),review_scores(source,score),videos(title,author,duration)').eq('status','published'),
     sb.from('news').select('title,hot_tag,sort').order('sort')
   ]);
   if(cz.error||rz.error||nz.error) throw (cz.error||rz.error||nz.error);
@@ -702,6 +749,7 @@ async function loadFromDB(){
     const sol=cat.color_solid||'#5b54e6';const cs=one(r.community_score);
     return {id:id++,name:r.name,brand:(one(r.brands)||{}).name||'',cat:cat.name||'',emoji:r.emoji||'🤖',bg:cat.color_bg||'#eee',
       price:r.price_text||'',sub:r.sub||'',priceNum:Number(r.price_num)||0,score:Number(r.editor_score)||0,
+      rev:r.revenue_type||'',availability:r.availability||'',
       radar:r.radar||[0,0,0,0,0],verdict:r.summary||'',pros:r.pros||[],cons:r.cons||[],tags:r.tags||[],
       koMean:(cs&&cs.composite!=null)?Number(cs.composite):0,sources,ko:[],
       specs:Object.fromEntries((r.robot_specs||[]).slice().sort((a,b)=>a.sort-b.sort).map(s=>[s.key,s.value])),
