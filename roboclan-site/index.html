@@ -76,6 +76,7 @@
   .card:hover{transform:translateY(-4px);box-shadow:0 16px 34px rgba(20,22,45,.12);border-color:#cdd5df}
   .thumb{height:152px;display:grid;place-items:center;font-size:66px;position:relative}
   .cat-pill{position:absolute;top:10px;left:10px;background:rgba(0,0,0,.55);color:#fff;font-size:11px;padding:3px 9px;border-radius:11px;font-weight:700;text-shadow:0 1px 3px rgba(0,0,0,.45)}
+  .use-pill{position:absolute;top:38px;left:10px;background:rgba(255,255,255,.9);color:#334;font-size:10.5px;padding:2px 8px;border-radius:10px;font-weight:600;box-shadow:0 1px 4px rgba(20,22,45,.12)}
   .cmpadd{position:absolute;top:10px;right:10px;width:28px;height:28px;border-radius:8px;background:rgba(255,255,255,.92);display:grid;place-items:center;border:none;cursor:pointer;font-size:16px;color:var(--brand);font-weight:700}
   .cmpadd.added{background:var(--brand);color:#fff}
   .cbody{padding:14px 16px 16px}
@@ -590,15 +591,26 @@ function render(){
   if(!list.length){grid.innerHTML='<div style="color:var(--sub);padding:40px">No matches — try removing a filter.</div>';return;}
   list.forEach((d,idx)=>{const added=compare.has(d.id);const c=document.createElement('div');c.className='card';
     const ps=priceStatus(d);
-    c.innerHTML=`<div class="thumb" style="background:${CATBG[d.cat]||d.bg}"><span class="cat-pill" style="background:${CATCOLOR[d.cat]||'rgba(0,0,0,.55)'}">${d.cat}</span>
+    const useTag=(d.specs&&d.specs['Use'])?`<span class="use-pill">${d.specs['Use']}</span>`:'';
+    c.innerHTML=`<div class="thumb" style="background:${CATBG[d.cat]||d.bg}"><span class="cat-pill" style="background:${CATCOLOR[d.cat]||'rgba(0,0,0,.55)'}">${d.cat}</span>${useTag}
       <button class="cmpadd ${added?'added':''}" onclick="event.stopPropagation();toggleCmp(${d.id})">${added?'✓':'+'}</button>${d.emoji}</div>
       <div class="cbody"><h3>${d.name}</h3><div class="brand">${d.brand}</div>
       <div class="price">${ps.priceLine}</div>
       ${ps.pill}
-      <div class="specrow">${Object.entries(d.specs).slice(0,2).map(([k,v])=>`<span>${k} <b>${v}</b></span>`).join('')}</div>
+      <div class="specrow">${cardSpecs(d).map(([k,v])=>`<span>${k} <b>${cleanVal(v)}</b></span>`).join('')}</div>
       <div class="score">${d.score}<small>/10</small></div></div>`;
-    c.onclick=()=>openModal(d.id);grid.appendChild(c);if(idx===5)grid.appendChild(sponsoredCard());});
+    c.onclick=()=>openModal(d.id);grid.appendChild(c);if(SHOW_SPONSOR&&idx===5)grid.appendChild(sponsoredCard());});
 }
+// Only show the sponsored card once a real ad is sold (flip to true / drive from ads table).
+var SHOW_SPONSOR=false;
+// Consistent card specs per category (fall back to first two if missing).
+var CARD_SPECS={Humanoids:['Height','Weight']};
+function cardSpecs(d){
+  const want=CARD_SPECS[d.cat];
+  if(want){const picked=want.map(k=>[k,d.specs[k]]).filter(([k,v])=>v!=null&&v!=='');if(picked.length>=2)return picked;}
+  return Object.entries(d.specs).slice(0,2);
+}
+function cleanVal(v){return String(v).replace(/^[~≈]\s*/,'');}
 // Availability + price/compare display rule.
 // 'us'=sold in US, 'intl'=sold abroad only, 'coming_soon'=announced not on sale, 'enterprise'=B2B/quote only.
 function avOf(d){
@@ -615,7 +627,7 @@ function mPriceLabel(d){
   const valid=d.prices.filter(p=>p.pn!=null);
   const distinct=[...new Set(valid.map(p=>p.pn))];
   const lowest=valid.length?valid.reduce((a,b)=>a.pn<b.pn?a:b):null;
-  if(distinct.length>=2&&lowest) return 'from '+lowest.p;
+  if(distinct.length>=2&&lowest) return 'from '+String(lowest.p).replace(/^from\s+/i,'');
   return d.price||(lowest?lowest.p:'—');
 }
 function priceStatus(d){
@@ -624,26 +636,27 @@ function priceStatus(d){
   const distinct=[...new Set(valid.map(p=>p.pn))];
   const lowest=valid.length?valid.reduce((a,b)=>a.pn<=b.pn?a:b):null;
   const open=(tab)=>`event.stopPropagation();openModal(${d.id}${tab?",'"+tab+"'":''})`;
+  const bare=p=>String(p||'').replace(/^from\s+/i,'');  // avoid "from from $X"
   if(av==='enterprise'||COMMERCIAL.has(d.cat))
     return {priceLine:`<span class="pstat">Enterprise</span>`,
-      pill:`<div class="pcompare biz" onclick="${open('prices')}">💼 Request a quote ›</div>`};
+      pill:`<div class="pcompare biz" onclick="${open('prices')}">Request a quote ›</div>`};
   if(av==='coming_soon')
     return {priceLine:`<span class="pstat soon">Coming soon</span>`,
-      pill:`<div class="pcompare soon" onclick="${open()}">🔜 Not yet on sale ›</div>`};
+      pill:`<div class="pcompare soon" onclick="${open()}">Not yet on sale ›</div>`};
   if(av==='intl')
     return {priceLine:`<span class="pstat intl">Not available in the U.S.</span>`,
-      pill:`<div class="pcompare intl" onclick="${open()}">🌐 Available abroad ›</div>`};
+      pill:`<div class="pcompare intl" onclick="${open()}">Available abroad ›</div>`};
   // US, sold
   if(distinct.length>=2 && lowest)
-    return {priceLine:`<span class="pfrom">from</span>${lowest.p}`,
-      pill:`<div class="pcompare" onclick="${open('prices')}">🏷️ Compare ${valid.length} prices ›</div>`};
+    return {priceLine:`<span class="pfrom">from</span>${bare(lowest.p)}`,
+      pill:`<div class="pcompare" onclick="${open('prices')}">Compare ${valid.length} prices ›</div>`};
   if(lowest){
     const store=String(lowest.ch||'').split('·')[0].trim()||'retailer';
-    return {priceLine:`${lowest.p}`,
-      pill:`<div class="pcompare" onclick="${open('prices')}">🛒 Buy at ${store} ›</div>`};
+    return {priceLine:`${bare(lowest.p)}`,
+      pill:`<div class="pcompare" onclick="${open('prices')}">Buy at ${store} ›</div>`};
   }
   return {priceLine:`${d.price||'—'}`,
-    pill:`<div class="pcompare na" onclick="${open('prices')}">🏷️ See details ›</div>`};
+    pill:`<div class="pcompare na" onclick="${open('prices')}">See details ›</div>`};
 }
 function resetAll(){selCat.clear();selBrand.clear();selPrice.clear();curQuery="";document.getElementById('q').value='';rebuild();}
 function openModal(id,initialTab){
