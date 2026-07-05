@@ -1,313 +1,262 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<meta name="robots" content="noindex,nofollow">
 <title>Roboclan · Admin</title>
-<link rel="icon" type="image/png" href="favicon.png">
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<link rel="icon" type="image/svg+xml" href="favicon.svg?v=6">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
-  :root{--bg:#f5f6f8;--card:#fff;--ink:#14152a;--sub:#6b7280;--line:#e6e8ef;--brand:#5b54e6;
-    --grad:linear-gradient(135deg,#6a5ad6,#3f6fce,#2f93bd);--accent:#16a34a;--red:#ef4444;--radius:14px}
-  *{box-sizing:border-box;margin:0;padding:0}
-  body{font-family:-apple-system,"Segoe UI",Roboto,system-ui,sans-serif;background:var(--bg);color:var(--ink);line-height:1.5}
-  .wrap{max-width:920px;margin:0 auto;padding:24px 20px 80px}
-  header{display:flex;align-items:center;gap:12px;margin-bottom:20px}
-  .logo{font-weight:800;font-size:20px}.logo span{background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
-  header .sp{flex:1}
-  button{font-family:inherit;cursor:pointer;border:none;border-radius:10px;font-weight:600}
-  .btn{background:var(--grad);color:#fff;padding:9px 16px;font-size:14px}
-  .btn.ghost{background:#fff;color:var(--ink);border:1px solid var(--line)}
-  .btn.danger{background:#fff;color:var(--red);border:1px solid #f2c2c2}
-  .btn.sm{padding:5px 10px;font-size:12px}
-  input,select,textarea{font-family:inherit;font-size:14px;width:100%;padding:8px 10px;border:1px solid var(--line);border-radius:9px;background:#fff;color:var(--ink);outline:none}
-  input:focus,select:focus,textarea:focus{border-color:var(--brand)}
-  textarea{resize:vertical;min-height:54px}
-  label{display:block;font-size:12px;font-weight:600;color:var(--sub);margin:0 0 4px}
-  .card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:20px;margin-bottom:16px}
-  /* login */
-  #login{max-width:380px;margin:80px auto;text-align:center}
-  #login .card{padding:28px}
-  #login h1{font-size:22px;margin-bottom:6px}#login p{color:var(--sub);font-size:13px;margin-bottom:18px}
-  #login input{margin-bottom:10px}
-  .msg{font-size:13px;margin-top:10px;min-height:18px}.msg.err{color:var(--red)}.msg.ok{color:var(--accent)}
-  /* list */
-  .rrow{display:flex;align-items:center;gap:10px;padding:10px 12px;border:1px solid var(--line);border-radius:10px;margin-bottom:8px}
-  .rrow .em{font-size:22px}.rrow .nm{font-weight:600}.rrow .meta{font-size:12px;color:var(--sub)}
-  .rrow .sp{flex:1}
-  .pill{font-size:11px;padding:2px 8px;border-radius:8px;background:#eef0ff;color:var(--brand);font-weight:700}
-  .pill.draft{background:#fff3df;color:#b45309}
-  /* form */
-  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-  .grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
-  .fld{margin-bottom:12px}
-  .secttl{font-weight:700;font-size:14px;margin:18px 0 8px;color:var(--ink)}
-  .radarrow{display:flex;align-items:center;gap:10px;margin:6px 0}
-  .radarrow label{width:120px;margin:0;color:var(--ink)}
-  .radarrow input[type=range]{flex:1}
-  .radarrow .v{width:30px;text-align:right;font-weight:700}
-  .dynrow{display:flex;gap:8px;margin-bottom:6px;align-items:center}
-  .dynrow button{flex-shrink:0}
-  .hint{font-size:12px;color:var(--sub);margin-top:3px}
-  .hidden{display:none}
+:root{
+  --bg:#0a0b0f; --surface-1:#14161d; --surface-2:#1b1e27; --line:#262a36; --line-2:#333846;
+  --text-1:#eef1f7; --text-2:#aab2c4; --text-3:#6b7488; --accent:#6E8BFF; --accent-ink:#8FA8FF;
+  --cyan:#5BE2FF; --violet:#A66BFF; --success:#3ddc97; --danger:#ff6b6b; --warn:#f5b14c;
+  --grad:linear-gradient(100deg,#5BE2FF,#6E8BFF 55%,#A66BFF);
+  --font-display:'Space Grotesk',sans-serif; --font-body:'Inter',sans-serif; --font-mono:'JetBrains Mono',monospace;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text-1);font-family:var(--font-body);font-size:14px;line-height:1.5;-webkit-font-smoothing:antialiased;min-height:100vh;}
+a{color:inherit}
+.mono{font-family:var(--font-mono)}
+.hide{display:none!important}
+
+/* ---- login ---- */
+.login-wrap{min-height:100vh;display:grid;place-items:center;padding:24px;}
+.login{width:100%;max-width:380px;background:var(--surface-1);border:1px solid var(--line);border-radius:18px;padding:32px 28px;box-shadow:0 30px 70px rgba(0,0,0,.5);}
+.login .brand{display:flex;align-items:center;gap:11px;margin-bottom:6px;}
+.login .brand span{font-family:var(--font-display);font-weight:600;font-size:20px;}
+.login h1{font-family:var(--font-display);font-weight:600;font-size:22px;margin:16px 0 4px;}
+.login p{color:var(--text-3);font-size:13px;margin-bottom:20px;}
+.fld{margin-bottom:14px;}
+.fld label{display:block;font-size:12px;color:var(--text-3);margin-bottom:6px;font-family:var(--font-mono);text-transform:uppercase;letter-spacing:.05em;}
+.fld input{width:100%;height:42px;border-radius:10px;border:1px solid var(--line-2);background:var(--surface-2);color:var(--text-1);font-family:var(--font-body);font-size:14px;padding:0 14px;outline:none;transition:border-color .15s;}
+.fld input:focus{border-color:rgba(110,139,255,.6);}
+.btn{width:100%;height:44px;border-radius:10px;border:none;background:var(--grad);color:#0a0b0f;font-family:var(--font-display);font-weight:600;font-size:15px;cursor:pointer;transition:opacity .15s,transform .05s;}
+.btn:hover{opacity:.92}.btn:active{transform:translateY(1px)}.btn:disabled{opacity:.55;cursor:default}
+.err{color:var(--danger);font-size:13px;margin-top:12px;min-height:18px;}
+
+/* ---- app ---- */
+.top{position:sticky;top:0;z-index:10;background:rgba(10,11,15,.85);backdrop-filter:blur(12px);border-bottom:1px solid var(--line);}
+.top-in{max-width:1180px;margin:0 auto;padding:14px 24px;display:flex;align-items:center;gap:14px;}
+.top .brand{display:flex;align-items:center;gap:10px;}
+.top .brand span{font-family:var(--font-display);font-weight:600;font-size:18px;}
+.top .badge{font-family:var(--font-mono);font-size:11px;color:var(--accent-ink);border:1px solid var(--line-2);border-radius:20px;padding:3px 9px;}
+.top .who{margin-left:auto;color:var(--text-3);font-size:13px;}
+.signout{border:1px solid var(--line-2);background:var(--surface-1);color:var(--text-2);border-radius:9px;height:34px;padding:0 14px;cursor:pointer;font-size:13px;font-weight:600;}
+.signout:hover{color:var(--text-1);border-color:var(--danger);}
+.wrap{max-width:1180px;margin:0 auto;padding:26px 24px 80px;}
+.tabs{display:flex;gap:8px;margin-bottom:22px;}
+.tab{border:1px solid var(--line);background:var(--surface-1);color:var(--text-2);border-radius:10px;height:38px;padding:0 18px;cursor:pointer;font-weight:600;font-size:14px;}
+.tab.on{color:var(--text-1);border-color:rgba(110,139,255,.55);background:var(--surface-2);}
+
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:14px;margin-bottom:24px;}
+.card{background:var(--surface-1);border:1px solid var(--line);border-radius:14px;padding:16px 18px;}
+.card .k{font-family:var(--font-mono);font-size:11px;color:var(--text-3);text-transform:uppercase;letter-spacing:.05em;}
+.card .v{font-family:var(--font-display);font-weight:600;font-size:30px;margin-top:6px;background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent;}
+.card .v.plain{background:none;color:var(--text-1);-webkit-text-fill-color:var(--text-1);}
+
+.panel{background:var(--surface-1);border:1px solid var(--line);border-radius:14px;padding:4px 4px;margin-bottom:22px;overflow:hidden;}
+.panel h3{font-family:var(--font-display);font-weight:600;font-size:15px;padding:16px 18px 10px;}
+.tbl-scroll{overflow-x:auto;}
+table{border-collapse:collapse;width:100%;font-size:13.5px;}
+th,td{text-align:left;padding:11px 16px;border-top:1px solid var(--line);vertical-align:top;}
+th{font-family:var(--font-mono);font-size:11px;color:var(--text-3);text-transform:uppercase;letter-spacing:.04em;white-space:nowrap;}
+td .em{color:var(--accent-ink);}
+td.msg{max-width:360px;color:var(--text-2);white-space:pre-wrap;}
+.status{font-family:var(--font-mono);font-size:12px;border-radius:8px;border:1px solid var(--line-2);background:var(--surface-2);color:var(--text-1);padding:5px 8px;cursor:pointer;}
+.pill{display:inline-block;font-family:var(--font-mono);font-size:11px;padding:2px 8px;border-radius:20px;border:1px solid var(--line-2);color:var(--text-2);}
+.empty{padding:34px;text-align:center;color:var(--text-3);}
+.muted{color:var(--text-3);font-size:12px;padding:0 18px 14px;}
+.bar{height:8px;border-radius:6px;background:var(--grad);}
+.barwrap{background:var(--surface-2);border-radius:6px;overflow:hidden;width:100%;min-width:90px;}
+@media(max-width:640px){td.msg{max-width:200px}.wrap{padding:20px 14px 60px}}
 </style>
 </head>
 <body>
 
-<div id="login">
-  <div class="logo" style="font-size:24px;margin-bottom:14px">🤖 <span>Roboclan</span> Admin</div>
-  <div class="card">
-    <h1>Sign in</h1>
-    <p>Admin access only</p>
-    <input id="email" type="email" placeholder="Email" autocomplete="username">
-    <input id="pass" type="password" placeholder="Password" autocomplete="current-password">
-    <button class="btn" style="width:100%" onclick="signIn()">Sign in</button>
-    <div class="msg" id="loginMsg"></div>
-  </div>
+<!-- LOGIN -->
+<div id="loginView" class="login-wrap">
+  <form class="login" id="loginForm">
+    <div class="brand">
+      <svg width="30" height="30" viewBox="0 0 48 48" fill="none"><defs><linearGradient id="lg" x1="8" y1="8" x2="40" y2="40" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#5BE2FF"/><stop offset=".52" stop-color="#6E8BFF"/><stop offset="1" stop-color="#A66BFF"/></linearGradient></defs><ellipse cx="24" cy="24" rx="18" ry="8.4" transform="rotate(-28 24 24)" fill="none" stroke="url(#lg)" stroke-width="1.5" opacity=".45"/><path d="M18 35 V13 H26 A6 6 0 0 1 26 25 H18 M23 25 L31 36" fill="none" stroke="url(#lg)" stroke-width="2.9" stroke-linecap="round" stroke-linejoin="round"/><circle cx="36.4" cy="13.6" r="3" fill="#8FA8FF"/></svg>
+      <span>Roboclan</span>
+    </div>
+    <h1>Admin sign in</h1>
+    <p>Leads &amp; traffic dashboard. Authorized users only.</p>
+    <div class="fld"><label>Email</label><input id="email" type="email" autocomplete="username" required></div>
+    <div class="fld"><label>Password</label><input id="password" type="password" autocomplete="current-password" required></div>
+    <button class="btn" id="loginBtn" type="submit">Sign in</button>
+    <div class="err" id="loginErr"></div>
+  </form>
 </div>
 
-<div id="app" class="wrap hidden">
-  <header>
-    <div class="logo">🤖 <span>Roboclan</span> Admin</div>
-    <div class="sp"></div>
-    <a class="btn ghost sm" href="/" target="_blank" style="text-decoration:none;display:inline-block">View site ↗</a>
-    <button class="btn ghost sm" onclick="signOut()">Sign out</button>
-  </header>
-
-  <div id="listView">
-    <div style="display:flex;align-items:center;margin-bottom:12px">
-      <h2 style="font-size:18px">Robots <span id="rcount" style="color:var(--sub);font-weight:500;font-size:14px"></span></h2>
-      <div class="sp" style="flex:1"></div>
-      <button class="btn" onclick="newRobot()">+ Add robot</button>
+<!-- APP -->
+<div id="appView" class="hide">
+  <div class="top"><div class="top-in">
+    <div class="brand">
+      <svg width="26" height="26" viewBox="0 0 48 48" fill="none"><defs><linearGradient id="lg2" x1="8" y1="8" x2="40" y2="40" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#5BE2FF"/><stop offset=".52" stop-color="#6E8BFF"/><stop offset="1" stop-color="#A66BFF"/></linearGradient></defs><ellipse cx="24" cy="24" rx="18" ry="8.4" transform="rotate(-28 24 24)" fill="none" stroke="url(#lg2)" stroke-width="1.5" opacity=".45"/><path d="M18 35 V13 H26 A6 6 0 0 1 26 25 H18 M23 25 L31 36" fill="none" stroke="url(#lg2)" stroke-width="2.9" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <span>Roboclan</span><span class="badge">ADMIN</span>
     </div>
-    <div id="rlist"></div>
-  </div>
+    <span class="who" id="who"></span>
+    <button class="signout" id="signout">Sign out</button>
+  </div></div>
 
-  <div id="formView" class="hidden">
-    <div class="card">
-      <div style="display:flex;align-items:center;margin-bottom:14px">
-        <h2 style="font-size:18px" id="formTitle">Add robot</h2>
-        <div class="sp" style="flex:1"></div>
-        <button class="btn ghost sm" onclick="showList()">← Back</button>
-      </div>
-      <input type="hidden" id="rid">
+  <div class="wrap">
+    <div class="tabs">
+      <button class="tab on" data-tab="leads">Leads</button>
+      <button class="tab" data-tab="traffic">Traffic</button>
+    </div>
 
-      <div class="grid2">
-        <div class="fld"><label>Category</label><select id="fcat" onchange="onCat()"></select></div>
-        <div class="fld"><label>Status</label><select id="fstatus"><option value="published">Published (live)</option><option value="draft">Draft (hidden)</option></select></div>
+    <!-- LEADS TAB -->
+    <div id="tab-leads">
+      <div class="cards">
+        <div class="card"><div class="k">Total leads</div><div class="v" id="s-total">–</div></div>
+        <div class="card"><div class="k">New (unhandled)</div><div class="v" id="s-new">–</div></div>
+        <div class="card"><div class="k">Last 7 days</div><div class="v plain" id="s-7d">–</div></div>
       </div>
-      <div class="grid2">
-        <div class="fld"><label>Name</label><input id="fname" placeholder="e.g. Roomba j9+"></div>
-        <div class="fld"><label>Brand</label><input id="fbrand" placeholder="e.g. iRobot"></div>
+      <div class="panel">
+        <h3>Inquiries</h3>
+        <div class="muted">Newest first. Change status with the dropdown — it saves automatically.</div>
+        <div class="tbl-scroll"><table id="leadsTbl">
+          <thead><tr><th>Received</th><th>Name</th><th>Email</th><th>Company</th><th>Message</th><th>Status</th></tr></thead>
+          <tbody><tr><td colspan="6" class="empty">Loading…</td></tr></tbody>
+        </table></div>
       </div>
-      <div class="grid3">
-        <div class="fld"><label>Emoji</label><input id="femoji" placeholder="🧹" maxlength="4"></div>
-        <div class="fld"><label>Price (shown)</label><input id="fprice" placeholder="$899 / Quote-based"></div>
-        <div class="fld"><label>Price # (for sort/filter)</label><input id="fpricenum" type="number" placeholder="899"></div>
-      </div>
-      <div class="grid3">
-        <div class="fld"><label>Sub-label (optional)</label><input id="fsub" placeholder="or $499/mo"></div>
-        <div class="fld"><label>Editor score (0–10)</label><input id="fscore" type="number" step="0.1" min="0" max="10" placeholder="8.5"></div>
-        <div class="fld"><label>Revenue type</label><select id="frev"><option value="affiliate">affiliate (consumer)</option><option value="lead">lead (commercial)</option><option value="traffic">traffic (hyped, ads)</option></select></div>
-      </div>
-      <div class="fld"><label>Verdict (plain-English summary)</label><textarea id="fsummary" placeholder="One honest paragraph..."></textarea></div>
+    </div>
 
-      <div class="secttl">⭐ Radar scores (0–10)</div>
-      <div id="radarBox"></div>
-
-      <div class="grid3" style="margin-top:8px">
-        <div class="fld"><label>Pros (one per line)</label><textarea id="fpros"></textarea></div>
-        <div class="fld"><label>Cons (one per line)</label><textarea id="fcons"></textarea></div>
-        <div class="fld"><label>Tags (one per line)</label><textarea id="ftags"></textarea></div>
+    <!-- TRAFFIC TAB -->
+    <div id="tab-traffic" class="hide">
+      <div class="cards">
+        <div class="card"><div class="k">Pageviews</div><div class="v" id="t-pv">–</div></div>
+        <div class="card"><div class="k">Product views</div><div class="v plain" id="t-views">–</div></div>
+        <div class="card"><div class="k">Quote clicks</div><div class="v plain" id="t-quote">–</div></div>
+        <div class="card"><div class="k">Deal / buy clicks</div><div class="v plain" id="t-buy">–</div></div>
+        <div class="card"><div class="k">Lead submits</div><div class="v plain" id="t-lead">–</div></div>
       </div>
-
-      <div class="secttl">📋 Specs</div>
-      <div id="specBox"></div>
-      <button class="btn ghost sm" onclick="addSpec()">+ Add spec</button>
-
-      <div class="secttl">💰 Prices / retailers <span class="hint">(leave empty for quote-based commercial robots)</span></div>
-      <div id="priceBox"></div>
-      <button class="btn ghost sm" onclick="addPrice()">+ Add price</button>
-
-      <div class="secttl">📊 Community score (optional)</div>
-      <div class="grid2">
-        <div class="fld"><label>Composite (0–10)</label><input id="fcomposite" type="number" step="0.1" min="0" max="10"></div>
+      <div class="panel">
+        <h3>Most-viewed products</h3>
+        <div class="tbl-scroll"><table id="topTbl">
+          <thead><tr><th>Product</th><th>Category</th><th style="width:40%">Views</th></tr></thead>
+          <tbody><tr><td colspan="3" class="empty">Loading…</td></tr></tbody>
+        </table></div>
       </div>
-      <div class="grid3">
-        <div class="fld"><label>Reddit</label><input id="fred" type="number" step="0.1" min="0" max="10"></div>
-        <div class="fld"><label>YouTube</label><input id="fyt" type="number" step="0.1" min="0" max="10"></div>
-        <div class="fld"><label>Amazon</label><input id="famz" type="number" step="0.1" min="0" max="10"></div>
+      <div class="panel">
+        <h3>Activity by category</h3>
+        <div class="tbl-scroll"><table id="catTbl">
+          <thead><tr><th>Category</th><th style="width:50%">Events</th></tr></thead>
+          <tbody><tr><td colspan="2" class="empty">Loading…</td></tr></tbody>
+        </table></div>
       </div>
-
-      <div class="secttl">🎬 Videos (optional)</div>
-      <div id="videoBox"></div>
-      <button class="btn ghost sm" onclick="addVideo()">+ Add video</button>
-
-      <div style="display:flex;gap:10px;margin-top:22px">
-        <button class="btn" onclick="save()">Save</button>
-        <button class="btn ghost" onclick="showList()">Cancel</button>
-        <div class="sp" style="flex:1"></div>
-        <span class="msg" id="formMsg"></span>
-      </div>
+      <div class="muted" id="t-range"></div>
     </div>
   </div>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 const SB_URL='https://vthiulsykmdnatwoqdat.supabase.co';
 const SB_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ0aGl1bHN5a21kbmF0d29xZGF0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODExOTM4NzksImV4cCI6MjA5Njc2OTg3OX0.TOHjT3wswV8F3juerFSci-OAa0Gz66nlbBQh7DwXdug';
-const sb=window.supabase.createClient(SB_URL,SB_ANON);
-let CATS=[]; // {id,name,radar_axes}
-const $=id=>document.getElementById(id);
-const slugify=x=>(x||'').toLowerCase().trim().replace(/[^a-z0-9]+/g,'-').replace(/(^-|-$)/g,'');
+const sb = supabase.createClient(SB_URL, SB_ANON);
+
+const $ = (id)=>document.getElementById(id);
+const esc = (s)=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const fmtDate = (s)=>{ if(!s) return ''; const d=new Date(s); return d.toLocaleString(undefined,{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'}); };
 
 // ---------- auth ----------
-async function boot(){
-  const {data:{session}}=await sb.auth.getSession();
-  if(session) showApp(); else $('login').classList.remove('hidden');
+async function refresh(){
+  const { data:{ session } } = await sb.auth.getSession();
+  if(session){ showApp(session); } else { showLogin(); }
 }
-async function signIn(){
-  $('loginMsg').className='msg';$('loginMsg').textContent='Signing in...';
-  const {error}=await sb.auth.signInWithPassword({email:$('email').value.trim(),password:$('pass').value});
-  if(error){$('loginMsg').className='msg err';$('loginMsg').textContent=error.message;return;}
-  showApp();
+function showLogin(){ $('appView').classList.add('hide'); $('loginView').classList.remove('hide'); }
+function showApp(session){
+  $('loginView').classList.add('hide'); $('appView').classList.remove('hide');
+  $('who').textContent = session.user.email;
+  loadLeads(); loadTraffic();
 }
-async function signOut(){await sb.auth.signOut();location.reload();}
-async function showApp(){
-  $('login').classList.add('hidden');$('app').classList.remove('hidden');
-  await loadCats(); await loadRobots(); showList();
-}
+$('loginForm').addEventListener('submit', async (e)=>{
+  e.preventDefault(); $('loginErr').textContent=''; $('loginBtn').disabled=true; $('loginBtn').textContent='Signing in…';
+  const { error } = await sb.auth.signInWithPassword({ email:$('email').value.trim(), password:$('password').value });
+  $('loginBtn').disabled=false; $('loginBtn').textContent='Sign in';
+  if(error){ $('loginErr').textContent = error.message || 'Sign-in failed.'; return; }
+  refresh();
+});
+$('signout').addEventListener('click', async ()=>{ await sb.auth.signOut(); showLogin(); });
 
-// ---------- data ----------
-async function loadCats(){
-  const {data}=await sb.from('categories').select('id,name,radar_axes,sort,sections(name,sort)').order('sort');
-  CATS=data||[];
-  $('fcat').innerHTML=CATS.map(c=>`<option value="${c.id}">${c.name}</option>`).join('');
-}
-async function loadRobots(){
-  const {data}=await sb.from('robots').select('id,name,emoji,status,categories(name)').order('name');
-  const list=data||[];
-  $('rcount').textContent='· '+list.length;
-  $('rlist').innerHTML=list.map(r=>`<div class="rrow">
-    <span class="em">${r.emoji||'🤖'}</span>
-    <div><div class="nm">${esc(r.name)}</div><div class="meta">${esc((r.categories&&r.categories.name)||'')}</div></div>
-    <div class="sp"></div>
-    <span class="pill ${r.status==='draft'?'draft':''}">${r.status}</span>
-    <button class="btn ghost sm" onclick="editRobot('${r.id}')">Edit</button>
-    <button class="btn danger sm" onclick="delRobot('${r.id}','${esc(r.name)}')">Delete</button>
-  </div>`).join('') || '<p style="color:var(--sub)">No robots yet. Click “Add robot”.</p>';
-}
-function esc(s){return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/'/g,'&#39;').replace(/"/g,'&quot;');}
+// ---------- tabs ----------
+document.querySelectorAll('.tab').forEach(t=>t.addEventListener('click',()=>{
+  document.querySelectorAll('.tab').forEach(x=>x.classList.remove('on')); t.classList.add('on');
+  const k=t.dataset.tab;
+  $('tab-leads').classList.toggle('hide', k!=='leads');
+  $('tab-traffic').classList.toggle('hide', k!=='traffic');
+}));
 
-// ---------- views ----------
-function showList(){$('formView').classList.add('hidden');$('listView').classList.remove('hidden');loadRobots();}
-function showForm(){$('listView').classList.add('hidden');$('formView').classList.remove('hidden');$('formMsg').textContent='';}
-
-function onCat(){
-  const c=CATS.find(x=>x.id===$('fcat').value);
-  const axes=(c&&c.radar_axes)||["A","B","C","D","E"];
-  $('radarBox').innerHTML=axes.map((a,i)=>`<div class="radarrow"><label>${esc(a)}</label>
-    <input type="range" min="0" max="10" step="0.1" value="${$('rd'+i)?$('rd'+i).value:7}" id="rd${i}" oninput="$('rv'+${i}).textContent=this.value">
-    <span class="v" id="rv${i}">7</span></div>`).join('');
-  axes.forEach((a,i)=>{$('rv'+i).textContent=$('rd'+i).value;});
-}
-function radarVals(){return [0,1,2,3,4].map(i=>parseFloat($('rd'+i).value));}
-
-function addSpec(k,v){const d=document.createElement('div');d.className='dynrow';
-  d.innerHTML=`<input placeholder="Key (e.g. Suction)" value="${esc(k||'')}" style="flex:1">
-    <input placeholder="Value (e.g. 22000 Pa)" value="${esc(v||'')}" style="flex:1.4">
-    <button class="btn danger sm" onclick="this.parentNode.remove()">✕</button>`;
-  $('specBox').appendChild(d);}
-function addPrice(ch,p,pn,url){const d=document.createElement('div');d.className='dynrow';
-  d.innerHTML=`<input placeholder="Retailer" value="${esc(ch||'')}" style="flex:1.2">
-    <input placeholder="Price text ($899)" value="${esc(p||'')}" style="flex:1">
-    <input placeholder="# (899)" type="number" value="${pn==null?'':pn}" style="width:90px">
-    <input placeholder="URL (affiliate)" value="${esc(url||'')}" style="flex:1.4">
-    <button class="btn danger sm" onclick="this.parentNode.remove()">✕</button>`;
-  $('priceBox').appendChild(d);}
-function addVideo(t,a,dur){const d=document.createElement('div');d.className='dynrow';
-  d.innerHTML=`<input placeholder="Title" value="${esc(t||'')}" style="flex:1.6">
-    <input placeholder="Author" value="${esc(a||'')}" style="flex:1">
-    <input placeholder="Duration (12:30)" value="${esc(dur||'')}" style="width:120px">
-    <button class="btn danger sm" onclick="this.parentNode.remove()">✕</button>`;
-  $('videoBox').appendChild(d);}
-
-function resetForm(){
-  ['rid','fname','fbrand','femoji','fprice','fpricenum','fsub','fscore','fsummary','fpros','fcons','ftags','fcomposite','fred','fyt','famz'].forEach(i=>$(i).value='');
-  $('fstatus').value='published';$('frev').value='affiliate';
-  $('specBox').innerHTML='';$('priceBox').innerHTML='';$('videoBox').innerHTML='';
-  if(CATS[0])$('fcat').value=CATS[0].id; onCat();
-}
-function newRobot(){resetForm();$('formTitle').textContent='Add robot';showForm();}
-
-async function editRobot(id){
-  const {data:r}=await sb.from('robots').select('*,robot_specs(key,value,sort),robot_prices(retailer_name,price_text,price_num,url),community_score(composite),review_scores(source,score),videos(title,author,duration)').eq('id',id).single();
-  if(!r)return;
-  resetForm();
-  $('formTitle').textContent='Edit robot';
-  $('rid').value=r.id;$('fcat').value=r.category_id;$('fstatus').value=r.status||'published';
-  $('fname').value=r.name||'';$('femoji').value=r.emoji||'';$('fprice').value=r.price_text||'';
-  $('fpricenum').value=r.price_num??'';$('fsub').value=r.sub||'';$('fscore').value=r.editor_score??'';
-  $('frev').value=r.revenue_type||'affiliate';$('fsummary').value=r.summary||'';
-  $('fpros').value=(r.pros||[]).join('\n');$('fcons').value=(r.cons||[]).join('\n');$('ftags').value=(r.tags||[]).join('\n');
-  // brand name
-  if(r.brand_id){const {data:b}=await sb.from('brands').select('name').eq('id',r.brand_id).single();if(b)$('fbrand').value=b.name;}
-  onCat();
-  const rad=r.radar||[]; rad.forEach((v,i)=>{if($('rd'+i)){$('rd'+i).value=v;$('rv'+i).textContent=v;}});
-  (r.robot_specs||[]).sort((a,b)=>a.sort-b.sort).forEach(s=>addSpec(s.key,s.value));
-  (r.robot_prices||[]).forEach(p=>addPrice(p.retailer_name,p.price_text,p.price_num,p.url));
-  (r.videos||[]).forEach(v=>addVideo(v.title,v.author,v.duration));
-  const cs=Array.isArray(r.community_score)?r.community_score[0]:r.community_score;
-  if(cs)$('fcomposite').value=cs.composite??'';
-  (r.review_scores||[]).forEach(x=>{if(x.source==='reddit')$('fred').value=x.score;if(x.source==='youtube')$('fyt').value=x.score;if(x.source==='amazon')$('famz').value=x.score;});
-  showForm();
+// ---------- leads ----------
+const STATUSES=['new','contacted','qualified','closed','spam'];
+async function loadLeads(){
+  const { data, error } = await sb.from('leads').select('*').order('created_at',{ascending:false});
+  const tb = $('leadsTbl').querySelector('tbody');
+  if(error){ tb.innerHTML='<tr><td colspan="6" class="empty">Could not load leads — is the read policy applied? ('+esc(error.message)+')</td></tr>'; return; }
+  const rows = data||[];
+  $('s-total').textContent = rows.length;
+  $('s-new').textContent = rows.filter(r=>(r.status||'new')==='new').length;
+  const wk = Date.now()-7*864e5;
+  $('s-7d').textContent = rows.filter(r=> new Date(r.created_at).getTime()>wk).length;
+  if(!rows.length){ tb.innerHTML='<tr><td colspan="6" class="empty">No inquiries yet.</td></tr>'; return; }
+  tb.innerHTML = rows.map(r=>{
+    const opts = STATUSES.map(s=>`<option value="${s}"${(r.status||'new')===s?' selected':''}>${s}</option>`).join('');
+    return `<tr>
+      <td class="mono" style="white-space:nowrap;color:var(--text-3)">${esc(fmtDate(r.created_at))}</td>
+      <td>${esc(r.name)||'<span class="pill">—</span>'}</td>
+      <td><a class="em" href="mailto:${esc(r.email)}">${esc(r.email)}</a></td>
+      <td>${esc(r.company)||'<span class="pill">—</span>'}</td>
+      <td class="msg">${esc(r.message)}</td>
+      <td><select class="status" data-id="${r.id}">${opts}</select></td>
+    </tr>`;
+  }).join('');
+  tb.querySelectorAll('.status').forEach(sel=>sel.addEventListener('change', async (e)=>{
+    const id=e.target.dataset.id, status=e.target.value; e.target.disabled=true;
+    const { error } = await sb.from('leads').update({status}).eq('id',id);
+    e.target.disabled=false;
+    if(error){ alert('Could not save status: '+error.message); }
+    else { $('s-new').textContent = document.querySelectorAll('.status').length && [...document.querySelectorAll('.status')].filter(s=>s.value==='new').length; }
+  }));
 }
 
-function lines(id){return $(id).value.split('\n').map(s=>s.trim()).filter(Boolean);}
-
-async function save(){
-  const msg=$('formMsg');msg.className='msg';msg.textContent='Saving...';
-  try{
-    const name=$('fname').value.trim();
-    if(!name){throw new Error('Name is required');}
-    // brand upsert
-    let brand_id=null;const bn=$('fbrand').value.trim();
-    if(bn){const {data:b,error:be}=await sb.from('brands').upsert({name:bn,slug:slugify(bn)},{onConflict:'slug'}).select('id').single();if(be)throw be;brand_id=b.id;}
-    const rec={category_id:$('fcat').value,brand_id,name,slug:slugify(name),emoji:$('femoji').value.trim()||null,
-      price_text:$('fprice').value.trim()||null,price_num:parseInt($('fpricenum').value)||0,sub:$('fsub').value.trim()||null,
-      editor_score:parseFloat($('fscore').value)||null,radar:radarVals(),summary:$('fsummary').value.trim()||null,
-      pros:lines('fpros'),cons:lines('fcons'),tags:lines('ftags'),revenue_type:$('frev').value,status:$('fstatus').value,updated_at:new Date().toISOString()};
-    let rid=$('rid').value;
-    if(rid){const {error}=await sb.from('robots').update(rec).eq('id',rid);if(error)throw error;}
-    else{const {data,error}=await sb.from('robots').insert(rec).select('id').single();if(error)throw error;rid=data.id;}
-    // children: clear + reinsert
-    await sb.from('robot_specs').delete().eq('robot_id',rid);
-    await sb.from('robot_prices').delete().eq('robot_id',rid);
-    await sb.from('review_scores').delete().eq('robot_id',rid);
-    await sb.from('videos').delete().eq('robot_id',rid);
-    const specs=[...$('specBox').querySelectorAll('.dynrow')].map((d,i)=>{const inp=d.querySelectorAll('input');return {robot_id:rid,key:inp[0].value.trim(),value:inp[1].value.trim(),sort:i};}).filter(s=>s.key);
-    if(specs.length)await sb.from('robot_specs').insert(specs);
-    const prices=[...$('priceBox').querySelectorAll('.dynrow')].map(d=>{const inp=d.querySelectorAll('input');return {robot_id:rid,retailer_name:inp[0].value.trim(),price_text:inp[1].value.trim(),price_num:inp[2].value===''?null:parseInt(inp[2].value),url:inp[3].value.trim()||null};}).filter(p=>p.retailer_name);
-    if(prices.length)await sb.from('robot_prices').insert(prices);
-    const vids=[...$('videoBox').querySelectorAll('.dynrow')].map(d=>{const inp=d.querySelectorAll('input');return {robot_id:rid,title:inp[0].value.trim(),author:inp[1].value.trim(),duration:inp[2].value.trim()};}).filter(v=>v.title);
-    if(vids.length)await sb.from('videos').insert(vids);
-    const rs=[];const add=(src,id)=>{const v=$(id).value;if(v!=='')rs.push({robot_id:rid,source:src,score:parseFloat(v)});};
-    add('reddit','fred');add('youtube','fyt');add('amazon','famz');
-    if(rs.length)await sb.from('review_scores').insert(rs);
-    if($('fcomposite').value!=='')await sb.from('community_score').upsert({robot_id:rid,composite:parseFloat($('fcomposite').value),updated_at:new Date().toISOString()},{onConflict:'robot_id'});
-    msg.className='msg ok';msg.textContent='Saved ✓';
-    setTimeout(showList,700);
-  }catch(e){msg.className='msg err';msg.textContent='Error: '+(e.message||e);}
+// ---------- traffic ----------
+async function loadTraffic(){
+  const { data, error } = await sb.from('clicks').select('*').order('created_at',{ascending:false}).limit(10000);
+  if(error){ $('topTbl').querySelector('tbody').innerHTML='<tr><td colspan="3" class="empty">Could not load traffic ('+esc(error.message)+')</td></tr>'; return; }
+  const rows=data||[];
+  const by=(k)=>rows.filter(r=>r.kind===k).length;
+  $('t-pv').textContent=by('pageview'); $('t-views').textContent=by('view');
+  $('t-quote').textContent=by('quote'); $('t-buy').textContent=by('buy')+by('outbound'); $('t-lead').textContent=by('lead');
+  // top products (kind view)
+  const prod={}, cats={};
+  rows.forEach(r=>{
+    if(r.kind==='view' && r.robot_name){ const key=r.robot_name; (prod[key]=prod[key]||{n:0,cat:r.category}); prod[key].n++; }
+    if(r.category){ cats[r.category]=(cats[r.category]||0)+1; }
+  });
+  const top=Object.entries(prod).sort((a,b)=>b[1].n-a[1].n).slice(0,15);
+  const maxV=top.length?top[0][1].n:1;
+  const ptb=$('topTbl').querySelector('tbody');
+  ptb.innerHTML = top.length? top.map(([name,o])=>`<tr>
+    <td>${esc(name)}</td><td><span class="pill">${esc(o.cat)||'—'}</span></td>
+    <td><div style="display:flex;align-items:center;gap:10px"><div class="barwrap"><div class="bar" style="width:${Math.max(6,o.n/maxV*100)}%"></div></div><span class="mono" style="color:var(--text-2)">${o.n}</span></div></td>
+  </tr>`).join('') : '<tr><td colspan="3" class="empty">No product views yet.</td></tr>';
+  // by category
+  const cent=Object.entries(cats).sort((a,b)=>b[1]-a[1]);
+  const maxC=cent.length?cent[0][1]:1;
+  const ctb=$('catTbl').querySelector('tbody');
+  ctb.innerHTML = cent.length? cent.map(([c,n])=>`<tr>
+    <td>${esc(c)}</td>
+    <td><div style="display:flex;align-items:center;gap:10px"><div class="barwrap"><div class="bar" style="width:${Math.max(6,n/maxC*100)}%"></div></div><span class="mono" style="color:var(--text-2)">${n}</span></div></td>
+  </tr>`).join('') : '<tr><td colspan="2" class="empty">No category activity yet.</td></tr>';
+  if(rows.length){ const oldest=new Date(rows[rows.length-1].created_at); $('t-range').textContent='Showing '+rows.length+' events since '+oldest.toLocaleDateString(); }
 }
 
-async function delRobot(id,name){
-  if(!confirm('Delete "'+name+'"? This cannot be undone.'))return;
-  await sb.from('robots').delete().eq('id',id);
-  loadRobots();
-}
-
-$('pass').addEventListener('keydown',e=>{if(e.key==='Enter')signIn();});
-boot();
+sb.auth.onAuthStateChange((_e,session)=>{ if(!session) showLogin(); });
+refresh();
 </script>
 </body>
 </html>
