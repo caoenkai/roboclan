@@ -35,8 +35,9 @@
     return n >= 15000;                   // "$15k+"
   }
 
-  function Catalog({ initialCat, onOpen, onAdd, compare }) {
+  function Catalog({ initialCat, search, onOpen, onAdd, compare }) {
     inject();
+    const q = (search || "").toLowerCase().trim();
     const [cats, setCats] = React.useState(new Set(initialCat ? [initialCat] : []));
     const [brands, setBrands] = React.useState(new Set());
     const [price, setPrice] = React.useState(new Set());
@@ -60,14 +61,15 @@
     const list = _mixed.filter((r) =>
       (cats.size === 0 || cats.has(r.cat)) &&
       (brands.size === 0 || brands.has(r.brand)) &&
-      (price.size === 0 || [...price].some((b) => inBucket(r.price, b))));
+      (price.size === 0 || [...price].some((b) => inBucket(r.price, b))) &&
+      (!q || (r.name + " " + r.brand + " " + r.cat).toLowerCase().includes(q)));
     const active = cats.size + brands.size + price.size > 0;
 
     return (
       <div className="rc-cat">
         <div className="rc-cat__head">
           <div className="rc-cat__ey">Catalog</div>
-          <h1>{cats.size === 1 ? [...cats][0] : "All robots"}</h1>
+          <h1>{q ? ("Search: “" + search + "”") : (cats.size === 1 ? [...cats][0] : "All robots")}</h1>
         </div>
         <div className="rc-cat__filters">
           <div className="rc-cat__row">

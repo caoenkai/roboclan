@@ -676,7 +676,7 @@ function injectPcStyles() {
   .rc-pc__cat{position:absolute;top:12px;left:12px;z-index:2;font-family:var(--font-mono);font-size:10.5px;
     letter-spacing:.08em;text-transform:uppercase;color:var(--text-1);padding:4px 9px;
     border-radius:var(--r-pill);background:#12141b;border:1px solid rgba(255,255,255,.14);}
-  .rc-pc__add{position:absolute;top:10px;right:10px;}
+  .rc-pc__add{position:absolute;top:10px;right:10px;z-index:2;}
   .rc-pc__body{padding:16px 16px 16px;display:flex;flex-direction:column;flex:1;}
   .rc-pc__catlbl{font-family:var(--font-mono);font-size:10.5px;font-weight:600;letter-spacing:.09em;text-transform:uppercase;margin:0 0 5px;}
   .rc-pc__name{font-family:var(--font-display);font-weight:600;font-size:17px;letter-spacing:-.01em;color:var(--text-1);margin:0;}

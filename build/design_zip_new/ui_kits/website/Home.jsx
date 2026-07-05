@@ -408,6 +408,17 @@
   ];
   function Home({ onOpenCategory, onOpen, onAdd, compare, onNews }) {
     inject();
+    // 新闻条实时从 Supabase 读（后台加了立即显示，无需重新发布）；失败则用内置兜底
+    const [news, setNews] = React.useState(NEWS);
+    React.useEffect(() => {
+      try {
+        const sb = window._sb; if (!sb) return;
+        sb.from("news").select("title,body,url,sort").eq("active", true).order("sort", { ascending: true })
+          .then(({ data, error }) => {
+            if (!error && data && data.length) setNews(data.map((n) => ({ b: n.title, t: n.body || "", url: n.url })));
+          });
+      } catch (e) {}
+    }, []);
     const counts = {};
     DATA.robots.forEach((r) => { counts[r.cat] = (counts[r.cat] || 0) + 1; });
     // 跨品类轮流取（否则前几台全是扫地机），首页 Products 混排更丰富
@@ -440,12 +451,14 @@
           <Badge tone="live">LIVE</Badge>
           <div className="rc-news__vp">
             <div className="rc-news__track">
-              {NEWS.concat([NEWS[0]]).map((n, i) => (
-                <div className="rc-news__line" key={i}><b>{n.b}</b> {n.t}</div>
+              {news.concat([news[0]]).map((n, i) => (
+                <div className="rc-news__line" key={i} style={{ cursor: n && n.url ? "pointer" : "default" }}
+                  onClick={() => { if (n && n.url) window.open(n.url, "_blank", "noopener"); }}>
+                  <b>{n && n.b}</b> {n && n.t}
+                </div>
               ))}
             </div>
           </div>
-          <span className="rc-news__more" onClick={onNews}>All headlines ›</span>
         </div>
 
         <div className="rc-sec"><h2>Browse by category</h2></div>

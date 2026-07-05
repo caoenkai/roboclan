@@ -66,13 +66,22 @@
     );
   }
 
-  function Header({ nav = "Home", compareCount = 0, onHome, onCompare, onSearch, query = "", onNav, onCategory }) {
+  function Header({ nav = "Home", compareCount = 0, onHome, onCompare, onSearch, onSearchGo, query = "", onNav, onCategory }) {
     inject();
     const items = ["Home", "Robots", "Guides", "News"];
     const DATA = window.ROBOCLAN_DATA || {};
     const cats = DATA.categories || [];
     const glow = DATA.glow || {};
     const [catOpen, setCatOpen] = React.useState(false);
+    const catsRef = React.useRef(null);
+    // 点下拉外面任意处就关闭（之前用 onMouseLeave，移到菜单项时会误关，导致点不中）
+    React.useEffect(() => {
+      if (!catOpen) return;
+      const onDoc = (e) => { if (catsRef.current && !catsRef.current.contains(e.target)) setCatOpen(false); };
+      document.addEventListener("mousedown", onDoc);
+      return () => document.removeEventListener("mousedown", onDoc);
+    }, [catOpen]);
+    const go = () => { if (onSearchGo) onSearchGo(query); };
     return (
       <header className="rc-hd">
         <div className="rc-hd__in">
@@ -83,10 +92,12 @@
             {items.map((it) => <a key={it} className={it === nav ? "on" : ""} onClick={() => onNav ? onNav(it) : onHome()}>{it}</a>)}
           </nav>
           <div className="rc-hd__search">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="11" cy="11" r="7" /><path d="M21 21l-4-4" /></svg>
-            <input placeholder="Search robots, brands…" value={query} onChange={(e) => onSearch && onSearch(e.target.value)} />
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ cursor: "pointer" }} onClick={go}><circle cx="11" cy="11" r="7" /><path d="M21 21l-4-4" /></svg>
+            <input placeholder="Search robots, brands…" value={query}
+              onChange={(e) => onSearch && onSearch(e.target.value)}
+              onKeyDown={(e) => { if (e.key === "Enter") go(); }} />
           </div>
-          <div className="rc-hd__cats" onMouseLeave={() => setCatOpen(false)}>
+          <div className="rc-hd__cats" ref={catsRef}>
             <button className={"rc-hd__catsbtn" + (catOpen ? " on" : "")} onClick={() => setCatOpen((o) => !o)} aria-haspopup="true" aria-expanded={catOpen}>
               Categories <span className="rc-hd__chev">▾</span>
             </button>
