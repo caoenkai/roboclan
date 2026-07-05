@@ -666,8 +666,8 @@ function injectPcStyles() {
   .rc-pc{width:100%;overflow:hidden;display:flex;flex-direction:column;}
   .rc-pc__thumb{position:relative;height:220px;display:grid;place-items:center;
     border-bottom:1px solid var(--line);overflow:hidden;}
-  .rc-pc__thumb img{width:100%;height:100%;object-fit:contain;padding:16px;box-sizing:border-box;
-    display:block;}
+  .rc-pc__thumb img{position:relative;z-index:1;width:100%;height:100%;object-fit:contain;padding:14px;box-sizing:border-box;
+    display:block;border-radius:10px;}
   .rc-pc__glow{position:absolute;width:240px;height:240px;border-radius:50%;
     filter:blur(34px);opacity:.55;}
   .rc-pc__emoji{position:relative;font-size:104px;line-height:1;filter:drop-shadow(0 10px 26px rgba(0,0,0,.5));}
@@ -728,7 +728,7 @@ function ProductCard({
     onClick: onOpen
   }, rest), /*#__PURE__*/React.createElement("div", {
     className: "rc-pc__thumb"
-  }, /*#__PURE__*/React.createElement("span", {
+  }, image ? null : /*#__PURE__*/React.createElement("span", {
     className: "rc-pc__glow",
     style: {
       background: glow
