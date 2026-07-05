@@ -678,6 +678,7 @@ function injectPcStyles() {
     border-radius:var(--r-pill);background:#12141b;border:1px solid rgba(255,255,255,.14);}
   .rc-pc__add{position:absolute;top:10px;right:10px;}
   .rc-pc__body{padding:16px 16px 16px;display:flex;flex-direction:column;flex:1;}
+  .rc-pc__catlbl{font-family:var(--font-mono);font-size:10.5px;font-weight:600;letter-spacing:.09em;text-transform:uppercase;margin:0 0 5px;}
   .rc-pc__name{font-family:var(--font-display);font-weight:600;font-size:17px;letter-spacing:-.01em;color:var(--text-1);margin:0;}
   .rc-pc__brand{font-size:12.5px;color:var(--text-3);margin-top:2px;}
   .rc-pc__priced{display:flex;align-items:flex-end;justify-content:space-between;gap:10px;margin-top:12px;}
@@ -737,11 +738,6 @@ function ProductCard({
     },
     "aria-hidden": "true"
   }), /*#__PURE__*/React.createElement("span", {
-    className: "rc-pc__cat",
-    style: {
-      color: glow
-    }
-  }, category), /*#__PURE__*/React.createElement("span", {
     className: "rc-pc__add",
     onClick: e => {
       e.stopPropagation();
@@ -757,7 +753,10 @@ function ProductCard({
     className: "rc-pc__emoji"
   }, emoji)), /*#__PURE__*/React.createElement("div", {
     className: "rc-pc__body"
-  }, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("h3", {
+  }, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
+    className: "rc-pc__catlbl",
+    style: { color: glow }
+  }, category), /*#__PURE__*/React.createElement("h3", {
     className: "rc-pc__name"
   }, name), /*#__PURE__*/React.createElement("div", {
     className: "rc-pc__brand"

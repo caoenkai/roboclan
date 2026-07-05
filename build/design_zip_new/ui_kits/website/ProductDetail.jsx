@@ -90,7 +90,6 @@
         <div className="rc-dt__top">
           <GlassCard padded={false} className="rc-dt__hero">
             <span className="rc-dt__heroglow" style={{ background: glow }} />
-            <span className="rc-dt__catpill" style={{ color: glow }}>{r.cat}</span>
             {r.image
               ? <img className="rc-dt__img" src={r.image} alt={r.name} loading="lazy" />
               : <span className="rc-dt__emoji">{r.emoji}</span>}
