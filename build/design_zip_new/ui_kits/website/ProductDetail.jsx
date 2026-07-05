@@ -32,10 +32,16 @@
     .rc-dt__back:hover{color:var(--text-1);}
     .rc-dt__top{display:grid;grid-template-columns:300px 1fr;gap:28px;align-items:stretch;}
     .rc-dt__hero{position:relative;display:grid;place-items:center;min-height:280px;overflow:hidden;}
+    /* 有图时整块 hero 铺成白底（和卡片一致），产品居中充满 */
+    .rc-dt__hero:has(.rc-dt__img){background:#ffffff;}
     .rc-dt__heroglow{position:absolute;width:280px;height:280px;border-radius:50%;filter:blur(50px);opacity:.5;}
     .rc-dt__emoji{position:relative;font-size:120px;filter:drop-shadow(0 16px 40px rgba(0,0,0,.6));}
-    .rc-dt__img{position:relative;z-index:1;width:86%;max-height:250px;object-fit:contain;background:#fff;padding:18px;box-sizing:border-box;border-radius:16px;box-shadow:0 16px 40px rgba(0,0,0,.45);}
+    .rc-dt__img{position:relative;z-index:1;width:100%;height:100%;max-height:320px;object-fit:contain;padding:26px;box-sizing:border-box;}
     .rc-dt__hero:has(.rc-dt__img) .rc-dt__heroglow{display:none;}
+    /* 品类 tag：实心深底 + 品类色文字，白底/深底上都清晰 */
+    .rc-dt__catpill{position:absolute;top:14px;left:14px;z-index:2;font-family:var(--font-mono);font-size:11px;
+      letter-spacing:.08em;text-transform:uppercase;padding:5px 11px;border-radius:var(--r-pill);
+      background:#12141b;border:1px solid rgba(255,255,255,.12);}
     .rc-dt__catpill{position:absolute;top:14px;left:14px;}
     .rc-dt__info{display:flex;flex-direction:column;justify-content:center;}
     .rc-dt__brand{font-family:var(--font-mono);font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--text-3);}
@@ -84,7 +90,7 @@
         <div className="rc-dt__top">
           <GlassCard padded={false} className="rc-dt__hero">
             <span className="rc-dt__heroglow" style={{ background: glow }} />
-            <span className="rc-dt__catpill"><Badge tone="neutral">{r.cat}</Badge></span>
+            <span className="rc-dt__catpill" style={{ color: glow }}>{r.cat}</span>
             {r.image
               ? <img className="rc-dt__img" src={r.image} alt={r.name} loading="lazy" />
               : <span className="rc-dt__emoji">{r.emoji}</span>}

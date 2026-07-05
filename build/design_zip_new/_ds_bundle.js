@@ -673,9 +673,9 @@ function injectPcStyles() {
   .rc-pc__glow{position:absolute;width:240px;height:240px;border-radius:50%;
     filter:blur(34px);opacity:.55;}
   .rc-pc__emoji{position:relative;font-size:104px;line-height:1;filter:drop-shadow(0 10px 26px rgba(0,0,0,.5));}
-  .rc-pc__cat{position:absolute;top:12px;left:12px;font-family:var(--font-mono);font-size:10.5px;
+  .rc-pc__cat{position:absolute;top:12px;left:12px;z-index:2;font-family:var(--font-mono);font-size:10.5px;
     letter-spacing:.08em;text-transform:uppercase;color:var(--text-1);padding:4px 9px;
-    border-radius:var(--r-pill);background:rgba(8,9,12,.55);border:1px solid var(--line-2);backdrop-filter:blur(6px);}
+    border-radius:var(--r-pill);background:#12141b;border:1px solid rgba(255,255,255,.14);}
   .rc-pc__add{position:absolute;top:10px;right:10px;}
   .rc-pc__body{padding:16px 16px 16px;display:flex;flex-direction:column;flex:1;}
   .rc-pc__name{font-family:var(--font-display);font-weight:600;font-size:17px;letter-spacing:-.01em;color:var(--text-1);margin:0;}
