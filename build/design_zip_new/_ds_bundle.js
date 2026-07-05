@@ -629,12 +629,14 @@ function PriceRow({
   price,
   best = false,
   ctaLabel = "View deal",
+  url,
   onView,
   className = "",
   ...rest
 }) {
   injectPrStyles();
   const cls = ["rc-prow", best ? "is-best" : "", className].filter(Boolean).join(" ");
+  const handle = () => { try { onView && onView(); } catch (e) {} if (url) window.open(url, "_blank", "noopener"); };
   return /*#__PURE__*/React.createElement("div", _extends({
     className: cls
   }, rest), /*#__PURE__*/React.createElement("div", {
@@ -648,7 +650,7 @@ function PriceRow({
   }, price), /*#__PURE__*/React.createElement(__ds_scope.Button, {
     variant: best ? "primary" : "secondary",
     size: "sm",
-    onClick: onView
+    onClick: handle
   }, ctaLabel));
 }
 Object.assign(__ds_scope, { PriceRow });

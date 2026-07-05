@@ -83,6 +83,9 @@
     const r = robot; const glow = DATA.glow[r.cat]; const axes = r.axes || DATA.axes[r.cat];
     const added = compare.has(r.id);
     const isQuote = /quote|contact/i.test(r.price || "");
+    // 顶部 View deal 链到最优（或第一个有链接的）商家
+    const _pr = (r.prices || []).map((row) => Array.isArray(row) ? { best: row[2], url: row[3] } : { best: row.best, url: row.url });
+    const bestUrl = (_pr.find((x) => x.best && x.url) || _pr.find((x) => x.url) || {}).url || null;
     return (
       <div className="rc-dt">
         <span className="rc-dt__back" onClick={onBack}>‹ Back to catalog</span>
@@ -106,7 +109,7 @@
                 <Button variant={added ? "secondary" : "primary"} onClick={() => onAdd(r.id)}>{added ? "✓ In compare" : "＋ Add to compare"}</Button>
                 {isQuote
                   ? <Button variant="primary" onClick={() => onQuote && onQuote(r.name)}>Contact for quote</Button>
-                  : <Button variant="primary" onClick={() => { try { window.rcLog && window.rcLog(r.name, r.cat, "outbound"); } catch (e) {} }}>View deal</Button>}
+                  : <Button variant="primary" onClick={() => { try { window.rcLog && window.rcLog(r.name, r.cat, "outbound"); } catch (e) {} if (bestUrl) window.open(bestUrl, "_blank", "noopener"); }}>View deal</Button>}
               </div>
             </div>
           </div>
@@ -150,10 +153,20 @@
               <React.Fragment>
                 <p className="rc-dt__seclbl">Compare prices</p>
                 <div className="rc-dt__prices">
-                  {r.prices.map(([ch, p, best], i) => (
-                    <PriceRow key={i} channel={ch} price={p} best={best} ctaLabel={p.includes("/mo") ? "View plan" : "View deal"} />
-                  ))}
+                  {(r.prices || []).map((row, i) => {
+                    // 兼容旧元组 [商家,价格,best,(url)] 和新对象 {retailer,price,url,best}
+                    const pr = Array.isArray(row)
+                      ? { ch: row[0], p: row[1], best: row[2], url: row[3] }
+                      : { ch: row.retailer || row.channel || row.ch, p: row.price || row.p, best: row.best, url: row.url };
+                    return (
+                      <PriceRow key={i} channel={pr.ch} price={pr.p} best={pr.best} url={pr.url}
+                        ctaLabel={pr.url ? "View deal" : (String(pr.p).includes("/mo") ? "View plan" : "View deal")}
+                        onView={() => { try { window.rcLog && window.rcLog(r.name, r.cat, "buy"); } catch (e) {} }} />
+                    );
+                  })}
                 </div>
+                {r.prices && r.prices.length > 0 &&
+                  <p className="rc-dt__note">Prices update periodically and may differ at checkout. We may earn a commission from links above.</p>}
               </React.Fragment>
             )}
           </GlassCard>
