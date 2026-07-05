@@ -1,0 +1,29 @@
+/* Roboclan spacing & layout — 4px base grid. */
+:root {
+  --sp-0: 0; /* @kind spacing */
+  --sp-1: 4px;
+  --sp-2: 8px;
+  --sp-3: 12px;
+  --sp-4: 16px;
+  --sp-5: 20px;
+  --sp-6: 24px;
+  --sp-7: 32px;
+  --sp-8: 40px;
+  --sp-9: 48px;
+  --sp-10: 64px;
+  --sp-12: 80px;
+  --sp-16: 120px;
+
+  /* Corner radii — soft hardware feel, never pill-everything */
+  --r-xs: 6px;
+  --r-sm: 10px;
+  --r-md: 14px;
+  --r-lg: 18px;     /* cards */
+  --r-xl: 24px;     /* modals / hero panels */
+  --r-pill: 999px;
+
+  /* Layout */
+  --container: 1180px;
+  --container-narrow: 760px;
+  --header-h: 64px;
+}
