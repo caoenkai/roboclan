@@ -1,0 +1,36 @@
+name: Publish site
+
+# 手动触发：仓库 → Actions → "Publish site" → Run workflow。
+# 作用：从 Supabase 拉最新产品数据，重建 roboclan-site/index.html 并提交，Vercel 随即上线。
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Build site from Supabase
+        run: python build/assemble.py --from-supabase --out roboclan-site/index.html
+
+      - name: Commit & push if changed
+        run: |
+          git config user.name "roboclan-bot"
+          git config user.email "bot@roboclan.ai"
+          git add roboclan-site/index.html
+          if git diff --staged --quiet; then
+            echo "No changes to publish."
+          else
+            git commit -m "Publish: rebuild site from Supabase"
+            git push
+          fi
