@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" fill="none" role="img" aria-label="Roboclan">
+  <defs>
+    <linearGradient id="or" x1="8" y1="8" x2="40" y2="40" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#5BE2FF"></stop><stop offset="0.52" stop-color="#6E8BFF"></stop><stop offset="1" stop-color="#A66BFF"></stop>
+    </linearGradient>
+    <radialGradient id="orn" cx="0.4" cy="0.38" r="0.7">
+      <stop offset="0" stop-color="#EAF2FF"></stop><stop offset="0.5" stop-color="#8FA8FF"></stop><stop offset="1" stop-color="#6E8BFF"></stop>
+    </radialGradient>
+    <filter id="org" x="-40%" y="-40%" width="180%" height="180%"><feGaussianBlur stdDeviation="0.9" result="b"></feGaussianBlur><feMerge><feMergeNode in="b"></feMergeNode><feMergeNode in="SourceGraphic"></feMergeNode></feMerge></filter>
+  </defs>
+  <ellipse cx="24" cy="24" rx="18" ry="8.4" transform="rotate(-28 24 24)" fill="none" stroke="url(#or)" stroke-width="1.5" opacity="0.45"></ellipse>
+  <path d="M18 35 V13 H26 A6 6 0 0 1 26 25 H18 M23 25 L31 36" fill="none" stroke="url(#or)" stroke-width="2.9" stroke-linecap="round" stroke-linejoin="round" filter="url(#org)"></path>
+  <circle cx="36.4" cy="13.6" r="3" fill="url(#orn)" filter="url(#org)"></circle>
+  <circle cx="35.5" cy="12.7" r="0.9" fill="#fff" fill-opacity="0.9"></circle>
+</svg>
