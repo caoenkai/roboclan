@@ -359,6 +359,14 @@ FOOT_CSS = """
 .rc-page__back:hover{color:var(--text-1);}
 .rc-page__title{font-family:var(--font-display);font-weight:600;font-size:38px;letter-spacing:-.025em;color:var(--text-1);margin:0 0 14px;}
 .rc-page__lede{font-size:17px;line-height:1.65;color:var(--text-2);margin:0 0 40px;}
+.rc-news2{display:flex;flex-direction:column;gap:12px;}
+.rc-news2__item{display:block;padding:18px 20px;border:1px solid var(--line);border-radius:14px;background:var(--surface-1);text-decoration:none;position:relative;}
+.rc-news2__item.is-link{cursor:pointer;transition:border-color .15s,background .15s;}
+.rc-news2__item.is-link:hover{border-color:rgba(110,139,255,.5);background:var(--surface-2);}
+.rc-news2__h{font-family:var(--font-display);font-weight:600;font-size:17px;color:var(--text-1);}
+.rc-news2__b{font-size:14.5px;color:var(--text-2);margin-top:4px;line-height:1.5;}
+.rc-news2__arw{position:absolute;top:18px;right:18px;color:var(--accent-ink);font-size:15px;}
+.rc-news2__empty{color:var(--text-3);padding:30px 0;}
 .rc-page__sec{margin-bottom:30px;}
 .rc-page__sec h2{font-family:var(--font-display);font-weight:600;font-size:21px;letter-spacing:-.01em;color:var(--text-1);margin:0 0 10px;}
 .rc-page__sec p{font-size:15px;line-height:1.72;color:var(--text-3);margin:0 0 12px;}
@@ -601,6 +609,31 @@ function CompareView({ids, onOpen, onBack, onRemove}){
         React.createElement("tbody",null,rows))));
 }
 
+// 独立新闻页：顶栏 News 打开，实时从 Supabase 读全部头条（可点链接）
+function NewsView({onBack}){
+  const [items,setItems]=React.useState(null);
+  React.useEffect(()=>{
+    try{ const sb=window._sb; if(!sb){setItems([]);return;}
+      sb.from("news").select("title,body,url,sort").eq("active",true).order("sort",{ascending:true})
+        .then(function(res){ setItems(res.error?[]:(res.data||[])); });
+    }catch(e){ setItems([]); }
+  },[]);
+  return React.createElement("div",{className:"rc-page"},
+    React.createElement("a",{className:"rc-page__back",onClick:onBack},"‹ Back"),
+    React.createElement("h1",{className:"rc-page__title"},"Robot News"),
+    React.createElement("p",{className:"rc-page__lede"},"The latest launches and updates across every robot category."),
+    items===null ? React.createElement("p",{className:"rc-news2__empty"},"Loading…")
+    : items.length===0 ? React.createElement("p",{className:"rc-news2__empty"},"No headlines yet.")
+    : React.createElement("div",{className:"rc-news2"}, items.map(function(n,i){
+        var props={key:i,className:"rc-news2__item"+(n.url?" is-link":"")};
+        if(n.url){props.href=n.url;props.target="_blank";props.rel="noopener";}
+        return React.createElement(n.url?"a":"div",props,
+          React.createElement("div",{className:"rc-news2__h"},n.title),
+          n.body?React.createElement("div",{className:"rc-news2__b"},n.body):null,
+          n.url?React.createElement("span",{className:"rc-news2__arw"},"↗"):null);
+      })));
+}
+
 function App(){
   const [view,setView]=React.useState({name:"home"});
   const [compare,setCompare]=React.useState(new Set());
@@ -628,21 +661,23 @@ function App(){
   });
   const goHome=()=>nav({name:"home"});
   const openCategory=(cat)=>nav({name:"catalog",cat});
+  const onSearchGo=(q)=>{ if(q&&q.trim()) nav({name:"catalog",cat:null,search:q.trim()}); };
   const open=(id)=>{const r=DATA.byId[id];try{window.rcLog&&window.rcLog(r&&r.name,r&&r.cat,"view");}catch(e){}nav({name:"detail",id});};
   const openPage=(key)=>nav({name:"page",key});
   const onCompare=()=>{if(compare.size===0){alert("Add robots with the ＋ on any card (up to 4, same category) to compare.");return;}nav({name:"compare"});};
   const onNews=()=>alert("Robot News (demo) — curated headlines refresh periodically.");
-  const onNav=(it)=>{if(it==="Home")goHome();else if(it==="Robots")openCategory(null);else if(it==="News")onNews();else alert(it+" — coming soon.");};
+  const onNav=(it)=>{if(it==="Home")goHome();else if(it==="Robots")openCategory(null);else if(it==="News")nav({name:"news"});else alert(it+" — coming soon.");};
   const Header=window.RCHeader;
   return (
     <div className="rc-app">
-      <Header nav={view.name==="home"?"Home":"Robots"} compareCount={compare.size} onHome={goHome} onNav={onNav} onCompare={onCompare} onSearch={setQuery} query={query} onCategory={openCategory} />
+      <Header nav={view.name==="home"?"Home":"Robots"} compareCount={compare.size} onHome={goHome} onNav={onNav} onCompare={onCompare} onSearch={setQuery} onSearchGo={onSearchGo} query={query} onCategory={openCategory} />
       {view.name==="home" && <window.RCHome onOpenCategory={openCategory} onOpen={open} onAdd={onAdd} compare={compare} onNews={onNews} />}
-      {view.name==="catalog" && <window.RCCatalog initialCat={view.cat} onOpen={open} onAdd={onAdd} compare={compare} />}
+      {view.name==="catalog" && <window.RCCatalog initialCat={view.cat} search={view.search} onOpen={open} onAdd={onAdd} compare={compare} />}
       {view.name==="detail" && <window.RCDetail robot={DATA.byId[view.id]} onBack={()=>openCategory(DATA.byId[view.id].cat)} onAdd={onAdd} compare={compare} onQuote={openQuote} />}
       {lead && <LeadModal product={lead} onClose={()=>setLead(null)} />}
       {view.name==="page" && <PageView page={PAGES[view.key]} onHome={goHome} />}
       {view.name==="compare" && <CompareView ids={[...compare]} onOpen={open} onBack={goHome} onRemove={onAdd} />}
+      {view.name==="news" && <NewsView onBack={goHome} />}
       <footer className="rc-ft">
         <div className="rc-ft__cols">
           <div className="rc-ft__col">
