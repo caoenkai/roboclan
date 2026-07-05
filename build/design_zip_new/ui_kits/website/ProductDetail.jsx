@@ -34,7 +34,7 @@
     .rc-dt__hero{position:relative;display:grid;place-items:center;min-height:280px;overflow:hidden;}
     .rc-dt__heroglow{position:absolute;width:280px;height:280px;border-radius:50%;filter:blur(50px);opacity:.5;}
     .rc-dt__emoji{position:relative;font-size:120px;filter:drop-shadow(0 16px 40px rgba(0,0,0,.6));}
-    .rc-dt__img{position:relative;z-index:1;max-width:90%;max-height:250px;object-fit:contain;border-radius:12px;filter:drop-shadow(0 16px 40px rgba(0,0,0,.55));}
+    .rc-dt__img{position:relative;z-index:1;width:86%;max-height:250px;object-fit:contain;background:#fff;padding:18px;box-sizing:border-box;border-radius:16px;box-shadow:0 16px 40px rgba(0,0,0,.45);}
     .rc-dt__hero:has(.rc-dt__img) .rc-dt__heroglow{display:none;}
     .rc-dt__catpill{position:absolute;top:14px;left:14px;}
     .rc-dt__info{display:flex;flex-direction:column;justify-content:center;}

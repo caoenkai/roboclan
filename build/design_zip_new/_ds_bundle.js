@@ -666,8 +666,10 @@ function injectPcStyles() {
   .rc-pc{width:100%;overflow:hidden;display:flex;flex-direction:column;}
   .rc-pc__thumb{position:relative;height:220px;display:grid;place-items:center;
     border-bottom:1px solid var(--line);overflow:hidden;}
-  .rc-pc__thumb img{position:relative;z-index:1;width:100%;height:100%;object-fit:contain;padding:14px;box-sizing:border-box;
-    display:block;border-radius:10px;}
+  /* 有图的卡片：图片区统一白底（电商标准），抠图后的产品干净地落在白片上 */
+  .rc-pc__thumb:has(img){background:#ffffff;border-bottom-color:#e6e8ee;}
+  .rc-pc__thumb img{position:relative;z-index:1;width:100%;height:100%;object-fit:contain;padding:16px;box-sizing:border-box;
+    display:block;}
   .rc-pc__glow{position:absolute;width:240px;height:240px;border-radius:50%;
     filter:blur(34px);opacity:.55;}
   .rc-pc__emoji{position:relative;font-size:104px;line-height:1;filter:drop-shadow(0 10px 26px rgba(0,0,0,.5));}
