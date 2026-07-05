@@ -105,6 +105,10 @@ textarea.pinput{height:auto;padding:10px 12px;line-height:1.5;resize:vertical;}
 .ederr{color:var(--danger);font-size:13px;margin-top:12px;min-height:16px;}
 .pubbar{display:flex;align-items:center;gap:16px;margin-top:18px;padding:16px 18px;border:1px solid rgba(110,139,255,.32);border-radius:14px;background:linear-gradient(100deg,rgba(110,139,255,.12),rgba(166,107,255,.08));}
 .pubbar>div:first-child{flex:1;}
+.prow-edit{display:flex;gap:8px;align-items:center;margin-bottom:8px;flex-wrap:wrap;}
+.prow-edit .pr-ch{width:130px;flex-shrink:0;} .prow-edit .pr-p{width:110px;flex-shrink:0;} .prow-edit .pr-url{flex:1;min-width:150px;}
+.prow-edit .ck{margin:0;white-space:nowrap;} .prow-edit .pr-del{background:none;border:none;color:var(--text-3);cursor:pointer;font-size:16px;}
+.prow-edit .pr-del:hover{color:var(--danger);}
 @media(max-width:560px){.grid2{grid-template-columns:1fr}}
 </style>
 </head>
@@ -281,6 +285,9 @@ textarea.pinput{height:auto;padding:10px 12px;line-height:1.5;resize:vertical;}
       <input id="edTags" class="pinput w">
       <label class="fl">Verdict</label>
       <textarea id="edVerdict" class="pinput w" rows="3"></textarea>
+      <label class="fl">Prices <span class="muted" style="padding:0">(retailer · price · link — shown in the compare table)</span></label>
+      <div id="edPrices"></div>
+      <button class="btn-sm ghost" id="edAddPrice" type="button" style="margin-top:8px">＋ Add retailer</button>
       <label class="ck"><input type="checkbox" id="edFeatured"> Featured on home</label>
       <details class="adv"><summary>Advanced — full record (JSON)</summary>
         <div class="muted" style="padding:6px 0">Specs, radar scores, info, prices live here. Edit carefully — must stay valid JSON.</div>
@@ -451,6 +458,37 @@ $('pNew').addEventListener('click',()=>openEditor(null));
 function renderThumb(){
   $('edThumb').innerHTML = edData.image ? `<img src="${esc(edData.image)}" alt="">` : esc(edData.emoji||'🤖');
 }
+// 价格多商家行编辑
+function normPrices(arr){
+  return (arr||[]).map(row=> Array.isArray(row)
+    ? { retailer:row[0]||'', price:row[1]||'', best:!!row[2], url:row[3]||'' }
+    : { retailer:row.retailer||row.channel||row.ch||'', price:row.price||row.p||'', best:!!row.best, url:row.url||'' });
+}
+function priceRowEl(p){
+  const d=document.createElement('div'); d.className='prow-edit';
+  d.innerHTML=`<input class="pinput pr-ch" placeholder="Retailer" value="${esc(p.retailer)}">
+    <input class="pinput pr-p" placeholder="$1,299.99" value="${esc(p.price)}">
+    <input class="pinput pr-url" placeholder="https://… affiliate link" value="${esc(p.url)}">
+    <label class="ck"><input type="checkbox" class="pr-best" ${p.best?'checked':''}> Best</label>
+    <button class="pr-del" type="button" title="Remove">✕</button>`;
+  d.querySelector('.pr-del').addEventListener('click',()=>{ d.remove(); });
+  return d;
+}
+function renderPrices(arr){
+  const box=$('edPrices'); box.innerHTML='';
+  normPrices(arr).forEach(p=>box.appendChild(priceRowEl(p)));
+}
+function collectPrices(){
+  return [...$('edPrices').querySelectorAll('.prow-edit')].map(d=>({
+    retailer:d.querySelector('.pr-ch').value.trim(),
+    price:d.querySelector('.pr-p').value.trim(),
+    url:d.querySelector('.pr-url').value.trim()||null,
+    best:d.querySelector('.pr-best').checked
+  })).filter(p=>p.retailer||p.price);
+}
+document.getElementById('edAddPrice').addEventListener('click',()=>{
+  $('edPrices').appendChild(priceRowEl({retailer:'',price:'',url:'',best:false}));
+});
 function openEditor(id){
   edIsNew = !id; edId = id;
   if(edIsNew){
@@ -465,6 +503,7 @@ function openEditor(id){
   $('edCat').value=edData.cat||CATS[0]; $('edPrice').value=edData.price||'';
   $('edTags').value=(edData.tags||[]).join(', '); $('edVerdict').value=edData.verdict||'';
   $('edFeatured').checked=!!edData.featured; $('edErr').textContent='';
+  renderPrices(edData.prices);
   $('edJson').value=JSON.stringify(edData,null,2); renderThumb();
   $('editOv').classList.remove('hide');
 }
@@ -478,6 +517,7 @@ function syncFromFields(){
   obj.name=$('edName').value; obj.brand=$('edBrand').value; obj.cat=$('edCat').value;
   obj.price=$('edPrice').value; obj.verdict=$('edVerdict').value; obj.featured=$('edFeatured').checked;
   obj.tags=$('edTags').value.split(',').map(s=>s.trim()).filter(Boolean);
+  obj.prices=collectPrices();
   if(edData.image) obj.image=edData.image; else delete obj.image;
   edData=obj; $('edJson').value=JSON.stringify(obj,null,2);
 }
@@ -535,6 +575,7 @@ $('edSave').addEventListener('click',async ()=>{
   obj.name=$('edName').value.trim(); obj.brand=$('edBrand').value.trim(); obj.cat=$('edCat').value;
   obj.price=$('edPrice').value.trim(); obj.verdict=$('edVerdict').value; obj.featured=$('edFeatured').checked;
   obj.tags=$('edTags').value.split(',').map(s=>s.trim()).filter(Boolean);
+  obj.prices=collectPrices();
   if(edData.image) obj.image=edData.image; else delete obj.image;
   if(!obj.name){ $('edErr').textContent='Name is required.'; return; }
   if(!obj.id){ obj.id=obj.name.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,''); }
