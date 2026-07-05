@@ -225,7 +225,8 @@ textarea.pinput{height:auto;padding:10px 12px;line-height:1.5;resize:vertical;}
             <label class="btn-sm" style="cursor:pointer">Upload…<input id="edFile" type="file" accept="image/*" class="hide"></label>
             <button class="btn-sm ghost" id="edImgClear" type="button">Remove</button>
           </div>
-          <div class="muted" id="edImgHint" style="padding:6px 0 0">Square, white/transparent background works best. Auto-compressed on upload.</div>
+          <label class="ck" style="margin-top:8px;font-size:13px"><input type="checkbox" id="edRmBg" checked> Auto-remove background (cut out the product)</label>
+          <div class="muted" id="edImgHint" style="padding:6px 0 0">Upload any photo — even a dark background. It's cut out and compressed automatically.</div>
         </div>
       </div>
       <div class="grid2">
@@ -442,9 +443,19 @@ $('edFeatured').addEventListener('change',syncFromFields);
 // image upload → Supabase Storage
 $('edFile').addEventListener('change',async e=>{
   const file=e.target.files[0]; if(!file) return;
-  $('edImgHint').textContent='Uploading…';
   try{
-    const blob=await compressImage(file);
+    let src=file;
+    if($('edRmBg').checked){
+      $('edImgHint').textContent='Removing background… (first time loads a model, ~15–30s)';
+      try{
+        const mod=await import('https://esm.sh/@imgly/background-removal@1.5.5');
+        const removeBackground=mod.removeBackground||(mod.default&&mod.default.removeBackground);
+        if(!removeBackground) throw new Error('library entry not found');
+        src=await removeBackground(file);   // Blob PNG，透明背景
+      }catch(bgErr){ console.warn('bg removal failed',bgErr); $('edImgHint').textContent='Auto-cutout unavailable — using original image…'; src=file; }
+    }
+    $('edImgHint').textContent='Compressing & uploading…';
+    const blob=await compressImage(src);
     const slug=(($('edName').value||edData.id||'product').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,''))||'product';
     const path=slug+'-'+Date.now()+'.webp';
     const { error }=await sb.storage.from('product-images').upload(path,blob,{contentType:'image/webp',upsert:true});
