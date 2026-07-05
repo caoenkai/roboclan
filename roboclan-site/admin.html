@@ -142,6 +142,7 @@ textarea.pinput{height:auto;padding:10px 12px;line-height:1.5;resize:vertical;}
       <button class="tab on" data-tab="leads">Leads</button>
       <button class="tab" data-tab="traffic">Traffic</button>
       <button class="tab" data-tab="products">Products</button>
+      <button class="tab" data-tab="news">News</button>
     </div>
 
     <!-- LEADS TAB -->
@@ -207,6 +208,47 @@ textarea.pinput{height:auto;padding:10px 12px;line-height:1.5;resize:vertical;}
           <div class="muted" style="padding:2px 0 0">Edits are saved to the database. Click Publish, then Run workflow, to rebuild the public site (~1 min).</div>
         </div>
         <a class="btn" style="width:auto;height:40px;padding:0 22px;display:inline-flex;align-items:center;text-decoration:none" id="pPublish" target="_blank" rel="noopener">Publish ↗</a>
+      </div>
+    </div>
+
+    <!-- NEWS TAB -->
+    <div id="tab-news" class="hide">
+      <div class="pbar">
+        <span class="muted" style="padding:0">Headlines shown in the live news ticker. Changes appear on the site instantly — no publish needed.</span>
+        <button class="btn-sm" id="nNew" style="margin-left:auto">＋ New headline</button>
+      </div>
+      <div class="panel">
+        <div class="tbl-scroll"><table id="newsTbl">
+          <thead><tr><th style="width:40px">#</th><th>Headline</th><th>Detail</th><th>Link</th><th>Live</th><th></th></tr></thead>
+          <tbody><tr><td colspan="6" class="empty">Loading…</td></tr></tbody>
+        </table></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- NEWS EDITOR MODAL -->
+<div id="newsOv" class="ov hide">
+  <div class="modal" style="max-width:520px">
+    <div class="modal-hd"><h3 id="nTitle">Edit headline</h3><button class="x" id="nClose">✕</button></div>
+    <div class="modal-bd">
+      <label class="fl">Headline (bold part)</label>
+      <input id="nHead" class="pinput w" placeholder="e.g. Dreame X60 Ultra">
+      <label class="fl">Detail (rest of the sentence)</label>
+      <input id="nBody" class="pinput w" placeholder="e.g. launches in the U.S. with 35,000 Pa suction">
+      <label class="fl">Link URL <span class="muted" style="padding:0">(optional — clicking the headline opens it)</span></label>
+      <input id="nUrl" class="pinput w" placeholder="https://…">
+      <div class="grid2" style="margin-top:14px">
+        <div><label class="fl">Order</label><input id="nSort" class="pinput w" type="number" value="0"></div>
+        <label class="ck" style="margin-top:22px"><input type="checkbox" id="nActive" checked> Show on site</label>
+      </div>
+      <div class="ederr" id="nErr"></div>
+    </div>
+    <div class="modal-ft">
+      <button class="btn-sm danger" id="nDelete" type="button">Delete</button>
+      <div style="margin-left:auto;display:flex;gap:8px">
+        <button class="btn-sm ghost" id="nCancel" type="button">Cancel</button>
+        <button class="btn" style="width:auto;height:38px;padding:0 22px" id="nSave" type="button">Save</button>
       </div>
     </div>
   </div>
@@ -293,7 +335,9 @@ document.querySelectorAll('.tab').forEach(t=>t.addEventListener('click',()=>{
   $('tab-leads').classList.toggle('hide', k!=='leads');
   $('tab-traffic').classList.toggle('hide', k!=='traffic');
   $('tab-products').classList.toggle('hide', k!=='products');
+  $('tab-news').classList.toggle('hide', k!=='news');
   if(k==='products' && !prodLoaded) loadProducts();
+  if(k==='news' && !newsLoaded) loadNews();
 }));
 
 // ---------- leads ----------
@@ -513,6 +557,58 @@ $('edDelete').addEventListener('click',async ()=>{
   const { error }=await sb.from('products').delete().eq('id',edId);
   if(error){ $('edErr').textContent='Delete failed: '+error.message; return; }
   closeEditor(); await loadProducts();
+});
+
+// ---------- news ----------
+let newsLoaded=false, newsRows=[], nId=null, nIsNew=false;
+async function loadNews(){
+  newsLoaded=true;
+  const { data, error } = await sb.from('news').select('*').order('sort',{ascending:true});
+  const tb=$('newsTbl').querySelector('tbody');
+  if(error){ tb.innerHTML='<tr><td colspan="6" class="empty">Could not load news — did you run the news table SQL? ('+esc(error.message)+')</td></tr>'; return; }
+  newsRows=data||[];
+  if(!newsRows.length){ tb.innerHTML='<tr><td colspan="6" class="empty">No headlines yet. Add one.</td></tr>'; return; }
+  tb.innerHTML=newsRows.map(r=>`<tr>
+    <td class="mono" style="color:var(--text-3)">${r.sort}</td>
+    <td style="font-weight:600">${esc(r.title)}</td>
+    <td class="msg">${esc(r.body)}</td>
+    <td>${r.url?`<a class="em" href="${esc(r.url)}" target="_blank" rel="noopener">link ↗</a>`:'<span class="pill">—</span>'}</td>
+    <td>${r.active?'<span class="pill" style="color:var(--success);border-color:var(--success)">live</span>':'<span class="pill">hidden</span>'}</td>
+    <td><span class="edit-lnk" data-id="${r.id}">Edit ›</span></td>
+  </tr>`).join('');
+  tb.querySelectorAll('.edit-lnk').forEach(el=>el.addEventListener('click',()=>openNews(el.dataset.id)));
+}
+$('nNew').addEventListener('click',()=>openNews(null));
+function openNews(id){
+  nIsNew=!id; nId=id;
+  const r = id ? newsRows.find(x=>x.id===id) : {title:'',body:'',url:'',active:true,sort:(newsRows.reduce((m,x)=>Math.max(m,x.sort||0),0)+1)};
+  $('nTitle').textContent = nIsNew?'New headline':'Edit headline';
+  $('nDelete').style.visibility = nIsNew?'hidden':'visible';
+  $('nHead').value=r.title||''; $('nBody').value=r.body||''; $('nUrl').value=r.url||'';
+  $('nSort').value=r.sort||0; $('nActive').checked=r.active!==false; $('nErr').textContent='';
+  $('newsOv').classList.remove('hide');
+}
+function closeNews(){ $('newsOv').classList.add('hide'); }
+$('nClose').addEventListener('click',closeNews); $('nCancel').addEventListener('click',closeNews);
+$('newsOv').addEventListener('click',e=>{ if(e.target.id==='newsOv') closeNews(); });
+$('nSave').addEventListener('click',async ()=>{
+  $('nErr').textContent='';
+  const rec={ title:$('nHead').value.trim(), body:$('nBody').value.trim()||null, url:$('nUrl').value.trim()||null,
+    sort:parseInt($('nSort').value)||0, active:$('nActive').checked };
+  if(!rec.title){ $('nErr').textContent='Headline is required.'; return; }
+  $('nSave').disabled=true; $('nSave').textContent='Saving…';
+  try{
+    if(nIsNew){ const {error}=await sb.from('news').insert(rec); if(error) throw error; }
+    else { const {error}=await sb.from('news').update(rec).eq('id',nId); if(error) throw error; }
+    closeNews(); await loadNews();
+  }catch(err){ $('nErr').textContent='Save failed: '+(err.message||err); }
+  $('nSave').disabled=false; $('nSave').textContent='Save';
+});
+$('nDelete').addEventListener('click',async ()=>{
+  if(!confirm('Delete this headline?')) return;
+  const {error}=await sb.from('news').delete().eq('id',nId);
+  if(error){ $('nErr').textContent='Delete failed: '+error.message; return; }
+  closeNews(); await loadNews();
 });
 
 sb.auth.onAuthStateChange((_e,session)=>{ if(!session) showLogin(); });
