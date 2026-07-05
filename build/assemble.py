@@ -482,7 +482,7 @@ const PAGES = {
   },
   affiliate: {
     title: "Affiliate Disclosure",
-    lede: "Roboclan is reader-supported. When you buy through links on our site, we may earn a commission — at no extra cost to you.",
+    lede: "Roboclan is free to use. When you buy through links on our site, we may earn a commission — at no extra cost to you.",
     sections: [
       ["Our affiliate relationships", ["Roboclan is funded in part by affiliate partnerships. As an Amazon Associate, Roboclan earns from qualifying purchases. Where we link to a retailer or manufacturer through an affiliate program, we may earn a commission if you make a purchase. As we are accepted into additional retailer and manufacturer programs, we will add any program-specific disclosures they require here."]],
       ["No extra cost to you", ["Affiliate commissions are paid by the retailer out of their margin. You pay the same price whether or not you use our links."]],
@@ -635,16 +635,18 @@ function NewsView({onBack}){
 }
 
 function App(){
-  const [view,setView]=React.useState({name:"home"});
+  // 基于 URL 路径路由：/robots/<slug>/ 直接打开该产品（SEO 独立页落地）
+  const routeFromPath=()=>{ try{ var p=location.pathname.replace(/\/+$/,""); var m=p.match(/^\/robots\/([^\/]+)$/); if(m&&DATA.byId[m[1]]) return {name:"detail",id:m[1]}; }catch(e){} return {name:"home"}; };
+  const [view,setView]=React.useState(routeFromPath());
   const [compare,setCompare]=React.useState(new Set());
   const [query,setQuery]=React.useState("");
   const [lead,setLead]=React.useState(null);
   const openQuote=(name)=>setLead(name);
   // 浏览器前进/后退：每次切页 pushState；按后退键 popstate 时恢复到上一页（不再跳出到 Google）
-  const nav=(v)=>{setView(v);try{window.history.pushState({rcView:v},"");}catch(e){}window.scrollTo(0,0);};
+  const nav=(v)=>{setView(v);try{var u=(v.name==="detail")?("/robots/"+v.id+"/"):"/";window.history.pushState({rcView:v},"",u);}catch(e){}window.scrollTo(0,0);};
   React.useEffect(()=>{
-    try{window.history.replaceState({rcView:{name:"home"}},"");}catch(e){}
-    const onPop=(e)=>{const v=(e.state&&e.state.rcView)||{name:"home"};setView(v);window.scrollTo(0,0);};
+    try{window.history.replaceState({rcView:routeFromPath()},"");}catch(e){}
+    const onPop=(e)=>{const v=(e.state&&e.state.rcView)||routeFromPath();setView(v);window.scrollTo(0,0);};
     window.addEventListener("popstate",onPop);
     return ()=>window.removeEventListener("popstate",onPop);
   },[]);
@@ -730,13 +732,12 @@ HTML = """<!doctype html>
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>Roboclan · Every robot, compared</title>
-<meta name="description" content="Roboclan — every robot, compared. Specs, 1–5 radar ratings and price tracking across every robot category.">
+__SEOHEAD__
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;450;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
-<link rel="icon" type="image/svg+xml" href="favicon.svg?v=6">
-<link rel="icon" type="image/png" href="favicon.png?v=6">
-<link rel="apple-touch-icon" href="apple-touch-icon.png?v=6">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg?v=6">
+<link rel="icon" type="image/png" href="/favicon.png?v=6">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png?v=6">
 <style>
 """ + css + """
 </style>
@@ -769,8 +770,36 @@ HTML = """<!doctype html>
 </body>
 </html>"""
 
-# 输出路径：默认写到 05_原型/；传 --out <路径> 时改写到指定文件（云端发布用，
-# 例如 --out roboclan-site/index.html 直接产出上线文件）。指定 --out 时若父目录存在即写入。
+# ============== SEO：每页独立 <head>（title/描述/canonical/OG）==============
+import html as _html
+SITE = "https://www.roboclan.ai"   # canonical 用带 www 的最终域名
+def _seo_head(title, desc, canonical, ogimg, ogtype="website"):
+    t=_html.escape(title); d=_html.escape((desc or "").replace("\n"," ")[:157]); img=_html.escape(ogimg)
+    return ("<title>"+t+"</title>\n"
+      '<meta name="description" content="'+d+'">\n'
+      '<link rel="canonical" href="'+canonical+'">\n'
+      '<meta name="robots" content="index,follow">\n'
+      '<meta property="og:type" content="'+ogtype+'">\n'
+      '<meta property="og:site_name" content="Roboclan">\n'
+      '<meta property="og:title" content="'+t+'">\n'
+      '<meta property="og:description" content="'+d+'">\n'
+      '<meta property="og:url" content="'+canonical+'">\n'
+      '<meta property="og:image" content="'+img+'">\n'
+      '<meta name="twitter:card" content="summary_large_image">')
+def _prod_desc(r):
+    if r.get("verdict"): return r["verdict"]
+    cs=", ".join([str(s[0])+" "+str(s[1]) for s in (r.get("cardSpecs") or [])[:3]])
+    return (r["name"]+" by "+r["brand"]+" — "+r["cat"]+": specs, 1–5 radar ratings and price comparison. "+cs).strip()
+def _abs_img(u):
+    if not u: return SITE+"/apple-touch-icon.png"
+    if u.startswith("/"): return SITE+u
+    return u
+_HOME_HEAD=_seo_head("Roboclan · Every robot, compared",
+    "Roboclan — every robot, compared. Specs, 1–5 radar ratings and price tracking across robot vacuums, mowers, pool cleaners, humanoids, quadrupeds and commercial robots.",
+    SITE+"/", SITE+"/apple-touch-icon.png")
+HTML_INDEX = HTML.replace("__SEOHEAD__", _HOME_HEAD)
+
+# 输出路径：默认写到 05_原型/；传 --out <路径> 时改写到指定文件（云端发布用）。
 _out_arg=None
 for _i,_a in enumerate(sys.argv):
     if _a=="--out" and _i+1<len(sys.argv): _out_arg=sys.argv[_i+1]
@@ -781,9 +810,26 @@ if _out_arg:
     if _d and not os.path.isdir(_d): os.makedirs(_d,exist_ok=True)
 else:
     op=os.path.join(HERE, "..", "05_原型", "Roboclan重设计_v2.html")
-open(op,"w",encoding="utf-8").write(HTML)
-print("写出:",len(HTML),"bytes →",op)
+open(op,"w",encoding="utf-8").write(HTML_INDEX)
+print("写出:",len(HTML_INDEX),"bytes →",op)
 print("机器人数:",len(out),"前3:",[(x['name'],x['score']) for x in out[:3]])
+
+# 部署构建（有 --out）时：为每个产品生成独立 URL 页 /robots/<slug>/ + sitemap.xml + robots.txt
+if _out_arg:
+    _base=os.path.dirname(op); _urls=[SITE+"/"]
+    for r in out:
+        slug=r["id"]; canon=SITE+"/robots/"+slug+"/"
+        head=_seo_head(r["name"]+" — Specs, Ratings & Price | Roboclan", _prod_desc(r), canon, _abs_img(r.get("image")), "product")
+        page=HTML.replace("__SEOHEAD__", head)
+        _pd=os.path.join(_base,"robots",slug); os.makedirs(_pd,exist_ok=True)
+        open(os.path.join(_pd,"index.html"),"w",encoding="utf-8").write(page)
+        _urls.append(canon)
+    _sm='<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
+    for _u in _urls: _sm+="<url><loc>"+_u+"</loc></url>\n"
+    _sm+="</urlset>\n"
+    open(os.path.join(_base,"sitemap.xml"),"w",encoding="utf-8").write(_sm)
+    open(os.path.join(_base,"robots.txt"),"w",encoding="utf-8").write("User-agent: *\nAllow: /\nSitemap: "+SITE+"/sitemap.xml\n")
+    print("生成产品独立页:",len(out),"→",os.path.join(_base,"robots")," + sitemap.xml + robots.txt")
 
 # ============== 自检关卡（每次生成后自动运行）==============
 def verify(html):
