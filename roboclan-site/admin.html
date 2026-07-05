@@ -71,6 +71,41 @@ td.msg{max-width:360px;color:var(--text-2);white-space:pre-wrap;}
 .bar{height:8px;border-radius:6px;background:var(--grad);}
 .barwrap{background:var(--surface-2);border-radius:6px;overflow:hidden;width:100%;min-width:90px;}
 @media(max-width:640px){td.msg{max-width:200px}.wrap{padding:20px 14px 60px}}
+
+/* products editor */
+.pbar{display:flex;gap:10px;align-items:center;margin-bottom:16px;flex-wrap:wrap;}
+.pinput{height:38px;border-radius:9px;border:1px solid var(--line-2);background:var(--surface-1);color:var(--text-1);font-family:var(--font-body);font-size:14px;padding:0 12px;outline:none;}
+.pinput:focus{border-color:rgba(110,139,255,.6);}
+.pinput.w{width:100%;}
+textarea.pinput{height:auto;padding:10px 12px;line-height:1.5;resize:vertical;}
+.btn-sm{height:38px;border:1px solid var(--line-2);background:var(--surface-2);color:var(--text-1);border-radius:9px;padding:0 16px;font-weight:600;font-size:13.5px;cursor:pointer;}
+.btn-sm:hover{border-color:rgba(110,139,255,.5);}
+.btn-sm.ghost{background:transparent;color:var(--text-2);}
+.btn-sm.danger{color:var(--danger);border-color:transparent;background:transparent;}
+.btn-sm.danger:hover{border-color:var(--danger);}
+.prodthumb{width:40px;height:40px;border-radius:8px;background:var(--surface-2);display:grid;place-items:center;font-size:22px;overflow:hidden;}
+.prodthumb img{width:100%;height:100%;object-fit:contain;}
+.edit-lnk{color:var(--accent-ink);cursor:pointer;font-weight:600;font-size:13px;}
+.ov{position:fixed;inset:0;background:rgba(5,6,10,.72);backdrop-filter:blur(4px);z-index:100;display:grid;place-items:center;padding:20px;}
+.modal{width:100%;max-width:620px;max-height:90vh;display:flex;flex-direction:column;background:var(--surface-1);border:1px solid var(--line);border-radius:16px;box-shadow:0 40px 90px rgba(0,0,0,.6);}
+.modal-hd{display:flex;align-items:center;padding:16px 20px;border-bottom:1px solid var(--line);}
+.modal-hd h3{font-family:var(--font-display);font-weight:600;font-size:17px;}
+.modal-hd .x{margin-left:auto;background:none;border:none;color:var(--text-3);font-size:18px;cursor:pointer;}
+.modal-bd{padding:18px 20px;overflow-y:auto;}
+.modal-ft{display:flex;align-items:center;gap:8px;padding:14px 20px;border-top:1px solid var(--line);}
+.fl{display:block;font-size:12px;color:var(--text-3);font-family:var(--font-mono);text-transform:uppercase;letter-spacing:.04em;margin:14px 0 6px;}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.grid2 .fl{margin-top:0;}
+.imgrow{display:flex;gap:16px;align-items:flex-start;}
+.thumbbox{width:96px;height:96px;border-radius:12px;border:1px solid var(--line-2);background:var(--surface-2);display:grid;place-items:center;font-size:44px;overflow:hidden;flex-shrink:0;}
+.thumbbox img{width:100%;height:100%;object-fit:contain;}
+.ck{display:flex;align-items:center;gap:8px;margin-top:16px;font-size:14px;color:var(--text-2);cursor:pointer;}
+.adv{margin-top:18px;border-top:1px solid var(--line);padding-top:8px;}
+.adv summary{cursor:pointer;font-weight:600;font-size:13.5px;color:var(--accent-ink);padding:8px 0;}
+.ederr{color:var(--danger);font-size:13px;margin-top:12px;min-height:16px;}
+.pubbar{display:flex;align-items:center;gap:16px;margin-top:18px;padding:16px 18px;border:1px solid rgba(110,139,255,.32);border-radius:14px;background:linear-gradient(100deg,rgba(110,139,255,.12),rgba(166,107,255,.08));}
+.pubbar>div:first-child{flex:1;}
+@media(max-width:560px){.grid2{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
@@ -106,6 +141,7 @@ td.msg{max-width:360px;color:var(--text-2);white-space:pre-wrap;}
     <div class="tabs">
       <button class="tab on" data-tab="leads">Leads</button>
       <button class="tab" data-tab="traffic">Traffic</button>
+      <button class="tab" data-tab="products">Products</button>
     </div>
 
     <!-- LEADS TAB -->
@@ -150,6 +186,72 @@ td.msg{max-width:360px;color:var(--text-2);white-space:pre-wrap;}
       </div>
       <div class="muted" id="t-range"></div>
     </div>
+
+    <!-- PRODUCTS TAB -->
+    <div id="tab-products" class="hide">
+      <div class="pbar">
+        <input id="pSearch" class="pinput" placeholder="Search name or brand…">
+        <select id="pCat" class="pinput"><option value="">All categories</option></select>
+        <span id="pCount" class="muted" style="padding:0"></span>
+        <button class="btn-sm" id="pNew" style="margin-left:auto">＋ New product</button>
+      </div>
+      <div class="panel">
+        <div class="tbl-scroll"><table id="prodTbl">
+          <thead><tr><th style="width:54px"></th><th>Name</th><th>Brand</th><th>Category</th><th>Price</th><th></th></tr></thead>
+          <tbody><tr><td colspan="6" class="empty">Loading…</td></tr></tbody>
+        </table></div>
+      </div>
+      <div class="pubbar">
+        <div>
+          <div style="font-weight:600;color:var(--text-1)">Ready to go live?</div>
+          <div class="muted" style="padding:2px 0 0">Edits are saved to the database. Click Publish, then Run workflow, to rebuild the public site (~1 min).</div>
+        </div>
+        <a class="btn" style="width:auto;height:40px;padding:0 22px;display:inline-flex;align-items:center;text-decoration:none" id="pPublish" target="_blank" rel="noopener">Publish ↗</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- PRODUCT EDITOR MODAL -->
+<div id="editOv" class="ov hide">
+  <div class="modal">
+    <div class="modal-hd"><h3 id="edTitle">Edit product</h3><button class="x" id="edClose">✕</button></div>
+    <div class="modal-bd">
+      <div class="imgrow">
+        <div class="thumbbox" id="edThumb"></div>
+        <div style="flex:1">
+          <label class="fl">Product image</label>
+          <div style="display:flex;gap:8px;flex-wrap:wrap">
+            <label class="btn-sm" style="cursor:pointer">Upload…<input id="edFile" type="file" accept="image/*" class="hide"></label>
+            <button class="btn-sm ghost" id="edImgClear" type="button">Remove</button>
+          </div>
+          <div class="muted" id="edImgHint" style="padding:6px 0 0">Square, white/transparent background works best. Auto-compressed on upload.</div>
+        </div>
+      </div>
+      <div class="grid2">
+        <div><label class="fl">Name</label><input id="edName" class="pinput w"></div>
+        <div><label class="fl">Brand</label><input id="edBrand" class="pinput w"></div>
+        <div><label class="fl">Category</label><select id="edCat" class="pinput w"></select></div>
+        <div><label class="fl">Price</label><input id="edPrice" class="pinput w" placeholder="$1,299.99 or Contact for quote"></div>
+      </div>
+      <label class="fl">Tags <span class="muted" style="padding:0">(comma-separated)</span></label>
+      <input id="edTags" class="pinput w">
+      <label class="fl">Verdict</label>
+      <textarea id="edVerdict" class="pinput w" rows="3"></textarea>
+      <label class="ck"><input type="checkbox" id="edFeatured"> Featured on home</label>
+      <details class="adv"><summary>Advanced — full record (JSON)</summary>
+        <div class="muted" style="padding:6px 0">Specs, radar scores, info, prices live here. Edit carefully — must stay valid JSON.</div>
+        <textarea id="edJson" class="pinput w mono" rows="14" spellcheck="false"></textarea>
+      </details>
+      <div class="ederr" id="edErr"></div>
+    </div>
+    <div class="modal-ft">
+      <button class="btn-sm danger" id="edDelete" type="button">Delete</button>
+      <div style="margin-left:auto;display:flex;gap:8px">
+        <button class="btn-sm ghost" id="edCancel" type="button">Cancel</button>
+        <button class="btn" style="width:auto;height:38px;padding:0 22px" id="edSave" type="button">Save</button>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -189,6 +291,8 @@ document.querySelectorAll('.tab').forEach(t=>t.addEventListener('click',()=>{
   const k=t.dataset.tab;
   $('tab-leads').classList.toggle('hide', k!=='leads');
   $('tab-traffic').classList.toggle('hide', k!=='traffic');
+  $('tab-products').classList.toggle('hide', k!=='products');
+  if(k==='products' && !prodLoaded) loadProducts();
 }));
 
 // ---------- leads ----------
@@ -254,6 +358,151 @@ async function loadTraffic(){
   </tr>`).join('') : '<tr><td colspan="2" class="empty">No category activity yet.</td></tr>';
   if(rows.length){ const oldest=new Date(rows[rows.length-1].created_at); $('t-range').textContent='Showing '+rows.length+' events since '+oldest.toLocaleDateString(); }
 }
+
+// ---------- products ----------
+// 发布按钮跳到 GitHub Actions 的 Publish 工作流页；若你的仓库地址不同，改这一行即可。
+const GH_ACTIONS_URL='https://github.com/caoenkai/roboclan/actions/workflows/publish.yml';
+{ const _pb=document.getElementById('pPublish'); if(_pb) _pb.href=GH_ACTIONS_URL; }
+const CATS=['Robot Vacuums','Robot Lawn Mowers','Pool Cleaners','Humanoids','Quadrupeds','Commercial & Industrial'];
+let prodLoaded=false, prodRows=[], edId=null, edData=null, edIsNew=false;
+
+function fillCatSelects(){
+  $('pCat').innerHTML='<option value="">All categories</option>'+CATS.map(c=>`<option>${esc(c)}</option>`).join('');
+  $('edCat').innerHTML=CATS.map(c=>`<option>${esc(c)}</option>`).join('');
+}
+async function loadProducts(){
+  prodLoaded=true; fillCatSelects();
+  const { data, error } = await sb.from('products').select('id,cat,sort,data,image_url').order('sort',{ascending:true});
+  const tb=$('prodTbl').querySelector('tbody');
+  if(error){ tb.innerHTML='<tr><td colspan="6" class="empty">Could not load products ('+esc(error.message)+')</td></tr>'; return; }
+  prodRows=data||[]; renderProducts();
+}
+function renderProducts(){
+  const q=($('pSearch').value||'').toLowerCase().trim(); const cat=$('pCat').value;
+  const rows=prodRows.filter(r=>{
+    const d=r.data||{};
+    if(cat && r.cat!==cat) return false;
+    if(q && !((d.name||'').toLowerCase().includes(q) || (d.brand||'').toLowerCase().includes(q))) return false;
+    return true;
+  });
+  $('pCount').textContent=rows.length+' of '+prodRows.length;
+  const tb=$('prodTbl').querySelector('tbody');
+  if(!rows.length){ tb.innerHTML='<tr><td colspan="6" class="empty">No matches.</td></tr>'; return; }
+  tb.innerHTML=rows.map(r=>{ const d=r.data||{};
+    const thumb=d.image?`<img src="${esc(d.image)}" alt="">`:esc(d.emoji||'🤖');
+    return `<tr>
+      <td><div class="prodthumb">${thumb}</div></td>
+      <td>${esc(d.name)}</td><td>${esc(d.brand)}</td>
+      <td><span class="pill">${esc(r.cat)}</span></td>
+      <td class="mono" style="color:var(--text-2)">${esc(d.price)}</td>
+      <td><span class="edit-lnk" data-id="${esc(r.id)}">Edit ›</span></td>
+    </tr>`; }).join('');
+  tb.querySelectorAll('.edit-lnk').forEach(el=>el.addEventListener('click',()=>openEditor(el.dataset.id)));
+}
+$('pSearch').addEventListener('input',renderProducts);
+$('pCat').addEventListener('change',renderProducts);
+$('pNew').addEventListener('click',()=>openEditor(null));
+
+function renderThumb(){
+  $('edThumb').innerHTML = edData.image ? `<img src="${esc(edData.image)}" alt="">` : esc(edData.emoji||'🤖');
+}
+function openEditor(id){
+  edIsNew = !id; edId = id;
+  if(edIsNew){
+    edData={ id:'', name:'', brand:'', cat:CATS[0], emoji:'🤖', price:'', priceFrom:false, featured:false,
+      radar:[3,3,3,3,3], tags:[], highlights:[], cardSpecs:[], verdict:'', pros:[], cons:[], info:[], specs:[], prices:[] };
+    $('edTitle').textContent='New product'; $('edDelete').style.visibility='hidden';
+  } else {
+    const row=prodRows.find(r=>r.id===id); edData=JSON.parse(JSON.stringify(row.data||{}));
+    $('edTitle').textContent='Edit · '+(edData.name||id); $('edDelete').style.visibility='visible';
+  }
+  $('edName').value=edData.name||''; $('edBrand').value=edData.brand||'';
+  $('edCat').value=edData.cat||CATS[0]; $('edPrice').value=edData.price||'';
+  $('edTags').value=(edData.tags||[]).join(', '); $('edVerdict').value=edData.verdict||'';
+  $('edFeatured').checked=!!edData.featured; $('edErr').textContent='';
+  $('edJson').value=JSON.stringify(edData,null,2); renderThumb();
+  $('editOv').classList.remove('hide');
+}
+function closeEditor(){ $('editOv').classList.add('hide'); }
+$('edClose').addEventListener('click',closeEditor); $('edCancel').addEventListener('click',closeEditor);
+$('editOv').addEventListener('click',e=>{ if(e.target.id==='editOv') closeEditor(); });
+
+// keep advanced JSON in sync when a friendly field changes
+function syncFromFields(){
+  let obj; try{ obj=JSON.parse($('edJson').value); }catch(_){ obj=edData; }
+  obj.name=$('edName').value; obj.brand=$('edBrand').value; obj.cat=$('edCat').value;
+  obj.price=$('edPrice').value; obj.verdict=$('edVerdict').value; obj.featured=$('edFeatured').checked;
+  obj.tags=$('edTags').value.split(',').map(s=>s.trim()).filter(Boolean);
+  if(edData.image) obj.image=edData.image; else delete obj.image;
+  edData=obj; $('edJson').value=JSON.stringify(obj,null,2);
+}
+['edName','edBrand','edCat','edPrice','edVerdict','edTags'].forEach(id=>$(id).addEventListener('change',syncFromFields));
+$('edFeatured').addEventListener('change',syncFromFields);
+
+// image upload → Supabase Storage
+$('edFile').addEventListener('change',async e=>{
+  const file=e.target.files[0]; if(!file) return;
+  $('edImgHint').textContent='Uploading…';
+  try{
+    const blob=await compressImage(file);
+    const slug=(($('edName').value||edData.id||'product').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,''))||'product';
+    const path=slug+'-'+Date.now()+'.webp';
+    const { error }=await sb.storage.from('product-images').upload(path,blob,{contentType:'image/webp',upsert:true});
+    if(error) throw error;
+    const { data:{ publicUrl } }=sb.storage.from('product-images').getPublicUrl(path);
+    edData.image=publicUrl; syncFromFields(); renderThumb();
+    $('edImgHint').textContent='Uploaded ✓';
+  }catch(err){ $('edImgHint').textContent='Upload failed: '+(err.message||err); }
+  e.target.value='';
+});
+$('edImgClear').addEventListener('click',()=>{ delete edData.image; syncFromFields(); renderThumb(); $('edImgHint').textContent='Image removed.'; });
+
+// client-side compress → webp, max 1000px
+function compressImage(file){
+  return new Promise((res,rej)=>{
+    const img=new Image(); const url=URL.createObjectURL(file);
+    img.onload=()=>{ URL.revokeObjectURL(url);
+      const max=1000; let{width:w,height:h}=img;
+      if(w>max||h>max){ const s=max/Math.max(w,h); w=Math.round(w*s); h=Math.round(h*s); }
+      const c=document.createElement('canvas'); c.width=w; c.height=h;
+      c.getContext('2d').drawImage(img,0,0,w,h);
+      c.toBlob(b=>b?res(b):rej(new Error('compress failed')),'image/webp',0.86);
+    };
+    img.onerror=()=>{ URL.revokeObjectURL(url); rej(new Error('not an image')); };
+    img.src=url;
+  });
+}
+
+$('edSave').addEventListener('click',async ()=>{
+  $('edErr').textContent=''; let obj;
+  try{ obj=JSON.parse($('edJson').value); }catch(err){ $('edErr').textContent='Advanced JSON is invalid: '+err.message; return; }
+  // friendly fields win
+  obj.name=$('edName').value.trim(); obj.brand=$('edBrand').value.trim(); obj.cat=$('edCat').value;
+  obj.price=$('edPrice').value.trim(); obj.verdict=$('edVerdict').value; obj.featured=$('edFeatured').checked;
+  obj.tags=$('edTags').value.split(',').map(s=>s.trim()).filter(Boolean);
+  if(edData.image) obj.image=edData.image; else delete obj.image;
+  if(!obj.name){ $('edErr').textContent='Name is required.'; return; }
+  if(!obj.id){ obj.id=obj.name.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,''); }
+  $('edSave').disabled=true; $('edSave').textContent='Saving…';
+  try{
+    if(edIsNew){
+      const maxSort=prodRows.reduce((m,r)=>Math.max(m,r.sort||0),0)+1;
+      const { error }=await sb.from('products').insert({id:obj.id,cat:obj.cat,sort:maxSort,data:obj,image_url:obj.image||null});
+      if(error) throw error;
+    } else {
+      const { error }=await sb.from('products').update({cat:obj.cat,data:obj,image_url:obj.image||null}).eq('id',edId);
+      if(error) throw error;
+    }
+    closeEditor(); await loadProducts();
+  }catch(err){ $('edErr').textContent='Save failed: '+(err.message||err); }
+  $('edSave').disabled=false; $('edSave').textContent='Save';
+});
+$('edDelete').addEventListener('click',async ()=>{
+  if(!confirm('Delete this product? This cannot be undone.')) return;
+  const { error }=await sb.from('products').delete().eq('id',edId);
+  if(error){ $('edErr').textContent='Delete failed: '+error.message; return; }
+  closeEditor(); await loadProducts();
+});
 
 sb.auth.onAuthStateChange((_e,session)=>{ if(!session) showLogin(); });
 refresh();
