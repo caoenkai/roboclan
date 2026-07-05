@@ -1,0 +1,79 @@
+/* Roboclan color system — dark-first "deep space / lab" palette.
+   Base scale + semantic aliases. One electric accent: cyan → blue → violet. */
+:root {
+  /* ---- Backgrounds (near-black, layered depth) ---- */
+  --bg-0: #08090C;   /* deepest void — page base */
+  --bg-1: #0A0B0F;   /* primary app background */
+  --bg-2: #0E1015;   /* raised regions / headers */
+  --bg-3: #14171D;   /* solid card fallback (no-blur) */
+
+  /* ---- Glass surfaces (translucent, frosted) ---- */
+  --surface-1: rgba(255, 255, 255, 0.030);  /* faint fill */
+  --surface-2: rgba(255, 255, 255, 0.050);  /* card glass */
+  --surface-3: rgba(255, 255, 255, 0.075);  /* hover / raised glass */
+  --surface-solid: rgba(18, 21, 27, 0.72);  /* glass over busy bg */
+
+  /* ---- Hairline borders ---- */
+  --line: rgba(255, 255, 255, 0.08);         /* default hairline */
+  --line-2: rgba(255, 255, 255, 0.12);       /* card border */
+  --line-strong: rgba(255, 255, 255, 0.18);  /* hover / focus edge */
+
+  /* ---- Text ---- */
+  --text-1: #F4F6FB;   /* primary */
+  --text-2: #AEB6C5;   /* secondary */
+  --text-3: #6B7484;   /* muted / labels */
+  --text-4: #454C5A;   /* disabled / faint */
+  --text-on-accent: #0A0B0F;
+
+  /* ---- Electric accent (the only chromatic family) ---- */
+  --accent-cyan: #5BE2FF;
+  --accent-blue: #5B8CFF;
+  --accent-violet: #A66BFF;
+  --accent: #6E8BFF;            /* single-color stand-in for the gradient */
+  --accent-ink: #C9D6FF;        /* accent text on dark */
+  --accent-soft: rgba(110, 139, 255, 0.14);   /* tinted fill */
+  --accent-soft-2: rgba(166, 107, 255, 0.14);
+
+  /* ---- The signature gradients ---- */
+  --grad-accent: linear-gradient(120deg, #5B8CFF 0%, #A66BFF 100%); /* @kind color */
+  --grad-hud: linear-gradient(135deg, #5BE2FF 0%, #6E8BFF 48%, #A66BFF 100%); /* @kind color */
+  --grad-sheen: linear-gradient(110deg, transparent 0%, rgba(255,255,255,0.18) 50%, transparent 100%); /* @kind color */
+  --grad-text: linear-gradient(110deg, #FFFFFF 0%, #B9C6FF 55%, #A66BFF 100%); /* @kind color */
+
+  /* ---- Semantic ---- */
+  --success: #3FE0A2;   /* best price / in stock */
+  --success-soft: rgba(63, 224, 162, 0.13);
+  --warn: #F5B14C;      /* coming soon / quote */
+  --warn-soft: rgba(245, 177, 76, 0.13);
+  --danger: #FF6B6B;    /* cons / unavailable */
+  --danger-soft: rgba(255, 107, 107, 0.13);
+  --live: #FF5470;      /* LIVE / hot news dot */
+
+  /* ---- Ambient glow tints (radial backdrops) ---- */
+  --glow-cyan: rgba(91, 226, 255, 0.10);
+  --glow-violet: rgba(166, 107, 255, 0.12);
+  --glow-blue: rgba(91, 140, 255, 0.10);
+}
+
+/* Optional light theme scope — dark is primary; this is the [data-theme=light] opt-in. */
+[data-theme="light"] {
+  --bg-0: #EEF1F6;
+  --bg-1: #F5F7FB;
+  --bg-2: #FFFFFF;
+  --bg-3: #FFFFFF;
+  --surface-1: rgba(10, 12, 20, 0.02);
+  --surface-2: rgba(255, 255, 255, 0.72);
+  --surface-3: rgba(255, 255, 255, 0.92);
+  --surface-solid: rgba(255, 255, 255, 0.86);
+  --line: rgba(12, 16, 28, 0.08);
+  --line-2: rgba(12, 16, 28, 0.12);
+  --line-strong: rgba(12, 16, 28, 0.20);
+  --text-1: #11141C;
+  --text-2: #4B5364;
+  --text-3: #7A8294;
+  --text-4: #AEB4C0;
+  --accent-ink: #4F46E5;
+  --glow-cyan: rgba(91, 226, 255, 0.16);
+  --glow-violet: rgba(166, 107, 255, 0.18);
+  --glow-blue: rgba(91, 140, 255, 0.16);
+}

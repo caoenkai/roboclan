@@ -1,0 +1,43 @@
+/* Roboclan base reset & ambient backdrop. Applied globally by consumers. */
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  font-family: var(--font-body);
+  font-size: var(--fs-body);
+  line-height: var(--lh-body);
+  color: var(--text-1);
+  background-color: var(--bg-1);
+  /* The signature "deep space / lab" ambient glow */
+  background-image:
+    radial-gradient(820px 520px at 8% -8%, var(--glow-violet), transparent 60%),
+    radial-gradient(720px 480px at 96% 2%, var(--glow-cyan), transparent 58%),
+    radial-gradient(900px 700px at 50% 120%, var(--glow-blue), transparent 62%);
+  background-attachment: fixed;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+a { color: inherit; text-decoration: none; }
+
+::selection { background: rgba(110,139,255,0.32); color: #fff; }
+
+/* Utility helpers used across cards & kits */
+.rc-mono { font-family: var(--font-mono); font-feature-settings: "tnum" 1; letter-spacing: var(--tracking-mono); }
+.rc-eyebrow {
+  font-family: var(--font-mono);
+  font-size: var(--fs-2xs);
+  letter-spacing: var(--tracking-label);
+  text-transform: uppercase;
+  color: var(--text-3);
+}
+.rc-grad-text {
+  background: var(--grad-text);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * { animation-duration: 0.001ms !important; transition-duration: 0.001ms !important; }
+}

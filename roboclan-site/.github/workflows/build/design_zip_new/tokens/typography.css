@@ -1,0 +1,36 @@
+/* Roboclan typography — geometric display, clean body, instrument-panel mono. */
+:root {
+  --font-display: "Space Grotesk", "Inter Tight", system-ui, sans-serif;
+  --font-body: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono: "JetBrains Mono", "SF Mono", ui-monospace, monospace;
+
+  /* Type scale (px). Confident, large. */
+  --fs-display: 64px;   /* hero */
+  --fs-h1: 44px;
+  --fs-h2: 32px;
+  --fs-h3: 23px;
+  --fs-h4: 19px;
+  --fs-body-lg: 17px;
+  --fs-body: 15px;
+  --fs-sm: 13.5px;
+  --fs-xs: 12px;
+  --fs-2xs: 11px;
+
+  /* Weights */
+  --fw-regular: 400; /* @kind font */
+  --fw-medium: 500; /* @kind font */
+  --fw-semibold: 600; /* @kind font */
+  --fw-bold: 700; /* @kind font */
+
+  /* Line heights */
+  --lh-tight: 1.04; /* @kind font */
+  --lh-snug: 1.22; /* @kind font */
+  --lh-body: 1.55; /* @kind font */
+
+  /* Tracking — display runs tight; mono/labels run open */
+  --tracking-display: -0.025em; /* @kind font */
+  --tracking-h: -0.015em; /* @kind font */
+  --tracking-body: 0; /* @kind font */
+  --tracking-label: 0.14em; /* @kind font */
+  --tracking-mono: 0.01em; /* @kind font */
+}
