@@ -2951,8 +2951,19 @@ return {robots:R,byId:byId,glow:CAT_GLOW,axes:AXES,categories:CATEGORIES};
       transform:translateX(-100%);animation:rc-news-sheen 5.5s var(--ease-in-out) infinite;}
     @keyframes rc-news-sheen{0%{transform:translateX(-100%)}55%,100%{transform:translateX(100%)}}
     .rc-news>*{position:relative;z-index:1;}
-    .rc-news__t{flex:1;font-size:14.5px;color:var(--text-1);overflow:hidden;white-space:nowrap;text-overflow:ellipsis;}
-    .rc-news__t b{color:#fff;font-weight:600;}
+    /* 向上滚动的新闻条：固定单行高视口，内部纵向轨道循环上移，末尾复制首条实现无缝循环 */
+    .rc-news__vp{flex:1;height:22px;overflow:hidden;}
+    .rc-news__track{display:flex;flex-direction:column;animation:rc-news-up 12s var(--ease-in-out) infinite;}
+    .rc-news__line{height:22px;line-height:22px;font-size:14.5px;color:var(--text-1);
+      white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+    .rc-news__line b{color:#fff;font-weight:600;}
+    @keyframes rc-news-up{
+      0%,26%{transform:translateY(0)}
+      33.3%,59.6%{transform:translateY(-22px)}
+      66.6%,93%{transform:translateY(-44px)}
+      100%{transform:translateY(-66px)}
+    }
+    @media (prefers-reduced-motion: reduce){.rc-news__track{animation:none;}}
     .rc-news__more{font-size:13px;font-weight:600;color:var(--accent-ink);cursor:pointer;white-space:nowrap;}
     .rc-sec{display:flex;align-items:baseline;justify-content:space-between;margin:52px 0 18px;}
     .rc-sec h2{font-family:var(--font-display);font-weight:600;font-size:24px;letter-spacing:-.02em;margin:0;}
@@ -3286,11 +3297,6 @@ return {robots:R,byId:byId,glow:CAT_GLOW,axes:AXES,categories:CATEGORIES};
   ];
   function Home({ onOpenCategory, onOpen, onAdd, compare, onNews }) {
     inject();
-    const [newsIdx, setNewsIdx] = React.useState(0);
-    React.useEffect(() => {
-      const t = setInterval(() => setNewsIdx((i) => (i + 1) % NEWS.length), 5000);
-      return () => clearInterval(t);
-    }, []);
     const counts = {};
     DATA.robots.forEach((r) => { counts[r.cat] = (counts[r.cat] || 0) + 1; });
     // 跨品类轮流取（否则前几台全是扫地机），首页 Products 混排更丰富
@@ -3321,7 +3327,13 @@ return {robots:R,byId:byId,glow:CAT_GLOW,axes:AXES,categories:CATEGORIES};
 
         <div className="rc-news">
           <Badge tone="live">LIVE</Badge>
-          <div className="rc-news__t" key={newsIdx}><b>{NEWS[newsIdx].b}</b> {NEWS[newsIdx].t}</div>
+          <div className="rc-news__vp">
+            <div className="rc-news__track">
+              {NEWS.concat([NEWS[0]]).map((n, i) => (
+                <div className="rc-news__line" key={i}><b>{n.b}</b> {n.t}</div>
+              ))}
+            </div>
+          </div>
           <span className="rc-news__more" onClick={onNews}>All headlines ›</span>
         </div>
 
