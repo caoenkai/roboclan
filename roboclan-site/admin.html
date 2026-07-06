@@ -561,21 +561,26 @@ function compressImage(file){
       const W=img.naturalWidth||img.width, H=img.naturalHeight||img.height;
       const c=document.createElement('canvas'); c.width=W; c.height=H;
       const ctx=c.getContext('2d'); ctx.drawImage(img,0,0);
-      // 找产品的内容边界：非透明 且 非接近纯白
+      // 找产品的内容边界：从四角采样背景色，按色差判定内容（白底/浅灰底/透明底都适用）
       let x0=0,y0=0,x1=W,y1=H;
       try{
         const d=ctx.getImageData(0,0,W,H).data;
+        const px=(x,y)=>{const i=(y*W+x)*4;return [d[i],d[i+1],d[i+2],d[i+3]];};
+        const cs=[px(1,1),px(W-2,1),px(1,H-2),px(W-2,H-2)];
+        let br=0,bgc=0,bb=0,ba=0; cs.forEach(p=>{br+=p[0];bgc+=p[1];bb+=p[2];ba+=p[3];});
+        br/=4;bgc/=4;bb/=4;ba/=4;
+        const TH=40;  // 与背景色的差异阈值
         let minX=W,minY=H,maxX=0,maxY=0,found=false;
         for(let y=0;y<H;y++){ const row=y*W;
           for(let x=0;x<W;x++){ const i=(row+x)*4;
-            const a=d[i+3]; if(a<=16) continue;
-            const r=d[i],g=d[i+1],b=d[i+2];
-            if(r>244&&g>244&&b>244) continue;      // 接近纯白当背景
-            found=true;
-            if(x<minX)minX=x; if(x>maxX)maxX=x; if(y<minY)minY=y; if(y>maxY)maxY=y;
+            const a=d[i+3]; if(ba>200 && a<=16) continue;               // 透明背景
+            const diff=Math.abs(d[i]-br)+Math.abs(d[i+1]-bgc)+Math.abs(d[i+2]-bb);
+            if(a>16 && diff>TH){ found=true;
+              if(x<minX)minX=x; if(x>maxX)maxX=x; if(y<minY)minY=y; if(y>maxY)maxY=y; }
           }
         }
-        if(found){ x0=minX; y0=minY; x1=maxX+1; y1=maxY+1; }
+        if(found){ const bw=maxX-minX, bh=maxY-minY;
+          if(bw>W*0.15 && bh>H*0.15){ x0=minX; y0=minY; x1=maxX+1; y1=maxY+1; } }  // 太小则放弃裁切
       }catch(e){}
       const cw=Math.max(1,x1-x0), ch=Math.max(1,y1-y0);
       const side0=Math.round(Math.max(cw,ch)*1.16);   // 16% 统一边距的正方形画布
