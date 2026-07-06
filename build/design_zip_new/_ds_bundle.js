@@ -666,11 +666,11 @@ function injectPcStyles() {
   const s = document.createElement("style");
   s.textContent = `
   .rc-pc{width:100%;overflow:hidden;display:flex;flex-direction:column;}
-  .rc-pc__thumb{position:relative;height:220px;display:grid;place-items:center;
+  .rc-pc__thumb{position:relative;height:260px;display:grid;place-items:center;
     border-bottom:1px solid var(--line);overflow:hidden;}
-  /* 有图的卡片：图片区统一白底（电商标准），抠图后的产品干净地落在白片上 */
-  .rc-pc__thumb:has(img){background:#ffffff;border-bottom-color:#e6e8ee;}
-  .rc-pc__thumb img{position:relative;z-index:1;width:100%;height:100%;object-fit:contain;padding:16px;box-sizing:border-box;
+  /* 有图的卡片：图片区柔和浅灰底（比纯白更能衬出白色产品），产品居中放大 */
+  .rc-pc__thumb:has(img){background:#f3f4f7;border-bottom-color:#e6e8ee;}
+  .rc-pc__thumb img{position:relative;z-index:1;width:100%;height:100%;object-fit:contain;padding:18px;box-sizing:border-box;
     display:block;}
   .rc-pc__glow{position:absolute;width:240px;height:240px;border-radius:50%;
     filter:blur(34px);opacity:.55;}
@@ -773,12 +773,7 @@ function ProductCard({
     className: "from"
   }, "from"), price), status && /*#__PURE__*/React.createElement(__ds_scope.Badge, {
     tone: status.tone || "neutral"
-  }, status.label)), specs.length > 0 && /*#__PURE__*/React.createElement("div", {
-    className: "rc-pc__specs"
-  }, specs.slice(0, 2).map(([k, v], i) => /*#__PURE__*/React.createElement("div", {
-    className: "rc-pc__spec",
-    key: i
-  }, /*#__PURE__*/React.createElement("span", null, k), /*#__PURE__*/React.createElement("b", null, v)))), /*#__PURE__*/React.createElement("div", {
+  }, status.label)), /*#__PURE__*/React.createElement("div", {
     className: "rc-pc__foot"
   }, /*#__PURE__*/React.createElement("span", {
     className: "rc-pc__cta",
