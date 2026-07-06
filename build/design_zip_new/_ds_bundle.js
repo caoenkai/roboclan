@@ -666,11 +666,11 @@ function injectPcStyles() {
   const s = document.createElement("style");
   s.textContent = `
   .rc-pc{width:100%;overflow:hidden;display:flex;flex-direction:column;}
-  .rc-pc__thumb{position:relative;height:260px;display:grid;place-items:center;
+  .rc-pc__thumb{position:relative;aspect-ratio:1;display:grid;place-items:center;
     border-bottom:1px solid var(--line);overflow:hidden;}
-  /* 有图的卡片：图片区白底（图片本身已烤好白底，居中放大） */
+  /* 有图的卡片：正方形白底，图片铺满（与后台 1:1 定位窗口所见即所得一致） */
   .rc-pc__thumb:has(img){background:#ffffff;border-bottom-color:#e6e8ee;}
-  .rc-pc__thumb img{position:relative;z-index:1;width:100%;height:100%;object-fit:contain;padding:18px;box-sizing:border-box;
+  .rc-pc__thumb img{position:relative;z-index:1;width:100%;height:100%;object-fit:contain;padding:0;box-sizing:border-box;
     display:block;}
   .rc-pc__glow{position:absolute;width:240px;height:240px;border-radius:50%;
     filter:blur(34px);opacity:.55;}
