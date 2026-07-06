@@ -33,7 +33,7 @@
     .rc-dt__top{display:grid;grid-template-columns:300px 1fr;gap:28px;align-items:stretch;}
     .rc-dt__hero{position:relative;display:grid;place-items:center;min-height:280px;overflow:hidden;}
     /* 有图时整块 hero 铺成白底（和卡片一致），产品居中充满 */
-    .rc-dt__hero:has(.rc-dt__img){background:#f3f4f7;}
+    .rc-dt__hero:has(.rc-dt__img){background:#ffffff;}
     .rc-dt__heroglow{position:absolute;width:280px;height:280px;border-radius:50%;filter:blur(50px);opacity:.5;}
     .rc-dt__emoji{position:relative;font-size:120px;filter:drop-shadow(0 16px 40px rgba(0,0,0,.6));}
     .rc-dt__img{position:relative;z-index:1;width:100%;height:100%;max-height:320px;object-fit:contain;padding:26px;box-sizing:border-box;}
