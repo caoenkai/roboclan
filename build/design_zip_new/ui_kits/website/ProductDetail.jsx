@@ -6,6 +6,9 @@
   // Non-breaking hyphen so words like "self-clean" / "third-party" never split.
   const nbHyph = (s) => String(s).replace(/-/g, "‑");
 
+  // "2 in threshold" 里的 in(英寸)易被误读，统一成 "2-in threshold"（读作 2-inch，一眼是尺寸）
+  const tidyTag = (t) => String(t).replace(/(\d[\d.,]*)\s+in\s+(threshold|mop[-\s]?lift|cut)\b/i, "$1‑in $2");
+
   // Title-case feature phrases: capitalize each word, but leave units,
   // acronyms and product names (anything already containing an uppercase
   // letter, or a known unit token) untouched.
@@ -101,7 +104,7 @@
           <div className="rc-dt__info">
             <div className="rc-dt__brand">{r.brand}</div>
             <h1 className="rc-dt__name">{r.name}</h1>
-            <div className="rc-dt__tags">{(r.highlights || []).map((t) => <Tag key={"hl-" + t} style={{ color: "#F5B14C", background: "rgba(245,177,76,.13)", borderColor: "rgba(245,177,76,.38)" }}>{t}</Tag>)}{r.tags.map((t) => <Tag key={t} style={{ color: "#F5B14C", background: "rgba(245,177,76,.13)", borderColor: "rgba(245,177,76,.38)" }}>{t}</Tag>)}</div>
+            <div className="rc-dt__tags">{(r.highlights || []).map((t) => <Tag key={"hl-" + t} style={{ color: "#F5B14C", background: "rgba(245,177,76,.13)", borderColor: "rgba(245,177,76,.38)" }}>{t}</Tag>)}{r.tags.map((t) => <Tag key={t} style={{ color: "#F5B14C", background: "rgba(245,177,76,.13)", borderColor: "rgba(245,177,76,.38)" }}>{tidyTag(t)}</Tag>)}</div>
             <div className="rc-dt__priced">
               {isQuote
                 ? <span className="rc-dt__quotelbl">Enterprise · priced by quote</span>
