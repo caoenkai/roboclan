@@ -1022,8 +1022,8 @@ function injectPcStyles() {
   .rc-pc{width:100%;overflow:hidden;display:flex;flex-direction:column;}
   .rc-pc__thumb{position:relative;height:260px;display:grid;place-items:center;
     border-bottom:1px solid var(--line);overflow:hidden;}
-  /* 有图的卡片：图片区柔和浅灰底（比纯白更能衬出白色产品），产品居中放大 */
-  .rc-pc__thumb:has(img){background:#f3f4f7;border-bottom-color:#e6e8ee;}
+  /* 有图的卡片：图片区白底（图片本身已烤好白底，居中放大） */
+  .rc-pc__thumb:has(img){background:#ffffff;border-bottom-color:#e6e8ee;}
   .rc-pc__thumb img{position:relative;z-index:1;width:100%;height:100%;object-fit:contain;padding:18px;box-sizing:border-box;
     display:block;}
   .rc-pc__glow{position:absolute;width:240px;height:240px;border-radius:50%;
@@ -3562,7 +3562,7 @@ return {robots:R,byId:byId,glow:CAT_GLOW,axes:AXES,categories:CATEGORIES};
     .rc-dt__top{display:grid;grid-template-columns:300px 1fr;gap:28px;align-items:stretch;}
     .rc-dt__hero{position:relative;display:grid;place-items:center;min-height:280px;overflow:hidden;}
     /* 有图时整块 hero 铺成白底（和卡片一致），产品居中充满 */
-    .rc-dt__hero:has(.rc-dt__img){background:#f3f4f7;}
+    .rc-dt__hero:has(.rc-dt__img){background:#ffffff;}
     .rc-dt__heroglow{position:absolute;width:280px;height:280px;border-radius:50%;filter:blur(50px);opacity:.5;}
     .rc-dt__emoji{position:relative;font-size:120px;filter:drop-shadow(0 16px 40px rgba(0,0,0,.6));}
     .rc-dt__img{position:relative;z-index:1;width:100%;height:100%;max-height:320px;object-fit:contain;padding:26px;box-sizing:border-box;}
