@@ -109,6 +109,10 @@ textarea.pinput{height:auto;padding:10px 12px;line-height:1.5;resize:vertical;}
 .prow-edit .pr-ch{width:130px;flex-shrink:0;} .prow-edit .pr-p{width:110px;flex-shrink:0;} .prow-edit .pr-url{flex:1;min-width:150px;}
 .prow-edit .ck{margin:0;white-space:nowrap;} .prow-edit .pr-del{background:none;border:none;color:var(--text-3);cursor:pointer;font-size:16px;}
 .prow-edit .pr-del:hover{color:var(--danger);}
+.ie-view{width:340px;height:340px;max-width:100%;margin:0 auto;position:relative;overflow:hidden;background:#fff;border:1px solid var(--line-2);border-radius:12px;cursor:grab;touch-action:none;}
+.ie-view:active{cursor:grabbing;}
+.ie-view img{position:absolute;user-select:none;-webkit-user-drag:none;pointer-events:none;}
+.ie-ctrl{display:flex;align-items:center;gap:10px;margin-top:16px;}
 @media(max-width:560px){.grid2{grid-template-columns:1fr}}
 </style>
 </head>
@@ -226,6 +230,28 @@ textarea.pinput{height:auto;padding:10px 12px;line-height:1.5;resize:vertical;}
           <thead><tr><th style="width:40px">#</th><th>Headline</th><th>Detail</th><th>Link</th><th>Live</th><th></th></tr></thead>
           <tbody><tr><td colspan="6" class="empty">Loading…</td></tr></tbody>
         </table></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- IMAGE POSITION EDITOR -->
+<div id="imgEditOv" class="ov hide">
+  <div class="modal" style="max-width:440px">
+    <div class="modal-hd"><h3>Position the product</h3><button class="x" id="ieClose">✕</button></div>
+    <div class="modal-bd" style="text-align:center">
+      <div class="muted" style="padding:0 0 10px">Drag to move · slider to zoom. A white background is added automatically.</div>
+      <div id="ieView" class="ie-view"><img id="ieImg" draggable="false" alt=""></div>
+      <div class="ie-ctrl">
+        <span class="muted" style="padding:0">Zoom</span>
+        <input id="ieZoom" type="range" min="0.3" max="3" step="0.01" value="1" style="flex:1">
+        <button class="btn-sm ghost" id="ieReset" type="button">Reset</button>
+      </div>
+    </div>
+    <div class="modal-ft">
+      <div style="margin-left:auto;display:flex;gap:8px">
+        <button class="btn-sm ghost" id="ieCancel" type="button">Cancel</button>
+        <button class="btn" style="width:auto;height:38px;padding:0 22px" id="ieApply" type="button">Apply</button>
       </div>
     </div>
   </div>
@@ -538,8 +564,10 @@ $('edFile').addEventListener('change',async e=>{
         src=await removeBackground(file);   // Blob PNG，透明背景
       }catch(bgErr){ console.warn('bg removal failed',bgErr); $('edImgHint').textContent='Auto-cutout unavailable — using original image…'; src=file; }
     }
-    $('edImgHint').textContent='Compressing & uploading…';
-    const blob=await compressImage(src);
+    $('edImgHint').textContent='Position the product…';
+    const blob=await openImgEditor(src);
+    if(!blob){ $('edImgHint').textContent='Cancelled.'; e.target.value=''; return; }
+    $('edImgHint').textContent='Uploading…';
     const slug=(($('edName').value||edData.id||'product').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,''))||'product';
     const path=slug+'-'+Date.now()+'.webp';
     const { error }=await sb.storage.from('product-images').upload(path,blob,{contentType:'image/webp',upsert:true});
@@ -553,7 +581,56 @@ $('edFile').addEventListener('change',async e=>{
 $('edImgClear').addEventListener('click',()=>{ delete edData.image; syncFromFields(); renderThumb(); $('edImgHint').textContent='Image removed.'; });
 
 // client-side compress → webp, max 1000px
-// 自动裁掉产品周围留白 → 居中 → 补统一边距 → 缩放压缩，统一每张图的构图
+// ---------- 手动图片定位编辑器（拖拽 + 缩放，白底自动补）----------
+const IEV=340;
+let ieImg=null, ieFitW=IEV, ieFitH=IEV, ieZ=1, ieOx=0, ieOy=0, ieResolve=null, ieUrl=null;
+function ieRender(){ const el=$('ieImg'); if(!el) return; el.style.width=(ieFitW*ieZ)+'px'; el.style.height=(ieFitH*ieZ)+'px'; el.style.left=ieOx+'px'; el.style.top=ieOy+'px'; }
+function openImgEditor(blob){
+  return new Promise((resolve)=>{
+    ieResolve=resolve;
+    if(ieUrl) URL.revokeObjectURL(ieUrl);
+    ieUrl=URL.createObjectURL(blob);
+    ieImg=new Image();
+    ieImg.onload=()=>{
+      $('ieImg').src=ieUrl;
+      const ar=ieImg.naturalWidth/ieImg.naturalHeight;
+      if(ar>=1){ ieFitW=IEV; ieFitH=IEV/ar; } else { ieFitH=IEV; ieFitW=IEV*ar; }
+      ieZ=1; ieOx=(IEV-ieFitW)/2; ieOy=(IEV-ieFitH)/2;
+      $('ieZoom').value=1; ieRender();
+      $('imgEditOv').classList.remove('hide');
+    };
+    ieImg.onerror=()=>{ resolve(null); };
+    ieImg.src=ieUrl;
+  });
+}
+(function(){
+  const v=document.getElementById('ieView'); if(!v) return;
+  let dragging=false,lx=0,ly=0;
+  const down=(e)=>{dragging=true; const p=e.touches?e.touches[0]:e; lx=p.clientX;ly=p.clientY; e.preventDefault();};
+  const move=(e)=>{ if(!dragging)return; const p=e.touches?e.touches[0]:e; ieOx+=p.clientX-lx; ieOy+=p.clientY-ly; lx=p.clientX;ly=p.clientY; ieRender(); e.preventDefault(); };
+  const up=()=>{dragging=false;};
+  v.addEventListener('mousedown',down); window.addEventListener('mousemove',move); window.addEventListener('mouseup',up);
+  v.addEventListener('touchstart',down,{passive:false}); window.addEventListener('touchmove',move,{passive:false}); window.addEventListener('touchend',up);
+})();
+document.getElementById('ieZoom').addEventListener('input',e=>{
+  const nz=parseFloat(e.target.value), cx=IEV/2, cy=IEV/2;
+  const oldW=ieFitW*ieZ, oldH=ieFitH*ieZ, newW=ieFitW*nz, newH=ieFitH*nz;
+  ieOx=cx-(cx-ieOx)*(newW/oldW); ieOy=cy-(cy-ieOy)*(newH/oldH); ieZ=nz; ieRender();
+});
+document.getElementById('ieReset').addEventListener('click',()=>{ ieZ=1; $('ieZoom').value=1; ieOx=(IEV-ieFitW)/2; ieOy=(IEV-ieFitH)/2; ieRender(); });
+function ieDone(res){ $('imgEditOv').classList.add('hide'); const r=ieResolve; ieResolve=null; if(r) r(res); }
+document.getElementById('ieClose').addEventListener('click',()=>ieDone(null));
+document.getElementById('ieCancel').addEventListener('click',()=>ieDone(null));
+document.getElementById('ieApply').addEventListener('click',()=>{
+  const O=1000, f=O/IEV;
+  const c=document.createElement('canvas'); c.width=O; c.height=O;
+  const ctx=c.getContext('2d'); ctx.fillStyle='#ffffff'; ctx.fillRect(0,0,O,O);
+  ctx.drawImage(ieImg, ieOx*f, ieOy*f, ieFitW*ieZ*f, ieFitH*ieZ*f);
+  $('imgEditOv').classList.add('hide');
+  c.toBlob(b=>{ const r=ieResolve; ieResolve=null; if(r) r(b); },'image/webp',0.86);
+});
+
+// 自动裁掉产品周围留白 → 居中 → 补统一边距 → 缩放压缩（仍保留，作兜底/备用）
 function compressImage(file){
   return new Promise((res,rej)=>{
     const img=new Image(); const url=URL.createObjectURL(file);
