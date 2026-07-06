@@ -109,7 +109,9 @@ textarea.pinput{height:auto;padding:10px 12px;line-height:1.5;resize:vertical;}
 .prow-edit .pr-ch{width:130px;flex-shrink:0;} .prow-edit .pr-p{width:110px;flex-shrink:0;} .prow-edit .pr-url{flex:1;min-width:150px;}
 .prow-edit .ck{margin:0;white-space:nowrap;} .prow-edit .pr-del{background:none;border:none;color:var(--text-3);cursor:pointer;font-size:16px;}
 .prow-edit .pr-del:hover{color:var(--danger);}
-.ie-view{width:340px;height:340px;max-width:100%;margin:0 auto;position:relative;overflow:hidden;background:#fff;border:1px solid var(--line-2);border-radius:12px;cursor:grab;touch-action:none;}
+#imgEditOv{z-index:120;}
+#imgEditOv .modal{max-width:min(94vw,560px);}
+.ie-view{width:100%;aspect-ratio:1;margin:0 auto;position:relative;overflow:hidden;background:#fff;border:1px solid var(--line-2);border-radius:12px;cursor:grab;touch-action:none;}
 .ie-view:active{cursor:grabbing;}
 .ie-view img{position:absolute;user-select:none;-webkit-user-drag:none;pointer-events:none;}
 .ie-ctrl{display:flex;align-items:center;gap:10px;margin-top:16px;}
@@ -237,7 +239,7 @@ textarea.pinput{height:auto;padding:10px 12px;line-height:1.5;resize:vertical;}
 
 <!-- IMAGE POSITION EDITOR -->
 <div id="imgEditOv" class="ov hide">
-  <div class="modal" style="max-width:440px">
+  <div class="modal">
     <div class="modal-hd"><h3>Position the product</h3><button class="x" id="ieClose">✕</button></div>
     <div class="modal-bd" style="text-align:center">
       <div class="muted" style="padding:0 0 10px">Drag to move · slider to zoom. A white background is added automatically.</div>
@@ -582,7 +584,7 @@ $('edImgClear').addEventListener('click',()=>{ delete edData.image; syncFromFiel
 
 // client-side compress → webp, max 1000px
 // ---------- 手动图片定位编辑器（拖拽 + 缩放，白底自动补）----------
-const IEV=340;
+let IEV=340;   // 编辑视口实际像素，打开时按真实渲染尺寸读取（保证拖拽/缩放坐标准确）
 let ieImg=null, ieFitW=IEV, ieFitH=IEV, ieZ=1, ieOx=0, ieOy=0, ieResolve=null, ieUrl=null;
 function ieRender(){ const el=$('ieImg'); if(!el) return; el.style.width=(ieFitW*ieZ)+'px'; el.style.height=(ieFitH*ieZ)+'px'; el.style.left=ieOx+'px'; el.style.top=ieOy+'px'; }
 function openImgEditor(blob){
@@ -592,12 +594,13 @@ function openImgEditor(blob){
     ieUrl=URL.createObjectURL(blob);
     ieImg=new Image();
     ieImg.onload=()=>{
+      $('imgEditOv').classList.remove('hide');          // 先显示，才能读到视口真实尺寸
+      IEV=$('ieView').clientWidth||340;
       $('ieImg').src=ieUrl;
       const ar=ieImg.naturalWidth/ieImg.naturalHeight;
       if(ar>=1){ ieFitW=IEV; ieFitH=IEV/ar; } else { ieFitH=IEV; ieFitW=IEV*ar; }
       ieZ=1; ieOx=(IEV-ieFitW)/2; ieOy=(IEV-ieFitH)/2;
       $('ieZoom').value=1; ieRender();
-      $('imgEditOv').classList.remove('hide');
     };
     ieImg.onerror=()=>{ resolve(null); };
     ieImg.src=ieUrl;
