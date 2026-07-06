@@ -63,13 +63,14 @@
     .rc-dt__pcli .m{flex-shrink:0;margin-top:1px;}
     .rc-dt__pcli .m.p{color:var(--success);} .rc-dt__pcli .m.c{color:var(--danger);}
     .rc-dt .rc-radar__axislabel{fill:var(--text-1);}
-    /* Unified spec cell: label on top, value(s) as boxed chips (consistent everywhere). */
-    .rc-dt__specgrid{display:grid;grid-template-columns:1fr 1fr;gap:16px 24px;align-items:start;}
-    .rc-sc{display:flex;flex-direction:column;gap:7px;min-width:0;}
-    .rc-sc--full{grid-column:1/-1;}
-    .rc-sc__k{font-family:var(--font-body);font-size:13px;color:var(--text-3);}
-    .rc-sc__chips{display:flex;flex-wrap:wrap;gap:7px;}
-    .rc-feat__chip{display:inline-block;padding:5px 11px;border-radius:8px;background:var(--surface-2);border:1px solid var(--line);font-family:var(--font-mono);font-size:12.5px;color:var(--text-1);line-height:1.4;hyphens:none;overflow-wrap:break-word;}
+    /* 规格：整齐的"标签 | 值"表格，一行一条、带分隔线、更大字号，不再左右交错显得乱 */
+    .rc-dt__specgrid{display:flex;flex-direction:column;}
+    .rc-sc{display:flex;gap:18px;align-items:baseline;padding:12px 0;border-top:1px solid var(--line);min-width:0;}
+    .rc-sc:first-child{border-top:none;}
+    .rc-sc__k{flex:0 0 33%;font-family:var(--font-body);font-size:14.5px;color:var(--text-3);}
+    .rc-sc__chips{flex:1;display:flex;flex-wrap:wrap;gap:8px;min-width:0;}
+    .rc-feat__chip{display:inline-block;padding:6px 12px;border-radius:8px;background:var(--surface-2);border:1px solid var(--line);font-family:var(--font-mono);font-size:14px;color:var(--text-1);line-height:1.45;hyphens:none;overflow-wrap:break-word;}
+    @media(max-width:560px){.rc-sc{flex-direction:column;gap:7px;}.rc-sc__k{flex:none;}}
     .rc-dt__prices{display:flex;flex-direction:column;gap:8px;}
     .rc-dt__note{font-size:12px;color:var(--text-3);margin-top:14px;line-height:1.5;}
     .rc-dt__cols{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:18px;align-items:start;}
@@ -175,9 +176,8 @@
             <div className="rc-dt__specgrid">
               {r.specs.map(([k, v], i) => {
                 const parts = String(v).split(/ · | — /).map((p) => p.trim()).filter(Boolean);
-                const full = parts.length >= 2 || String(v).length > 26;
                 return (
-                  <div className={"rc-sc" + (full ? " rc-sc--full" : "")} key={i}>
+                  <div className="rc-sc" key={i}>
                     <span className="rc-sc__k">{k}</span>
                     <div className="rc-sc__chips">
                       {parts.map((p, j) => <span className="rc-feat__chip" key={j}>{nbHyph(titleCase(p))}</span>)}

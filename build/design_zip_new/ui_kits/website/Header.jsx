@@ -28,7 +28,8 @@
     .rc-hd__badge{position:absolute;top:-7px;right:-7px;min-width:19px;height:19px;border-radius:10px;
       background:var(--grad-accent);color:var(--text-on-accent);font-family:var(--font-mono);font-size:11px;
       font-weight:600;display:grid;place-items:center;padding:0 5px;box-shadow:var(--glow-accent-sm);}
-    .rc-hd__cats{position:relative;margin-left:auto;}
+    /* Categories 下拉：电脑端隐藏（顶部已有导航），只在手机端显示 */
+    .rc-hd__cats{position:relative;margin-left:auto;display:none;}
     .rc-hd__catsbtn{display:inline-flex;align-items:center;gap:7px;height:38px;padding:0 15px;border-radius:var(--r-pill);
       border:1px solid var(--line-2);background:var(--surface-1);color:var(--text-2);font-family:var(--font-body);
       font-size:13.5px;font-weight:500;cursor:pointer;transition:color var(--dur-fast),border-color var(--dur-fast);}
@@ -42,7 +43,7 @@
       font-size:14px;color:var(--text-2);cursor:pointer;transition:background var(--dur-fast),color var(--dur-fast);}
     .rc-hd__catsmenu a:hover{background:var(--surface-2);color:var(--text-1);}
     .rc-hd__catdot{width:9px;height:9px;border-radius:50%;flex-shrink:0;}
-    @media(max-width:820px){.rc-hd__nav,.rc-hd__search{display:none}}
+    @media(max-width:820px){.rc-hd__nav,.rc-hd__search{display:none}.rc-hd__cats{display:block;}}
     `;
     document.head.appendChild(s);
   }
