@@ -281,8 +281,8 @@ textarea.pinput{height:auto;padding:10px 12px;line-height:1.5;resize:vertical;}
         <div><label class="fl">Category</label><select id="edCat" class="pinput w"></select></div>
         <div><label class="fl">Price</label><input id="edPrice" class="pinput w" placeholder="$1,299.99 or Contact for quote"></div>
       </div>
-      <label class="fl">Tags <span class="muted" style="padding:0">(comma-separated)</span></label>
-      <input id="edTags" class="pinput w">
+      <label class="fl">Tags <span class="muted" style="padding:0">(one per line)</span></label>
+      <textarea id="edTags" class="pinput w" rows="4" placeholder="e.g. 35,000 Pa"></textarea>
       <label class="fl">Verdict</label>
       <textarea id="edVerdict" class="pinput w" rows="3"></textarea>
       <label class="fl">Prices <span class="muted" style="padding:0">(retailer · price · link — shown in the compare table)</span></label>
@@ -501,7 +501,7 @@ function openEditor(id){
   }
   $('edName').value=edData.name||''; $('edBrand').value=edData.brand||'';
   $('edCat').value=edData.cat||CATS[0]; $('edPrice').value=edData.price||'';
-  $('edTags').value=(edData.tags||[]).join(', '); $('edVerdict').value=edData.verdict||'';
+  $('edTags').value=(edData.tags||[]).join('\n'); $('edVerdict').value=edData.verdict||'';
   $('edFeatured').checked=!!edData.featured; $('edErr').textContent='';
   renderPrices(edData.prices);
   $('edJson').value=JSON.stringify(edData,null,2); renderThumb();
@@ -516,7 +516,7 @@ function syncFromFields(){
   let obj; try{ obj=JSON.parse($('edJson').value); }catch(_){ obj=edData; }
   obj.name=$('edName').value; obj.brand=$('edBrand').value; obj.cat=$('edCat').value;
   obj.price=$('edPrice').value; obj.verdict=$('edVerdict').value; obj.featured=$('edFeatured').checked;
-  obj.tags=$('edTags').value.split(',').map(s=>s.trim()).filter(Boolean);
+  obj.tags=$('edTags').value.split('\n').map(s=>s.trim()).filter(Boolean);
   obj.prices=collectPrices();
   if(edData.image) obj.image=edData.image; else delete obj.image;
   edData=obj; $('edJson').value=JSON.stringify(obj,null,2);
@@ -574,7 +574,7 @@ $('edSave').addEventListener('click',async ()=>{
   // friendly fields win
   obj.name=$('edName').value.trim(); obj.brand=$('edBrand').value.trim(); obj.cat=$('edCat').value;
   obj.price=$('edPrice').value.trim(); obj.verdict=$('edVerdict').value; obj.featured=$('edFeatured').checked;
-  obj.tags=$('edTags').value.split(',').map(s=>s.trim()).filter(Boolean);
+  obj.tags=$('edTags').value.split('\n').map(s=>s.trim()).filter(Boolean);
   obj.prices=collectPrices();
   if(edData.image) obj.image=edData.image; else delete obj.image;
   if(!obj.name){ $('edErr').textContent='Name is required.'; return; }
