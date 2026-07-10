@@ -768,7 +768,7 @@ function App(){
   const Header=window.RCHeader;
   return (
     <div className="rc-app">
-      <Header nav={view.name==="home"?"Home":"Robots"} compareCount={compare.size} onHome={goHome} onNav={onNav} onCompare={onCompare} onSearch={setQuery} onSearchGo={onSearchGo} query={query} onCategory={openCategory} />
+      <Header nav={view.name==="home"?"Home":(view.name==="guides"||view.name==="post")?"Guides":view.name==="news"?"News":"Robots"} compareCount={compare.size} onHome={goHome} onNav={onNav} onCompare={onCompare} onSearch={setQuery} onSearchGo={onSearchGo} query={query} onCategory={openCategory} />
       {view.name==="home" && <window.RCHome onOpenCategory={openCategory} onOpen={open} onAdd={onAdd} compare={compare} onNews={onNews} onQuote={openQuote} onOpenGuides={openGuides} onOpenPost={openPost} />}
       {view.name==="catalog" && <window.RCCatalog key={(view.cat||"")+"|"+(view.search||"")} initialCat={view.cat} search={view.search} onOpen={open} onAdd={onAdd} compare={compare} onQuote={openQuote} />}
       {view.name==="detail" && <window.RCDetail robot={DATA.byId[view.id]} onBack={()=>openCategory(DATA.byId[view.id].cat)} onAdd={onAdd} compare={compare} onQuote={openQuote} />}
