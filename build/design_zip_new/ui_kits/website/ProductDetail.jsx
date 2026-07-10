@@ -172,7 +172,7 @@
           <div className="rc-dt__info">
             <div className="rc-dt__brand">{r.brand}</div>
             <h1 className="rc-dt__name">{r.name}</h1>
-            <div className="rc-dt__tags">{radarTags(r).map((t) => <Tag key={t} style={{ color: "#F5B14C", background: "rgba(245,177,76,.13)", borderColor: "rgba(245,177,76,.38)" }}>{tidyTag(t)}</Tag>)}</div>
+            <div className="rc-dt__tags">{radarTags(r).map((t) => <Tag key={t} style={{ color: "#8A6D3B", background: "#F6F1E7", borderColor: "rgba(138,109,59,.28)" }}>{tidyTag(t)}</Tag>)}</div>
             <div className="rc-dt__priced">
               {isQuote
                 ? <span className="rc-dt__quotelbl">Priced by quote</span>
