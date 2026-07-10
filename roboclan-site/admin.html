@@ -298,6 +298,7 @@ textarea.pinput{height:auto;padding:10px 12px;line-height:1.5;resize:vertical;}
           <label class="fl">Product image</label>
           <div style="display:flex;gap:8px;flex-wrap:wrap">
             <label class="btn-sm" style="cursor:pointer">Upload…<input id="edFile" type="file" accept="image/*" class="hide"></label>
+            <button class="btn-sm ghost" id="edReposition" type="button">Re-position</button>
             <button class="btn-sm ghost" id="edImgClear" type="button">Remove</button>
           </div>
           <label class="ck" style="margin-top:8px;font-size:13px"><input type="checkbox" id="edRmBg" checked> Auto-remove background (cut out the product)</label>
@@ -452,7 +453,10 @@ function fillCatSelects(){
   $('edCat').innerHTML=CATS.map(c=>`<option>${esc(c)}</option>`).join('');
 }
 async function loadProducts(){
-  prodLoaded=true; fillCatSelects();
+  prodLoaded=true;
+  const _cc=$('pCat').value, _cs=$('pSearch').value;   // 保存当前品类/搜索，重建下拉后还原（保存后不跳回全部）
+  fillCatSelects();
+  $('pCat').value=_cc; $('pSearch').value=_cs;
   const { data, error } = await sb.from('products').select('id,cat,sort,data,image_url').order('sort',{ascending:true});
   const tb=$('prodTbl').querySelector('tbody');
   if(error){ tb.innerHTML='<tr><td colspan="6" class="empty">Could not load products ('+esc(error.message)+')</td></tr>'; return; }
@@ -570,16 +574,30 @@ $('edFile').addEventListener('change',async e=>{
     $('edImgHint').textContent='Position the product…';
     const blob=await openImgEditor(src);
     if(!blob){ $('edImgHint').textContent='Cancelled.'; e.target.value=''; return; }
-    $('edImgHint').textContent='Uploading…';
-    const slug=(($('edName').value||edData.id||'product').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,''))||'product';
-    const path=slug+'-'+Date.now()+'.webp';
-    const { error }=await sb.storage.from('product-images').upload(path,blob,{contentType:'image/webp',upsert:true});
-    if(error) throw error;
-    const { data:{ publicUrl } }=sb.storage.from('product-images').getPublicUrl(path);
-    edData.image=publicUrl; syncFromFields(); renderThumb();
-    $('edImgHint').textContent='Uploaded ✓';
+    await uploadFramed(blob);
   }catch(err){ $('edImgHint').textContent='Upload failed: '+(err.message||err); }
   e.target.value='';
+});
+async function uploadFramed(blob){
+  $('edImgHint').textContent='Uploading…';
+  const slug=(($('edName').value||edData.id||'product').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,''))||'product';
+  const path=slug+'-'+Date.now()+'.webp';
+  const { error }=await sb.storage.from('product-images').upload(path,blob,{contentType:'image/webp',upsert:true});
+  if(error) throw error;
+  const { data:{ publicUrl } }=sb.storage.from('product-images').getPublicUrl(path);
+  edData.image=publicUrl; syncFromFields(); renderThumb();
+  $('edImgHint').textContent='Uploaded ✓';
+}
+// 重新编辑已上传的图（拖拽缩放重新定位，不用重新上传源图）
+$('edReposition').addEventListener('click',async ()=>{
+  if(!edData.image){ $('edImgHint').textContent='No image to re-position yet.'; return; }
+  try{
+    $('edImgHint').textContent='Loading image…';
+    const resp=await fetch(edData.image,{mode:'cors',cache:'no-store'}); const blob=await resp.blob();
+    const framed=await openImgEditor(blob);
+    if(!framed){ $('edImgHint').textContent='Cancelled.'; return; }
+    await uploadFramed(framed);
+  }catch(err){ $('edImgHint').textContent='Re-position failed: '+(err.message||err); }
 });
 $('edImgClear').addEventListener('click',()=>{ delete edData.image; syncFromFields(); renderThumb(); $('edImgHint').textContent='Image removed.'; });
 
