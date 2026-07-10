@@ -545,8 +545,8 @@
     const bestOf = (prices) => {
       if (!prices || !prices.length) return null;
       const c = prices.map((x) => Array.isArray(x)
-        ? { ch: x[0], p: x[1], url: (typeof x[2] === "string" && /^https?:/.test(x[2])) ? x[2] : null }
-        : { ch: x.ch, p: x.p, url: x.url })
+        ? { ch: x[0], p: x[1], url: [x[2], x[3]].find((v) => typeof v === "string" && /^https?:/.test(v)) || null }
+        : { ch: x.retailer || x.channel || x.ch, p: (x.price != null ? x.price : x.p), url: x.url })
         .filter((x) => _num(x.p) != null).map((x) => ({ ch: x.ch, p: x.p, url: x.url, n: _num(x.p) }));
       if (!c.length) return null;
       c.sort((a, b) => a.n - b.n);

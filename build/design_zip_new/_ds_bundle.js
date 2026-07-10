@@ -745,7 +745,7 @@ function ProductCard({
   // prices 行格式 [零售商, 价格, (可选)链接]；取有效价里最低的作 best，真实零售商名才展示，首发价只作参考
   const _bu = (prices || []).map((row) => Array.isArray(row)
     ? { ch: row[0], p: row[1], url: [row[2], row[3]].find((v) => typeof v === "string" && /^https?:/.test(v)) || null }
-    : { ch: row.ch, p: (row.price != null ? row.price : row.p), url: row.url });
+    : { ch: row.retailer || row.channel || row.ch, p: (row.price != null ? row.price : row.p), url: row.url });
   const _cands = (!_isQuote) ? _bu.filter((x) => _num(x.p)).map((x) => ({ n: _num(x.p), p: x.p, ch: x.ch, url: x.url })) : [];
   _cands.sort((a, b) => a.n - b.n);
   const _best = _cands.length ? _cands[0] : null;
