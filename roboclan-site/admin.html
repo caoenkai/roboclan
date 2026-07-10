@@ -119,6 +119,8 @@ textarea.pinput{height:auto;padding:10px 12px;line-height:1.5;resize:vertical;}
 .prow-edit .pr-del:hover{color:var(--danger);}
 #imgEditOv{z-index:120;}
 #imgEditOv .modal{max-width:min(94vw,560px);}
+.cover-box{width:100%;aspect-ratio:3/2;border:1px dashed var(--line-2);border-radius:12px;background:#f6f6f3;display:flex;align-items:center;justify-content:center;color:var(--text-3);cursor:pointer;overflow:hidden;font-size:13px;text-align:center;padding:8px;}
+.cover-box img{width:100%;height:100%;object-fit:cover;display:block;}
 .ie-view{width:100%;aspect-ratio:1;margin:0 auto;position:relative;overflow:hidden;background:#fff;border:1px solid var(--line-2);border-radius:12px;cursor:grab;touch-action:none;}
 .ie-view:active{cursor:grabbing;}
 .ie-view img{position:absolute;user-select:none;-webkit-user-drag:none;pointer-events:none;}
@@ -305,8 +307,11 @@ textarea.pinput{height:auto;padding:10px 12px;line-height:1.5;resize:vertical;}
       </div>
       <label class="fl">Excerpt <span class="muted" style="padding:0">(one-line summary — shows on cards &amp; search)</span></label>
       <textarea id="poExcerpt" class="pinput w" rows="2"></textarea>
-      <label class="fl">Cover image URL <span class="muted" style="padding:0">(optional)</span></label>
-      <input id="poCover" class="pinput w" placeholder="https://…">
+      <label class="fl">Cover image <span class="muted" style="padding:0">(3:2 · shows on the home guide banner &amp; article page)</span></label>
+      <div id="poCoverBox" class="cover-box"></div>
+      <input id="poCoverFile" type="file" accept="image/*" class="hide">
+      <div class="muted" id="poCoverHint" style="padding:6px 0 0">Click to upload — position it in a 3:2 frame, exactly as it appears on the site.</div>
+      <input id="poCover" type="hidden">
       <label class="fl">Body <span class="muted" style="padding:0">(HTML — use &lt;h2&gt; &lt;h3&gt; &lt;p&gt; &lt;ul&gt;&lt;li&gt; &lt;a href&gt; &lt;strong&gt;. First paragraph can be &lt;p class="lead"&gt;.)</span></label>
       <textarea id="poBody" class="pinput w mono" rows="16" spellcheck="false"></textarea>
       <div class="grid2" style="margin-top:14px">
@@ -671,10 +676,11 @@ async function uploadFramed(blob){
 
 // client-side compress → webp, max 1000px
 // ---------- 手动图片定位编辑器（拖拽 + 缩放，白底自动补）----------
-let IEV=340;   // 编辑视口实际像素，打开时按真实渲染尺寸读取（保证拖拽/缩放坐标准确）
-let ieImg=null, ieFitW=IEV, ieFitH=IEV, ieZ=1, ieOx=0, ieOy=0, ieResolve=null, ieUrl=null;
+let IEVW=340, IEVH=340, ieAspect=1;   // 编辑视口像素 + 目标宽高比（产品=1，导购封面=3/2）
+let ieImg=null, ieFitW=IEVW, ieFitH=IEVH, ieZ=1, ieOx=0, ieOy=0, ieResolve=null, ieUrl=null;
 function ieRender(){ const el=$('ieImg'); if(!el) return; el.style.width=(ieFitW*ieZ)+'px'; el.style.height=(ieFitH*ieZ)+'px'; el.style.left=ieOx+'px'; el.style.top=ieOy+'px'; }
-function openImgEditor(blob){
+function openImgEditor(blob, aspect){
+  ieAspect = aspect || 1;
   return new Promise((resolve)=>{
     ieResolve=resolve;
     if(ieUrl) URL.revokeObjectURL(ieUrl);
@@ -682,11 +688,14 @@ function openImgEditor(blob){
     ieImg=new Image();
     ieImg.onload=()=>{
       $('imgEditOv').classList.remove('hide');          // 先显示，才能读到视口真实尺寸
-      IEV=$('ieView').clientWidth||340;
+      IEVW=$('ieView').clientWidth||340;
+      IEVH=IEVW/ieAspect;
+      $('ieView').style.height=IEVH+'px';
+      { const plus=document.querySelector('.ie-plus'); if(plus) plus.style.display=(ieAspect===1)?'grid':'none'; }
       $('ieImg').src=ieUrl;
-      const ar=ieImg.naturalWidth/ieImg.naturalHeight;
-      if(ar>=1){ ieFitW=IEV; ieFitH=IEV/ar; } else { ieFitH=IEV; ieFitW=IEV*ar; }
-      ieZ=1; ieOx=(IEV-ieFitW)/2; ieOy=(IEV-ieFitH)/2;
+      const s=Math.min(IEVW/ieImg.naturalWidth, IEVH/ieImg.naturalHeight);
+      ieFitW=ieImg.naturalWidth*s; ieFitH=ieImg.naturalHeight*s;
+      ieZ=1; ieOx=(IEVW-ieFitW)/2; ieOy=(IEVH-ieFitH)/2;
       $('ieZoom').value=1; ieRender();
     };
     ieImg.onerror=()=>{ resolve(null); };
@@ -703,18 +712,18 @@ function openImgEditor(blob){
   v.addEventListener('touchstart',down,{passive:false}); window.addEventListener('touchmove',move,{passive:false}); window.addEventListener('touchend',up);
 })();
 document.getElementById('ieZoom').addEventListener('input',e=>{
-  const nz=parseFloat(e.target.value), cx=IEV/2, cy=IEV/2;
+  const nz=parseFloat(e.target.value), cx=IEVW/2, cy=IEVH/2;
   const oldW=ieFitW*ieZ, oldH=ieFitH*ieZ, newW=ieFitW*nz, newH=ieFitH*nz;
   ieOx=cx-(cx-ieOx)*(newW/oldW); ieOy=cy-(cy-ieOy)*(newH/oldH); ieZ=nz; ieRender();
 });
-document.getElementById('ieReset').addEventListener('click',()=>{ ieZ=1; $('ieZoom').value=1; ieOx=(IEV-ieFitW)/2; ieOy=(IEV-ieFitH)/2; ieRender(); });
+document.getElementById('ieReset').addEventListener('click',()=>{ ieZ=1; $('ieZoom').value=1; ieOx=(IEVW-ieFitW)/2; ieOy=(IEVH-ieFitH)/2; ieRender(); });
 function ieDone(res){ $('imgEditOv').classList.add('hide'); const r=ieResolve; ieResolve=null; if(r) r(res); }
 document.getElementById('ieClose').addEventListener('click',()=>ieDone(null));
 document.getElementById('ieCancel').addEventListener('click',()=>ieDone(null));
 document.getElementById('ieApply').addEventListener('click',()=>{
-  const O=1000, f=O/IEV;
-  const c=document.createElement('canvas'); c.width=O; c.height=O;
-  const ctx=c.getContext('2d'); ctx.fillStyle='#ffffff'; ctx.fillRect(0,0,O,O);
+  const OW=1200, f=OW/IEVW, OH=Math.round(OW/ieAspect);
+  const c=document.createElement('canvas'); c.width=OW; c.height=OH;
+  const ctx=c.getContext('2d'); ctx.fillStyle='#ffffff'; ctx.fillRect(0,0,OW,OH);
   ctx.drawImage(ieImg, ieOx*f, ieOy*f, ieFitW*ieZ*f, ieFitH*ieZ*f);
   $('imgEditOv').classList.add('hide');
   c.toBlob(b=>{ const r=ieResolve; ieResolve=null; if(r) r(b); },'image/webp',0.86);
@@ -832,7 +841,7 @@ async function openPost(id){
   $('poDelete').style.visibility = poIsNew?'hidden':'visible';
   $('poHead').value=r.title||''; $('poCat').value=r.category||''; $('poSlug').value=r.id||'';
   $('poAuthor').value=r.author||'Roboclan Editorial'; $('poExcerpt').value=r.excerpt||'';
-  $('poCover').value=r.cover_image||''; $('poBody').value=r.body||'';
+  $('poCover').value=r.cover_image||''; renderPoCover(); $('poBody').value=r.body||'';
   $('poSort').value=r.sort==null?0:r.sort; $('poPub').checked=!!r.published; $('poErr').textContent='';
   $('poSlug').disabled=!poIsNew; // slug is primary key — don't change after creation
   $('postOv').classList.remove('hide');
@@ -840,6 +849,24 @@ async function openPost(id){
 // auto-suggest slug from title when creating
 $('poHead').addEventListener('input',()=>{ if(poIsNew && !$('poSlug').dataset.touched){ $('poSlug').value=slugify($('poHead').value); } });
 $('poSlug').addEventListener('input',()=>{ $('poSlug').dataset.touched='1'; });
+// cover image: upload + 3:2 WYSIWYG framing (same editor as products, wide frame)
+function renderPoCover(){
+  const box=$('poCoverBox'); if(!box) return; const u=($('poCover').value||'').trim();
+  box.innerHTML = u ? '<img src="'+u+'" alt="">' : 'Click to add a 3:2 cover image';
+}
+$('poCoverBox').addEventListener('click',()=>$('poCoverFile').click());
+$('poCoverFile').addEventListener('change', async (e)=>{
+  const file=e.target.files[0]; if(!file) return;
+  try{
+    $('poCoverHint').textContent='Position the cover…';
+    const blob=await openImgEditor(file, 3/2);
+    if(!blob){ $('poCoverHint').textContent='Cancelled.'; e.target.value=''; return; }
+    const url=await uploadFramed(blob);
+    $('poCover').value=url; renderPoCover();
+    $('poCoverHint').textContent='Uploaded ✓ — click the image to reposition.';
+  }catch(err){ $('poCoverHint').textContent='Upload failed: '+(err.message||err); }
+  e.target.value='';
+});
 function closePost(){ $('postOv').classList.add('hide'); $('poSlug').dataset.touched=''; }
 $('poClose').addEventListener('click',closePost); $('poCancel').addEventListener('click',closePost);
 $('postOv').addEventListener('click',e=>{ if(e.target.id==='postOv') closePost(); });
