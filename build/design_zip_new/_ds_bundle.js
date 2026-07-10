@@ -750,11 +750,9 @@ function ProductCard({
   _cands.sort((a, b) => a.n - b.n);
   const _best = _cands.length ? _cands[0] : null;
   const _buyUrl = (_best && _best.url) || (_bu.find((x) => x.url) || {}).url || null;
-  const _msrpN = _num(price);
-  // 绿色永远是最低可得价：零售商行与首发价取最低；真实商家名才附上
-  const _grUseBest = _best && (!_msrpN || _best.n <= _msrpN);
-  const _grP = _grUseBest ? _best.p : price;
-  const _grCh = (_grUseBest && _realCh(_best.ch)) ? _best.ch : null;
+  // 绿色 = best price = 零售/品牌各行里的最低价（MSRP 只作参考）；真实商家名才附上
+  const _grP = _best ? _best.p : price;
+  const _grCh = (_best && _realCh(_best.ch)) ? _best.ch : null;
   const _ctaLabel = _isQuote ? "Contact ↗" : (_buyUrl ? "View deal ↗" : "View details");
   const _ctaAct = (e) => {
     e.stopPropagation();
