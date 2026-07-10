@@ -155,7 +155,7 @@
               <div style={{ marginLeft: "auto", display: "flex", gap: 10, flexWrap: "wrap" }}>
                 <Button variant={added ? "secondary" : "primary"} onClick={() => onAdd(r.id)}>{added ? "✓ In compare" : "＋ Add to compare"}</Button>
                 {isQuote
-                  ? <Button variant="primary" onClick={() => onQuote && onQuote(r.name)}>Contact for quote</Button>
+                  ? <Button variant="primary" onClick={() => onQuote && onQuote(r.name)}>Contact</Button>
                   : <Button variant="primary" onClick={() => { try { window.rcLog && window.rcLog(r.name, r.cat, "outbound"); } catch (e) {} if (bestUrl) window.open(bestUrl, "_blank", "noopener"); }}>{bestUrl ? "View deal ↗" : "View deal"}</Button>}
               </div>
             </div>

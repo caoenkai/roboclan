@@ -687,9 +687,13 @@ function injectPcStyles() {
   .rc-pc__name{font-family:var(--font-display);font-weight:600;font-size:17px;letter-spacing:-.01em;color:var(--text-1);margin:0;}
   .rc-pc__brand{font-size:12.5px;color:var(--text-3);margin-top:2px;}
   .rc-pc__priced{display:flex;align-items:flex-end;justify-content:space-between;gap:10px;margin-top:12px;}
-  .rc-pc__price{font-family:var(--font-mono);font-size:19px;font-weight:600;color:var(--text-1);}
+  .rc-pc__price{display:flex;flex-direction:column;gap:1px;font-family:var(--font-mono);}
+  .rc-pc__msrp{font-size:11.5px;color:var(--text-3);}
+  .rc-pc__msrp.struck{text-decoration:line-through;}
+  .rc-pc__bestp{font-size:18px;font-weight:600;color:var(--text-1);}
   .rc-pc__price .from{font-size:11px;color:var(--text-3);font-weight:500;margin-right:5px;letter-spacing:.06em;text-transform:uppercase;}
   .rc-pc__best{font-family:var(--font-mono);font-size:12px;color:var(--success);white-space:nowrap;}
+  .rc-pc__qlbl{font-family:var(--font-mono);font-size:13px;color:var(--text-3);text-transform:uppercase;letter-spacing:.05em;}
   .rc-pc__specs{display:flex;flex-direction:column;gap:5px;margin-top:13px;}
   .rc-pc__spec{display:flex;justify-content:space-between;gap:12px;font-size:12.5px;color:var(--text-3);}
   .rc-pc__spec b{font-family:var(--font-mono);color:var(--text-2);font-weight:500;}
@@ -737,9 +741,15 @@ function ProductCard({
   const _isQuote = /quote|contact/i.test(String(price || ""));
   const _bu = (prices || []).map((row) => Array.isArray(row) ? { p: row[1], best: row[2], url: row[3] } : { p: row.price, best: row.best, url: row.url });
   const _bestBuy = _bu.find((x) => x.best && x.url) || _bu.find((x) => x.url) || null;
-  const _bestPrice = (_bu.find((x) => x.best) || _bu[0] || {}).p || null;
   const _buyUrl = _bestBuy ? _bestBuy.url : null;
-  const _ctaLabel = _isQuote ? "Contact for quote" : (_buyUrl ? "View deal ↗" : "View details");
+  // best price = 首发价 + 各零售价里的最低价（没零售价则=首发价 → 每张卡都有，统一）
+  const _num = (s) => { const n = parseFloat(String(s).replace(/[^0-9.]/g, "")); return isFinite(n) && n > 0 ? n : 0; };
+  const _cands = [];
+  if (!_isQuote) { if (_num(price)) _cands.push([_num(price), price]); _bu.forEach((x) => { if (_num(x.p)) _cands.push([_num(x.p), x.p]); }); }
+  _cands.sort((a, b) => a[0] - b[0]);
+  const _bestPrice = _cands.length ? _cands[0][1] : null;
+  const _msrpHigher = _cands.length && _num(price) > _cands[0][0];
+  const _ctaLabel = _isQuote ? "Contact" : (_buyUrl ? "View deal ↗" : "View details");
   const _ctaAct = (e) => {
     e.stopPropagation();
     if (_isQuote) { onQuote && onQuote(name); return; }
@@ -786,11 +796,12 @@ function ProductCard({
     className: "rc-pc__priced"
   }, /*#__PURE__*/React.createElement("div", {
     className: "rc-pc__price"
-  }, priceFrom && /*#__PURE__*/React.createElement("span", {
-    className: "from"
-  }, "from"), price), _bestPrice && !_isQuote && String(_bestPrice) !== String(price) && /*#__PURE__*/React.createElement("span", {
-    className: "rc-pc__best"
-  }, "Best ", _bestPrice), status && /*#__PURE__*/React.createElement(__ds_scope.Badge, {
+  }, _isQuote
+    ? /*#__PURE__*/React.createElement("span", { className: "rc-pc__qlbl" }, "Enterprise")
+    : /*#__PURE__*/React.createElement(React.Fragment, null,
+        /*#__PURE__*/React.createElement("span", { className: "rc-pc__msrp" + (_msrpHigher ? " struck" : "") }, "MSRP ", price),
+        /*#__PURE__*/React.createElement("span", { className: "rc-pc__bestp" }, "Best ", _bestPrice || price))
+  ), status && /*#__PURE__*/React.createElement(__ds_scope.Badge, {
     tone: status.tone || "neutral"
   }, status.label)), /*#__PURE__*/React.createElement("div", {
     className: "rc-pc__foot"
