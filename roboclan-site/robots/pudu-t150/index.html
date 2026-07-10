@@ -3535,8 +3535,9 @@ return {robots:R,byId:byId,glow:CAT_GLOW,axes:AXES,categories:CATEGORIES};
   // Non-breaking hyphen so words like "self-clean" / "third-party" never split.
   const nbHyph = (s) => String(s).replace(/-/g, "‑");
 
-  // "2 in threshold" 里的 in(英寸)易被误读，统一成 "2-in threshold"（读作 2-inch，一眼是尺寸）
-  const tidyTag = (t) => String(t).replace(/(\d[\d.,]*)\s+in\s+(threshold|mop[-\s]?lift|cut)\b/i, "$1‑in $2");
+  // "2 in threshold" 里的 in(英寸)易被误读 → 任何"数字 + in + 英文词"统一成连字符("2‑in threshold")
+  // 通用规则，未来新标签也自动处理；in 后面若是数字(如"5 in 1")则不动。
+  const tidyTag = (t) => String(t).replace(/(\d[\d.,]*)\s+in\s+(?=[A-Za-z])/g, "$1‑in ");
 
   // Title-case feature phrases: capitalize each word, but leave units,
   // acronyms and product names (anything already containing an uppercase
