@@ -87,9 +87,9 @@
     .rc-dt__best{font-family:var(--font-mono);font-size:13px;color:var(--success);}
     .rc-dt__best b{color:var(--success);}
     .rc-dt__speccard{margin-top:18px;}
-    .rc-dt__panels{display:grid;grid-template-columns:1.1fr .9fr;gap:18px;margin-top:18px;}
+    .rc-dt__panels{display:grid;grid-template-columns:.85fr 1.15fr;gap:18px;margin-top:18px;align-items:start;}
     .rc-dt__radarwrap{display:flex;flex-direction:column;align-items:center;gap:6px;}
-    .rc-dt__seclbl{font-family:var(--font-mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--text-3);margin:0 0 14px;}
+    .rc-dt__seclbl{font-family:var(--font-display);font-weight:600;font-size:18px;letter-spacing:-.01em;color:var(--text-1);margin:0 0 16px;}
     .rc-dt__chips{display:flex;gap:10px;flex-wrap:wrap;}
     .rc-dt__chip{flex:1;min-width:150px;padding:14px 16px;border-radius:var(--r-md);background:var(--surface-1);border:1px solid var(--line);}
     .rc-dt__chip .rc-stat__v{font-size:16px;line-height:1.3;overflow-wrap:break-word;word-break:normal;hyphens:none;}
@@ -146,7 +146,7 @@
             <div className="rc-dt__tags">{radarTags(r).map((t) => <Tag key={t} style={{ color: "#F5B14C", background: "rgba(245,177,76,.13)", borderColor: "rgba(245,177,76,.38)" }}>{tidyTag(t)}</Tag>)}</div>
             <div className="rc-dt__priced">
               {isQuote
-                ? <span className="rc-dt__quotelbl">Enterprise · priced by quote</span>
+                ? <span className="rc-dt__quotelbl">Priced by quote</span>
                 : <div className="rc-dt__pricebox">
                     <StatReadout label={r.priceFrom ? "From" : "Launch MSRP"} value={r.price} accent size="lg" />
                     {bestEntry && bestEntry.p && String(bestEntry.p) !== String(r.price) &&
@@ -155,8 +155,8 @@
               <div style={{ marginLeft: "auto", display: "flex", gap: 10, flexWrap: "wrap" }}>
                 <Button variant={added ? "secondary" : "primary"} onClick={() => onAdd(r.id)}>{added ? "✓ In compare" : "＋ Add to compare"}</Button>
                 {isQuote
-                  ? <Button variant="primary" onClick={() => onQuote && onQuote(r.name)}>Contact</Button>
-                  : <Button variant="primary" onClick={() => { try { window.rcLog && window.rcLog(r.name, r.cat, "outbound"); } catch (e) {} if (bestUrl) window.open(bestUrl, "_blank", "noopener"); }}>{bestUrl ? "View deal ↗" : "View deal"}</Button>}
+                  ? <Button variant="primary" style={{ background: "linear-gradient(135deg,#22c55e,#16a34a)", color: "#fff" }} onClick={() => onQuote && onQuote(r.name)}>Contact ↗</Button>
+                  : <Button variant="primary" style={{ background: "linear-gradient(135deg,#22c55e,#16a34a)", color: "#fff" }} onClick={() => { try { window.rcLog && window.rcLog(r.name, r.cat, "outbound"); } catch (e) {} if (bestUrl) window.open(bestUrl, "_blank", "noopener"); }}>{bestUrl ? "View deal ↗" : "View deal"}</Button>}
               </div>
             </div>
             {!isQuote && r.prices && r.prices.length > 0 &&
@@ -172,32 +172,22 @@
             </div>
           </GlassCard>
           <GlassCard>
-            <p className="rc-dt__seclbl">The verdict</p>
-            <div className="rc-dt__verdict"><p>{r.verdict}</p></div>
+            <p className="rc-dt__seclbl">Features &amp; Specs</p>
+            <div className="rc-dt__specgrid">
+              {r.specs.map(([k, v], i) => {
+                const parts = String(v).split(/ · | — /).map((p) => p.trim()).filter(Boolean);
+                return (
+                  <div className="rc-sc" key={i}>
+                    <span className="rc-sc__k">{k}</span>
+                    <div className="rc-sc__chips">
+                      {parts.map((p, j) => <span className="rc-feat__chip" key={j}>{nbHyph(titleCase(p))}</span>)}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
           </GlassCard>
         </div>
-
-        <div className="rc-dt__pc">
-          <div className="rc-dt__pccol pro"><h4>Pros</h4>{r.pros.map((p, i) => <div className="rc-dt__pcli" key={i}><span className="m p">+</span>{p}</div>)}</div>
-          <div className="rc-dt__pccol con"><h4>Cons</h4>{r.cons.map((p, i) => <div className="rc-dt__pcli" key={i}><span className="m c">–</span>{p}</div>)}</div>
-        </div>
-
-        <GlassCard className="rc-dt__speccard">
-          <p className="rc-dt__seclbl">Features &amp; Specs</p>
-          <div className="rc-dt__specgrid">
-            {r.specs.map(([k, v], i) => {
-              const parts = String(v).split(/ · | — /).map((p) => p.trim()).filter(Boolean);
-              return (
-                <div className="rc-sc" key={i}>
-                  <span className="rc-sc__k">{k}</span>
-                  <div className="rc-sc__chips">
-                    {parts.map((p, j) => <span className="rc-feat__chip" key={j}>{nbHyph(titleCase(p))}</span>)}
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </GlassCard>
       </div>
     );
   }

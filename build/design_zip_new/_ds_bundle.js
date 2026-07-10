@@ -693,7 +693,7 @@ function injectPcStyles() {
   .rc-pc__bestp{font-size:18px;font-weight:600;color:var(--text-1);}
   .rc-pc__price .from{font-size:11px;color:var(--text-3);font-weight:500;margin-right:5px;letter-spacing:.06em;text-transform:uppercase;}
   .rc-pc__best{font-family:var(--font-mono);font-size:12px;color:var(--success);white-space:nowrap;}
-  .rc-pc__qlbl{font-family:var(--font-mono);font-size:13px;color:var(--text-3);text-transform:uppercase;letter-spacing:.05em;}
+  .rc-pc__qlbl{font-family:var(--font-mono);font-size:14px;color:var(--text-1);text-transform:uppercase;letter-spacing:.05em;}
   .rc-pc__specs{display:flex;flex-direction:column;gap:5px;margin-top:13px;}
   .rc-pc__spec{display:flex;justify-content:space-between;gap:12px;font-size:12.5px;color:var(--text-3);}
   .rc-pc__spec b{font-family:var(--font-mono);color:var(--text-2);font-weight:500;}
@@ -701,8 +701,8 @@ function injectPcStyles() {
     margin-top:14px;padding-top:13px;border-top:1px solid var(--line);}
   .rc-pc__cta{display:inline-flex;align-items:center;gap:5px;font-size:12.5px;font-weight:600;
     color:var(--accent-ink);cursor:pointer;}
-  .rc-pc__cta.is-buy{background:var(--grad-accent);color:var(--text-on-accent);padding:8px 14px;border-radius:var(--r-pill);box-shadow:var(--glow-accent-sm);}
-  .rc-pc__cta.is-buy:hover{box-shadow:var(--glow-accent-md);}
+  .rc-pc__cta.is-buy{background:linear-gradient(135deg,#22c55e,#16a34a);color:#fff;padding:8px 15px;border-radius:var(--r-pill);box-shadow:0 6px 16px rgba(22,163,74,.32);}
+  .rc-pc__cta.is-buy:hover{box-shadow:0 8px 22px rgba(22,163,74,.45);}
   .rc-pc__mini{flex-shrink:0;}
   `;
   document.head.appendChild(s);
@@ -749,7 +749,7 @@ function ProductCard({
   _cands.sort((a, b) => a[0] - b[0]);
   const _bestPrice = _cands.length ? _cands[0][1] : null;
   const _msrpHigher = _cands.length && _num(price) > _cands[0][0];
-  const _ctaLabel = _isQuote ? "Contact" : (_buyUrl ? "View deal ↗" : "View details");
+  const _ctaLabel = _isQuote ? "Contact ↗" : (_buyUrl ? "View deal ↗" : "View details");
   const _ctaAct = (e) => {
     e.stopPropagation();
     if (_isQuote) { onQuote && onQuote(name); return; }
@@ -797,9 +797,9 @@ function ProductCard({
   }, /*#__PURE__*/React.createElement("div", {
     className: "rc-pc__price"
   }, _isQuote
-    ? /*#__PURE__*/React.createElement("span", { className: "rc-pc__qlbl" }, "Enterprise")
+    ? /*#__PURE__*/React.createElement("span", { className: "rc-pc__qlbl" }, "Contact Sales")
     : /*#__PURE__*/React.createElement(React.Fragment, null,
-        /*#__PURE__*/React.createElement("span", { className: "rc-pc__msrp" + (_msrpHigher ? " struck" : "") }, "MSRP ", price),
+        /*#__PURE__*/React.createElement("span", { className: "rc-pc__msrp" }, "MSRP ", price),
         /*#__PURE__*/React.createElement("span", { className: "rc-pc__bestp" }, "Best ", _bestPrice || price))
   ), status && /*#__PURE__*/React.createElement(__ds_scope.Badge, {
     tone: status.tone || "neutral"
