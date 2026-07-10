@@ -143,8 +143,8 @@
     _candsD.sort((a, b) => a.n - b.n);
     const _bestD = (!isQuote && _candsD.length) ? _candsD[0] : null;
     const _msrpND = _numD(r.price);
-    // 只有真的比首发价更低，才显示独立的 best 行（否则和 MSRP 一样，重复无意义）
-    const best = (_bestD && _msrpND && _bestD.n < _msrpND - 0.01) ? _bestD : null;
+    // MSRP（首发价，参考）+ best price（当前最低价，带商家）并列显示
+    const best = _bestD;
     return (
       <div className="rc-dt">
         <span className="rc-dt__back" onClick={onBack}>‹ Back to catalog</span>
@@ -174,8 +174,8 @@
               {isQuote
                 ? <span className="rc-dt__quotelbl">Priced by quote</span>
                 : <div className="rc-dt__pricebox">
-                    <StatReadout label="MSRP" value={r.price} accent size="lg" />
-                    {best && <span className="rc-dt__best">Best <b>{best.p}</b>{_realChD(best.ch) ? " · " + best.ch : ""}</span>}
+                    <StatReadout label="MSRP" value={r.price} size="lg" />
+                    {best && <span className="rc-dt__best">Best <b>{best.p}</b>{_realChD(best.ch) ? <React.Fragment> · {bestUrl ? <a href={bestUrl} target="_blank" rel="noopener" onClick={(e) => e.stopPropagation()} style={{ color: "var(--success)" }}>{best.ch}</a> : best.ch}</React.Fragment> : null}</span>}
                   </div>}
               <div style={{ marginLeft: "auto", display: "flex", gap: 10, flexWrap: "wrap" }}>
                 {isQuote
