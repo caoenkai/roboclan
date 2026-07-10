@@ -72,6 +72,11 @@
     .rc-dt__heroglow{position:absolute;width:280px;height:280px;border-radius:50%;filter:blur(50px);opacity:.5;}
     .rc-dt__emoji{position:relative;font-size:120px;filter:drop-shadow(0 16px 40px rgba(0,0,0,.6));}
     .rc-dt__img{position:relative;z-index:1;width:100%;height:100%;max-height:320px;object-fit:contain;padding:26px;box-sizing:border-box;}
+    .rc-dt__gallery{display:flex;flex-direction:column;gap:10px;}
+    .rc-dt__thumbs{display:flex;gap:8px;flex-wrap:wrap;}
+    .rc-dt__thumb{width:56px;height:56px;border-radius:9px;border:1px solid var(--line);background:#fff;overflow:hidden;cursor:pointer;padding:4px;flex-shrink:0;}
+    .rc-dt__thumb.on{border-color:var(--accent-ink);box-shadow:0 0 0 1px var(--accent-ink);}
+    .rc-dt__thumb img{width:100%;height:100%;object-fit:contain;}
     .rc-dt__hero:has(.rc-dt__img) .rc-dt__heroglow{display:none;}
     /* 品类 tag：实心深底 + 品类色文字，白底/深底上都清晰 */
     .rc-dt__catpill{position:absolute;top:14px;left:14px;z-index:2;font-family:var(--font-mono);font-size:11px;
@@ -121,6 +126,8 @@
   function Detail({ robot, onBack, onAdd, compare, onQuote }) {
     inject();
     const r = robot; const glow = DATA.glow[r.cat]; const axes = r.axes || DATA.axes[r.cat];
+    const imgs = (r.images && r.images.length) ? r.images : (r.image ? [r.image] : []);
+    const [imgSel, setImgSel] = React.useState(0);
     const added = compare.has(r.id);
     const isQuote = /quote|contact/i.test(r.price || "");
     // 多商家价格 → 最优价（含商家、价格、链接）
@@ -134,12 +141,22 @@
         <span className="rc-dt__back" onClick={onBack}>‹ Back to catalog</span>
 
         <div className="rc-dt__top">
-          <GlassCard padded={false} className="rc-dt__hero">
-            <span className="rc-dt__heroglow" style={{ background: glow }} />
-            {r.image
-              ? <img className="rc-dt__img" src={r.image} alt={r.name} loading="lazy" />
-              : <span className="rc-dt__emoji">{r.emoji}</span>}
-          </GlassCard>
+          <div className="rc-dt__gallery">
+            <GlassCard padded={false} className="rc-dt__hero">
+              <span className="rc-dt__heroglow" style={{ background: glow }} />
+              {imgs.length
+                ? <img className="rc-dt__img" src={imgs[Math.min(imgSel, imgs.length - 1)]} alt={r.name} loading="lazy" />
+                : <span className="rc-dt__emoji">{r.emoji}</span>}
+            </GlassCard>
+            {imgs.length > 1 &&
+              <div className="rc-dt__thumbs">
+                {imgs.map((im, i) => (
+                  <button key={i} type="button" className={"rc-dt__thumb" + (i === imgSel ? " on" : "")} onClick={() => setImgSel(i)}>
+                    <img src={im} alt="" />
+                  </button>
+                ))}
+              </div>}
+          </div>
           <div className="rc-dt__info">
             <div className="rc-dt__brand">{r.brand}</div>
             <h1 className="rc-dt__name">{r.name}</h1>
