@@ -1043,6 +1043,7 @@ function injectPcStyles() {
   .rc-pc__priced{display:flex;align-items:flex-end;justify-content:space-between;gap:10px;margin-top:12px;}
   .rc-pc__price{font-family:var(--font-mono);font-size:19px;font-weight:600;color:var(--text-1);}
   .rc-pc__price .from{font-size:11px;color:var(--text-3);font-weight:500;margin-right:5px;letter-spacing:.06em;text-transform:uppercase;}
+  .rc-pc__best{font-family:var(--font-mono);font-size:12px;color:var(--success);white-space:nowrap;}
   .rc-pc__specs{display:flex;flex-direction:column;gap:5px;margin-top:13px;}
   .rc-pc__spec{display:flex;justify-content:space-between;gap:12px;font-size:12.5px;color:var(--text-3);}
   .rc-pc__spec b{font-family:var(--font-mono);color:var(--text-2);font-weight:500;}
@@ -1050,6 +1051,8 @@ function injectPcStyles() {
     margin-top:14px;padding-top:13px;border-top:1px solid var(--line);}
   .rc-pc__cta{display:inline-flex;align-items:center;gap:5px;font-size:12.5px;font-weight:600;
     color:var(--accent-ink);cursor:pointer;}
+  .rc-pc__cta.is-buy{background:var(--grad-accent);color:var(--text-on-accent);padding:8px 14px;border-radius:var(--r-pill);box-shadow:var(--glow-accent-sm);}
+  .rc-pc__cta.is-buy:hover{box-shadow:var(--glow-accent-md);}
   .rc-pc__mini{flex-shrink:0;}
   `;
   document.head.appendChild(s);
@@ -1075,7 +1078,9 @@ function ProductCard({
   axes,
   score,
   scoreMax = 5,
-  cta = "Compare prices",
+  cta = "View details",
+  prices = [],
+  onQuote,
   added = false,
   onAdd,
   onOpen,
@@ -1083,6 +1088,18 @@ function ProductCard({
   ...rest
 }) {
   injectPcStyles();
+  const _isQuote = /quote|contact/i.test(String(price || ""));
+  const _bu = (prices || []).map((row) => Array.isArray(row) ? { p: row[1], best: row[2], url: row[3] } : { p: row.price, best: row.best, url: row.url });
+  const _bestBuy = _bu.find((x) => x.best && x.url) || _bu.find((x) => x.url) || null;
+  const _bestPrice = (_bu.find((x) => x.best) || _bu[0] || {}).p || null;
+  const _buyUrl = _bestBuy ? _bestBuy.url : null;
+  const _ctaLabel = _isQuote ? "Contact for quote" : (_buyUrl ? "View deal ↗" : "View details");
+  const _ctaAct = (e) => {
+    e.stopPropagation();
+    if (_isQuote) { onQuote && onQuote(name); return; }
+    if (_buyUrl) { try { window.rcLog && window.rcLog(name, category, "buy"); } catch (x) {} window.open(_buyUrl, "_blank", "noopener"); return; }
+    onOpen && onOpen(e);
+  };
   return /*#__PURE__*/React.createElement(__ds_scope.GlassCard, _extends({
     hover: true,
     padded: false,
@@ -1125,19 +1142,16 @@ function ProductCard({
     className: "rc-pc__price"
   }, priceFrom && /*#__PURE__*/React.createElement("span", {
     className: "from"
-  }, "from"), price), status && /*#__PURE__*/React.createElement(__ds_scope.Badge, {
+  }, "from"), price), _bestPrice && !_isQuote && String(_bestPrice) !== String(price) && /*#__PURE__*/React.createElement("span", {
+    className: "rc-pc__best"
+  }, "Best ", _bestPrice), status && /*#__PURE__*/React.createElement(__ds_scope.Badge, {
     tone: status.tone || "neutral"
   }, status.label)), /*#__PURE__*/React.createElement("div", {
     className: "rc-pc__foot"
   }, /*#__PURE__*/React.createElement("span", {
-    className: "rc-pc__cta",
-    onClick: e => {
-      e.stopPropagation();
-      onOpen && onOpen(e);
-    }
-  }, cta, " ", /*#__PURE__*/React.createElement("span", {
-    "aria-hidden": "true"
-  }, "\u203A")), radar ? /*#__PURE__*/React.createElement("span", {
+    className: "rc-pc__cta" + (_isQuote || _buyUrl ? " is-buy" : ""),
+    onClick: _ctaAct
+  }, _ctaLabel), radar ? /*#__PURE__*/React.createElement("span", {
     className: "rc-pc__mini"
   }, /*#__PURE__*/React.createElement(__ds_scope.Radar, {
     values: radar,
@@ -3328,7 +3342,7 @@ return {robots:R,byId:byId,glow:CAT_GLOW,axes:AXES,categories:CATEGORIES};
     { b: "Dreame A3 AWD Pro", t: "lands in North America — LiDAR mapping, no boundary wire, 4WD slopes" },
     { b: "Cordless pool season", t: "self-emptying dock cleaners headline this year's robot lineup" },
   ];
-  function Home({ onOpenCategory, onOpen, onAdd, compare, onNews }) {
+  function Home({ onOpenCategory, onOpen, onAdd, compare, onNews, onQuote }) {
     inject();
     // 新闻条实时从 Supabase 读（后台加了立即显示，无需重新发布）；失败则用内置兜底
     const [news, setNews] = React.useState(NEWS);
@@ -3401,7 +3415,7 @@ return {robots:R,byId:byId,glow:CAT_GLOW,axes:AXES,categories:CATEGORIES};
             <ProductCard key={r.id}
               name={r.name} brand={r.brand} category={r.cat} emoji={r.emoji} image={r.image}
               glow={DATA.glow[r.cat]} price={r.price} priceFrom={r.priceFrom}
-              cta={/quote|contact/i.test(r.price || "") ? "Contact for quote" : "Compare prices"}
+              prices={r.prices} onQuote={onQuote}
               specs={r.cardSpecs} radar={r.radar} axes={r.axes || DATA.axes[r.cat]}
               status={r.status}
               added={compare.has(r.id)} onAdd={() => onAdd(r.id)} onOpen={() => onOpen(r.id)} />
@@ -3450,7 +3464,7 @@ return {robots:R,byId:byId,glow:CAT_GLOW,axes:AXES,categories:CATEGORIES};
     return n >= 15000;                   // "$15k+"
   }
 
-  function Catalog({ initialCat, search, onOpen, onAdd, compare }) {
+  function Catalog({ initialCat, search, onOpen, onAdd, compare, onQuote }) {
     inject();
     const q = (search || "").toLowerCase().trim();
     const [cats, setCats] = React.useState(new Set(initialCat ? [initialCat] : []));
@@ -3516,7 +3530,7 @@ return {robots:R,byId:byId,glow:CAT_GLOW,axes:AXES,categories:CATEGORIES};
             <ProductCard key={r.id}
               name={r.name} brand={r.brand} category={r.cat} emoji={r.emoji} image={r.image}
               glow={DATA.glow[r.cat]} price={r.price} priceFrom={r.priceFrom}
-              cta={/quote|contact/i.test(r.price || "") ? "Contact for quote" : "Compare prices"}
+              prices={r.prices} onQuote={onQuote}
               specs={r.cardSpecs} radar={r.radar} axes={r.axes || DATA.axes[r.cat]} status={r.status}
               added={compare.has(r.id)} onAdd={() => onAdd(r.id)} onOpen={() => onOpen(r.id)} />
           ))}
@@ -3538,6 +3552,37 @@ return {robots:R,byId:byId,glow:CAT_GLOW,axes:AXES,categories:CATEGORIES};
   // "2 in threshold" 里的 in(英寸)易被误读 → 任何"数字 + in + 英文词"统一成连字符("2‑in threshold")
   // 通用规则，未来新标签也自动处理；in 后面若是数字(如"5 in 1")则不动。
   const tidyTag = (t) => String(t).replace(/(\d[\d.,]*)\s+in\s+(?=[A-Za-z])/g, "$1‑in ");
+
+  // 名字下的标签 = 每根雷达轴对应的真实数据值（如 "Suction 35,000 Pa"）
+  const AXIS_ALIAS = {
+    "Suction": ["suction"], "Runtime": ["runtime", "battery life", "battery"],
+    "Threshold": ["obstacle crossing", "obstacle", "threshold"], "Mop-lift": ["mop lift", "mop-lift"],
+    "Payload": ["payload", "max payload", "cabin payload"], "Speed": ["speed"],
+    "DOF": ["total dof", "dof"], "Battery": ["battery", "runtime", "battery life"],
+    "Cut": ["cut width", "cut"], "Cut width": ["cut width"], "Slope": ["max slope", "slope"],
+    "Cleaning": ["coverage", "cleaning", "clean water"], "Capacity": ["basket", "capacity", "dustbin"],
+    "Filtration": ["filtration", "filter"], "Mobility": ["max speed", "speed"],
+    "Autonomy": ["navigation", "autonomy", "mapping"], "Efficiency": ["coverage", "throughput", "speed"],
+    "Intelligence": ["compute", "sensing", "ai"]
+  };
+  function specVal(r, keys) {
+    const rows = [].concat(r.specs || [], r.cardSpecs || [], r.info || []);
+    for (const key of keys) {
+      const hit = rows.find((row) => Array.isArray(row) && String(row[0]).toLowerCase().includes(key));
+      if (hit) return String(hit[1]);
+    }
+    return null;
+  }
+  function radarTags(r) {
+    const ax = r.axes || DATA.axes[r.cat] || [];
+    const out = [];
+    ax.forEach((a) => {
+      if (a === "Value") return;                       // 性价比无实测值，跳过
+      const v = specVal(r, AXIS_ALIAS[a] || [a.toLowerCase()]);
+      if (v) out.push(a + " " + v);
+    });
+    return out;
+  }
 
   // Title-case feature phrases: capitalize each word, but leave units,
   // acronyms and product names (anything already containing an uppercase
@@ -3581,6 +3626,10 @@ return {robots:R,byId:byId,glow:CAT_GLOW,axes:AXES,categories:CATEGORIES};
     .rc-dt__name{font-family:var(--font-display);font-weight:600;font-size:42px;letter-spacing:-.03em;margin:6px 0 12px;line-height:1.05;}
     .rc-dt__tags{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:18px;}
     .rc-dt__priced{display:flex;align-items:flex-end;gap:26px;flex-wrap:wrap;margin-top:4px;}
+    .rc-dt__pricebox{display:flex;flex-direction:column;gap:6px;}
+    .rc-dt__best{font-family:var(--font-mono);font-size:13px;color:var(--success);}
+    .rc-dt__best b{color:var(--success);}
+    .rc-dt__speccard{margin-top:18px;}
     .rc-dt__panels{display:grid;grid-template-columns:1.1fr .9fr;gap:18px;margin-top:18px;}
     .rc-dt__radarwrap{display:flex;flex-direction:column;align-items:center;gap:6px;}
     .rc-dt__seclbl{font-family:var(--font-mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--text-3);margin:0 0 14px;}
@@ -3617,8 +3666,11 @@ return {robots:R,byId:byId,glow:CAT_GLOW,axes:AXES,categories:CATEGORIES};
     const r = robot; const glow = DATA.glow[r.cat]; const axes = r.axes || DATA.axes[r.cat];
     const added = compare.has(r.id);
     const isQuote = /quote|contact/i.test(r.price || "");
-    // 顶部 View deal 链到最优（或第一个有链接的）商家
-    const _pr = (r.prices || []).map((row) => Array.isArray(row) ? { best: row[2], url: row[3] } : { best: row.best, url: row.url });
+    // 多商家价格 → 最优价（含商家、价格、链接）
+    const _pr = (r.prices || []).map((row) => Array.isArray(row)
+      ? { ch: row[0], p: row[1], best: row[2], url: row[3] }
+      : { ch: row.retailer || row.channel || row.ch, p: row.price || row.p, best: row.best, url: row.url });
+    const bestEntry = _pr.find((x) => x.best) || _pr[0] || null;
     const bestUrl = (_pr.find((x) => x.best && x.url) || _pr.find((x) => x.url) || {}).url || null;
     return (
       <div className="rc-dt">
@@ -3634,18 +3686,24 @@ return {robots:R,byId:byId,glow:CAT_GLOW,axes:AXES,categories:CATEGORIES};
           <div className="rc-dt__info">
             <div className="rc-dt__brand">{r.brand}</div>
             <h1 className="rc-dt__name">{r.name}</h1>
-            <div className="rc-dt__tags">{(r.highlights || []).map((t) => <Tag key={"hl-" + t} style={{ color: "#F5B14C", background: "rgba(245,177,76,.13)", borderColor: "rgba(245,177,76,.38)" }}>{t}</Tag>)}{r.tags.map((t) => <Tag key={t} style={{ color: "#F5B14C", background: "rgba(245,177,76,.13)", borderColor: "rgba(245,177,76,.38)" }}>{tidyTag(t)}</Tag>)}</div>
+            <div className="rc-dt__tags">{radarTags(r).map((t) => <Tag key={t} style={{ color: "#F5B14C", background: "rgba(245,177,76,.13)", borderColor: "rgba(245,177,76,.38)" }}>{tidyTag(t)}</Tag>)}</div>
             <div className="rc-dt__priced">
               {isQuote
                 ? <span className="rc-dt__quotelbl">Enterprise · priced by quote</span>
-                : <StatReadout label={r.priceFrom ? "From" : "Price"} value={r.price} accent size="lg" />}
-              <div style={{ marginLeft: "auto", display: "flex", gap: 10 }}>
+                : <div className="rc-dt__pricebox">
+                    <StatReadout label={r.priceFrom ? "From" : "Launch MSRP"} value={r.price} accent size="lg" />
+                    {bestEntry && bestEntry.p && String(bestEntry.p) !== String(r.price) &&
+                      <span className="rc-dt__best">Best: <b>{bestEntry.p}</b>{bestEntry.ch ? " · " + bestEntry.ch : ""}</span>}
+                  </div>}
+              <div style={{ marginLeft: "auto", display: "flex", gap: 10, flexWrap: "wrap" }}>
                 <Button variant={added ? "secondary" : "primary"} onClick={() => onAdd(r.id)}>{added ? "✓ In compare" : "＋ Add to compare"}</Button>
                 {isQuote
                   ? <Button variant="primary" onClick={() => onQuote && onQuote(r.name)}>Contact for quote</Button>
-                  : <Button variant="primary" onClick={() => { try { window.rcLog && window.rcLog(r.name, r.cat, "outbound"); } catch (e) {} if (bestUrl) window.open(bestUrl, "_blank", "noopener"); }}>View deal</Button>}
+                  : <Button variant="primary" onClick={() => { try { window.rcLog && window.rcLog(r.name, r.cat, "outbound"); } catch (e) {} if (bestUrl) window.open(bestUrl, "_blank", "noopener"); }}>{bestUrl ? "View deal ↗" : "View deal"}</Button>}
               </div>
             </div>
+            {!isQuote && r.prices && r.prices.length > 0 &&
+              <p className="rc-dt__note" style={{ marginTop: 10 }}>Price shown for reference — check the retailer for the current price. As an Amazon Associate, Roboclan earns from qualifying purchases.</p>}
           </div>
         </div>
 
@@ -3657,62 +3715,32 @@ return {robots:R,byId:byId,glow:CAT_GLOW,axes:AXES,categories:CATEGORIES};
             </div>
           </GlassCard>
           <GlassCard>
-            <p className="rc-dt__seclbl">At a glance</p>
-            <div className="rc-dt__chips">
-              {r.info.map(([k, v]) => (
-                <div className="rc-dt__chip" key={k}><StatReadout label={k} value={nbHyph(titleCase(v))} size="sm" /></div>
-              ))}
-            </div>
+            <p className="rc-dt__seclbl">The verdict</p>
             
           </GlassCard>
         </div>
 
-        <div className="rc-dt__cols">
-          <GlassCard>
-            {isQuote ? (
-              <div className="rc-dt__quote">
-                <p className="rc-dt__seclbl">Pricing</p>
-                <p className="rc-dt__quotetext">This model is sold by quote. Tell us about your use case and we’ll connect you with the manufacturer or an authorized distributor — they’ll follow up directly with pricing and availability.</p>
-                <Button variant="primary" onClick={() => onQuote && onQuote(r.name)}>Contact for quote</Button>
-              </div>
-            ) : (
-              <React.Fragment>
-                <p className="rc-dt__seclbl">Compare prices</p>
-                <div className="rc-dt__prices">
-                  {(r.prices || []).map((row, i) => {
-                    // 兼容旧元组 [商家,价格,best,(url)] 和新对象 {retailer,price,url,best}
-                    const pr = Array.isArray(row)
-                      ? { ch: row[0], p: row[1], best: row[2], url: row[3] }
-                      : { ch: row.retailer || row.channel || row.ch, p: row.price || row.p, best: row.best, url: row.url };
-                    return (
-                      <PriceRow key={i} channel={pr.ch} price={pr.p} best={pr.best} url={pr.url}
-                        ctaLabel={pr.url ? "View deal" : (String(pr.p).includes("/mo") ? "View plan" : "View deal")}
-                        onView={() => { try { window.rcLog && window.rcLog(r.name, r.cat, "buy"); } catch (e) {} }} />
-                    );
-                  })}
-                </div>
-                {r.prices && r.prices.length > 0 &&
-                  <p className="rc-dt__note">Prices update periodically and may differ at checkout. We may earn a commission from links above.</p>}
-              </React.Fragment>
-            )}
-          </GlassCard>
-          <GlassCard>
-            <p className="rc-dt__seclbl">Features &amp; Specs</p>
-            <div className="rc-dt__specgrid">
-              {r.specs.map(([k, v], i) => {
-                const parts = String(v).split(/ · | — /).map((p) => p.trim()).filter(Boolean);
-                return (
-                  <div className="rc-sc" key={i}>
-                    <span className="rc-sc__k">{k}</span>
-                    <div className="rc-sc__chips">
-                      {parts.map((p, j) => <span className="rc-feat__chip" key={j}>{nbHyph(titleCase(p))}</span>)}
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </GlassCard>
+        <div className="rc-dt__pc">
+          <div className="rc-dt__pccol pro"><h4>Pros</h4>{r.pros.map((p, i) => <div className="rc-dt__pcli" key={i}><span className="m p">+</span>{p}</div>)}</div>
+          <div className="rc-dt__pccol con"><h4>Cons</h4>{r.cons.map((p, i) => <div className="rc-dt__pcli" key={i}><span className="m c">–</span>{p}</div>)}</div>
         </div>
+
+        <GlassCard className="rc-dt__speccard">
+          <p className="rc-dt__seclbl">Features &amp; Specs</p>
+          <div className="rc-dt__specgrid">
+            {r.specs.map(([k, v], i) => {
+              const parts = String(v).split(/ · | — /).map((p) => p.trim()).filter(Boolean);
+              return (
+                <div className="rc-sc" key={i}>
+                  <span className="rc-sc__k">{k}</span>
+                  <div className="rc-sc__chips">
+                    {parts.map((p, j) => <span className="rc-feat__chip" key={j}>{nbHyph(titleCase(p))}</span>)}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </GlassCard>
       </div>
     );
   }
@@ -3941,8 +3969,8 @@ function App(){
   return (
     <div className="rc-app">
       <Header nav={view.name==="home"?"Home":"Robots"} compareCount={compare.size} onHome={goHome} onNav={onNav} onCompare={onCompare} onSearch={setQuery} onSearchGo={onSearchGo} query={query} onCategory={openCategory} />
-      {view.name==="home" && <window.RCHome onOpenCategory={openCategory} onOpen={open} onAdd={onAdd} compare={compare} onNews={onNews} />}
-      {view.name==="catalog" && <window.RCCatalog key={(view.cat||"")+"|"+(view.search||"")} initialCat={view.cat} search={view.search} onOpen={open} onAdd={onAdd} compare={compare} />}
+      {view.name==="home" && <window.RCHome onOpenCategory={openCategory} onOpen={open} onAdd={onAdd} compare={compare} onNews={onNews} onQuote={openQuote} />}
+      {view.name==="catalog" && <window.RCCatalog key={(view.cat||"")+"|"+(view.search||"")} initialCat={view.cat} search={view.search} onOpen={open} onAdd={onAdd} compare={compare} onQuote={openQuote} />}
       {view.name==="detail" && <window.RCDetail robot={DATA.byId[view.id]} onBack={()=>openCategory(DATA.byId[view.id].cat)} onAdd={onAdd} compare={compare} onQuote={openQuote} />}
       {lead && <LeadModal product={lead} onClose={()=>setLead(null)} />}
       {view.name==="page" && <PageView page={PAGES[view.key]} onHome={goHome} />}
