@@ -220,6 +220,17 @@
     .rc2-guide .gbody h3{font-family:var(--serif);font-weight:500;font-size:30px;line-height:1.12;letter-spacing:-.02em;margin:0 0 12px;color:var(--ink);}
     .rc2-guide .gbody p{font-size:15px;color:var(--ink2);line-height:1.6;margin:0 0 22px;}
     .rc2-guide .rc2-btn{align-self:flex-start;margin-top:auto;}
+    .rc2-gcards{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;margin-top:20px;}
+    .rc2-gcard{border:1px solid var(--line);border-radius:14px;overflow:hidden;background:#fff;cursor:pointer;transition:.15s;display:flex;flex-direction:column;}
+    .rc2-gcard:hover{border-color:var(--line2);transform:translateY(-3px);}
+    .rc2-gcard .gcimg{aspect-ratio:3/2;background:linear-gradient(135deg,#dfe7ea,#c7d2d6);display:flex;align-items:center;justify-content:center;color:#8ea0a6;font-size:34px;overflow:hidden;}
+    .rc2-gcard .gcimg img{width:100%;height:100%;object-fit:cover;display:block;}
+    .rc2-gcard .gcbody{padding:15px 17px 17px;display:flex;flex-direction:column;gap:7px;flex:1;}
+    .rc2-gcard .gccat{font-size:12px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:var(--accent);}
+    .rc2-gcard .gctitle{font-family:var(--serif);font-weight:500;font-size:18px;line-height:1.25;letter-spacing:-.01em;margin:0;color:var(--ink);}
+    .rc2-gcard .gcread{font-size:13px;font-weight:600;color:var(--accent);margin-top:auto;padding-top:4px;}
+    @media(max-width:900px){.rc2-gcards{grid-template-columns:1fr 1fr}}
+    @media(max-width:640px){.rc2-gcards{grid-template-columns:1fr}}
 
     @media(max-width:900px){.rc2-hero,.rc2-guide{grid-template-columns:1fr}.rc2-rail{grid-template-columns:repeat(2,1fr)}.rc2-mrow{grid-template-columns:1fr}.rc2-mcat{border-right:none;border-bottom:1px solid var(--line)}}
     @media(max-width:640px){.rc2-hero h1{font-size:40px}.rc2-rail{grid-template-columns:1fr 1fr}.rc2-sechd h2{font-size:26px}}
@@ -683,6 +694,20 @@
                 <span className="rc2-btn">Read the guide →</span>
               </div>
             </div>
+            {DATA.posts.length > 1 && (
+              <div className="rc2-gcards">
+                {DATA.posts.slice(1, 4).map((g) => (
+                  <div className="rc2-gcard" key={g.id} onClick={() => onOpenPost && onOpenPost(g.id)}>
+                    <div className="gcimg">{g.cover_image ? <img src={g.cover_image} alt={g.title} /> : <span className="emo">📷</span>}</div>
+                    <div className="gcbody">
+                      <div className="gccat">{g.category || "Guide"}</div>
+                      <h4 className="gctitle">{g.title}</h4>
+                      <span className="gcread">Read guide →</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         ); })()}
       </div>
