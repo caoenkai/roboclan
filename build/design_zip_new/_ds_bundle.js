@@ -742,13 +742,11 @@ function ProductCard({
   const _bu = (prices || []).map((row) => Array.isArray(row) ? { p: row[1], best: row[2], url: row[3] } : { p: row.price, best: row.best, url: row.url });
   const _bestBuy = _bu.find((x) => x.best && x.url) || _bu.find((x) => x.url) || null;
   const _buyUrl = _bestBuy ? _bestBuy.url : null;
-  // best price = 首发价 + 各零售价里的最低价（没零售价则=首发价 → 每张卡都有，统一）
+  // best price = 你填的零售/品牌链接里的最低价（一定带渠道名）；首发价只作参考
   const _num = (s) => { const n = parseFloat(String(s).replace(/[^0-9.]/g, "")); return isFinite(n) && n > 0 ? n : 0; };
-  const _cands = [];
-  if (!_isQuote) { if (_num(price)) _cands.push([_num(price), price]); _bu.forEach((x) => { if (_num(x.p)) _cands.push([_num(x.p), x.p]); }); }
-  _cands.sort((a, b) => a[0] - b[0]);
-  const _bestPrice = _cands.length ? _cands[0][1] : null;
-  const _msrpHigher = _cands.length && _num(price) > _cands[0][0];
+  const _cands = (!_isQuote) ? _bu.filter((x) => _num(x.p) && (x.ch || x.url)).map((x) => ({ n: _num(x.p), p: x.p, ch: x.ch })) : [];
+  _cands.sort((a, b) => a.n - b.n);
+  const _best = _cands.length ? _cands[0] : null;
   const _ctaLabel = _isQuote ? "Contact ↗" : (_buyUrl ? "View deal ↗" : "View details");
   const _ctaAct = (e) => {
     e.stopPropagation();
@@ -798,9 +796,11 @@ function ProductCard({
     className: "rc-pc__price"
   }, _isQuote
     ? /*#__PURE__*/React.createElement("span", { className: "rc-pc__qlbl" }, "Contact Sales")
-    : /*#__PURE__*/React.createElement(React.Fragment, null,
-        /*#__PURE__*/React.createElement("span", { className: "rc-pc__msrp" }, "MSRP ", price),
-        /*#__PURE__*/React.createElement("span", { className: "rc-pc__bestp" }, "Best ", _bestPrice || price))
+    : _best
+      ? /*#__PURE__*/React.createElement(React.Fragment, null,
+          /*#__PURE__*/React.createElement("span", { className: "rc-pc__msrp" }, "MSRP ", price),
+          /*#__PURE__*/React.createElement("span", { className: "rc-pc__bestp" }, "Best ", _best.p, _best.ch ? " · " + _best.ch : ""))
+      : /*#__PURE__*/React.createElement("span", { className: "rc-pc__bestp" }, price)
   ), status && /*#__PURE__*/React.createElement(__ds_scope.Badge, {
     tone: status.tone || "neutral"
   }, status.label)), /*#__PURE__*/React.createElement("div", {

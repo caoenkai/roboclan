@@ -135,12 +135,11 @@
       ? { ch: row[0], p: row[1], best: row[2], url: row[3] }
       : { ch: row.retailer || row.channel || row.ch, p: row.price || row.p, best: row.best, url: row.url });
     const bestUrl = (_pr.find((x) => x.best && x.url) || _pr.find((x) => x.url) || {}).url || null;
-    // best price = 首发价 + 各零售/品牌价里的最低价（含渠道名）；每个有价产品都显示，统一
+    // best price = 你在后台填的零售/品牌链接里的最低价（一定带渠道名）；首发价只作参考、不参与
     const _numD = (s) => { const n = parseFloat(String(s).replace(/[^0-9.]/g, "")); return isFinite(n) && n > 0 ? n : 0; };
-    const _candsD = [];
-    if (!isQuote) { if (_numD(r.price)) _candsD.push({ n: _numD(r.price), p: r.price, ch: null }); _pr.forEach((x) => { if (_numD(x.p)) _candsD.push({ n: _numD(x.p), p: x.p, ch: x.ch }); }); }
+    const _candsD = _pr.filter((x) => _numD(x.p) && (x.ch || x.url)).map((x) => ({ n: _numD(x.p), p: x.p, ch: x.ch }));
     _candsD.sort((a, b) => a.n - b.n);
-    const best = _candsD[0] || null;
+    const best = (!isQuote && _candsD.length) ? _candsD[0] : null;
     return (
       <div className="rc-dt">
         <span className="rc-dt__back" onClick={onBack}>‹ Back to catalog</span>
