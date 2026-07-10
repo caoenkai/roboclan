@@ -1124,7 +1124,7 @@ function ProductCard({
   // prices 行格式 [零售商, 价格, (可选)链接]；取有效价里最低的作 best，真实零售商名才展示，首发价只作参考
   const _bu = (prices || []).map((row) => Array.isArray(row)
     ? { ch: row[0], p: row[1], url: [row[2], row[3]].find((v) => typeof v === "string" && /^https?:/.test(v)) || null }
-    : { ch: row.ch, p: (row.price != null ? row.price : row.p), url: row.url });
+    : { ch: row.retailer || row.channel || row.ch, p: (row.price != null ? row.price : row.p), url: row.url });
   const _cands = (!_isQuote) ? _bu.filter((x) => _num(x.p)).map((x) => ({ n: _num(x.p), p: x.p, ch: x.ch, url: x.url })) : [];
   _cands.sort((a, b) => a.n - b.n);
   const _best = _cands.length ? _cands[0] : null;
@@ -3523,8 +3523,8 @@ return {robots:R,byId:byId,glow:CAT_GLOW,axes:AXES,categories:CATEGORIES,posts:P
     const bestOf = (prices) => {
       if (!prices || !prices.length) return null;
       const c = prices.map((x) => Array.isArray(x)
-        ? { ch: x[0], p: x[1], url: (typeof x[2] === "string" && /^https?:/.test(x[2])) ? x[2] : null }
-        : { ch: x.ch, p: x.p, url: x.url })
+        ? { ch: x[0], p: x[1], url: [x[2], x[3]].find((v) => typeof v === "string" && /^https?:/.test(v)) || null }
+        : { ch: x.retailer || x.channel || x.ch, p: (x.price != null ? x.price : x.p), url: x.url })
         .filter((x) => _num(x.p) != null).map((x) => ({ ch: x.ch, p: x.p, url: x.url, n: _num(x.p) }));
       if (!c.length) return null;
       c.sort((a, b) => a.n - b.n);
