@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 <url><loc>https://www.roboclan.ai/</loc></url>
+<url><loc>https://www.roboclan.ai/guides/</loc></url>
 <url><loc>https://www.roboclan.ai/robots/dreame-x60-max-ultra/</loc></url>
 <url><loc>https://www.roboclan.ai/robots/roborock-saros-20/</loc></url>
 <url><loc>https://www.roboclan.ai/robots/roborock-saros-20-sonic/</loc></url>
@@ -174,4 +175,5 @@
 <url><loc>https://www.roboclan.ai/robots/pudu-t300/</loc></url>
 <url><loc>https://www.roboclan.ai/robots/pudu-t600/</loc></url>
 <url><loc>https://www.roboclan.ai/robots/pudu-t600-underride/</loc></url>
+<url><loc>https://www.roboclan.ai/guides/roborock-vs-dreame/</loc></url>
 </urlset>
