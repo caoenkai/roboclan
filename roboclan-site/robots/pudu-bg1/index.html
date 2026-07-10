@@ -1069,7 +1069,7 @@ function injectPcStyles() {
   .rc-pc__price{display:flex;flex-direction:column;justify-content:flex-end;gap:1px;min-height:40px;font-family:var(--font-mono);}
   .rc-pc__msrp{font-size:11.5px;color:var(--text-3);}
   .rc-pc__msrp.struck{text-decoration:line-through;}
-  .rc-pc__bestp{font-size:18px;font-weight:600;color:var(--text-1);}
+  .rc-pc__bestp{font-size:18px;font-weight:600;color:var(--success);}
   .rc-pc__price .from{font-size:11px;color:var(--text-3);font-weight:500;margin-right:5px;letter-spacing:.06em;text-transform:uppercase;}
   .rc-pc__best{font-family:var(--font-mono);font-size:12px;color:var(--success);white-space:nowrap;}
   .rc-pc__qlbl{font-family:var(--font-mono);font-size:18px;font-weight:600;color:var(--text-1);text-transform:uppercase;letter-spacing:.03em;}
@@ -1180,11 +1180,9 @@ function ProductCard({
     className: "rc-pc__price"
   }, _isQuote
     ? /*#__PURE__*/React.createElement("span", { className: "rc-pc__qlbl" }, "Contact Sales")
-    : _hasDiscount
-      ? /*#__PURE__*/React.createElement(React.Fragment, null,
-          /*#__PURE__*/React.createElement("span", { className: "rc-pc__msrp struck" }, "MSRP ", price),
-          /*#__PURE__*/React.createElement("span", { className: "rc-pc__bestp" }, _best.p, _realCh(_best.ch) ? " · " + _best.ch : ""))
-      : /*#__PURE__*/React.createElement("span", { className: "rc-pc__bestp" }, _best ? _best.p : price, (_best && _realCh(_best.ch)) ? " · " + _best.ch : "")
+    : /*#__PURE__*/React.createElement(React.Fragment, null,
+        /*#__PURE__*/React.createElement("span", { className: "rc-pc__msrp" }, "MSRP ", price),
+        /*#__PURE__*/React.createElement("span", { className: "rc-pc__bestp" }, _best ? _best.p : price, (_best && _realCh(_best.ch)) ? " · " + _best.ch : ""))
   ), status && /*#__PURE__*/React.createElement(__ds_scope.Badge, {
     tone: status.tone || "neutral"
   }, status.label)), /*#__PURE__*/React.createElement("div", {
@@ -3128,8 +3126,8 @@ return {robots:R,byId:byId,glow:CAT_GLOW,axes:AXES,categories:CATEGORIES,posts:P
     .rc2-herocard .tagn{font-size:12.5px;color:var(--ink3);font-weight:600;letter-spacing:.05em;text-transform:uppercase;}
     .rc2-herocard h3{font-family:var(--serif);font-size:24px;font-weight:600;margin:4px 0 2px;color:var(--ink);}
     .rc2-herocard .brand{font-size:14px;color:var(--ink2);}
-    .rc2-himg{height:186px;background:#fff;border-radius:12px;border:1px solid var(--line);display:grid;place-items:center;margin:16px 0;overflow:hidden;}
-    .rc2-himg img{max-width:82%;max-height:82%;object-fit:contain;}
+    .rc2-himg{height:210px;background:#fff;border-radius:12px;border:1px solid var(--line);display:grid;place-items:center;margin:16px 0;overflow:hidden;padding:16px;}
+    .rc2-himg img{width:100%;height:100%;object-fit:contain;display:block;}
     .rc2-himg .emo{font-size:52px;}
     .rc2-hcbot{display:flex;align-items:flex-end;justify-content:space-between;}
     .rc2-scorepill{display:inline-flex;align-items:center;gap:6px;background:var(--ink);color:#fff;font-size:13px;font-weight:600;padding:5px 12px;border-radius:999px;}
@@ -3144,7 +3142,7 @@ return {robots:R,byId:byId,glow:CAT_GLOW,axes:AXES,categories:CATEGORIES,posts:P
     .rc2-tkin{display:flex;align-items:center;gap:18px;height:44px;padding:0 24px;max-width:100%;}
     .rc2-tklbl{font-size:12px;font-weight:600;letter-spacing:.09em;color:var(--accent);flex-shrink:0;}
     .rc2-tkview{overflow:hidden;flex:1;}
-    .rc2-tktrack{display:inline-flex;gap:40px;white-space:nowrap;animation:rc2tk 36s linear infinite;}
+    .rc2-tktrack{display:inline-flex;gap:40px;white-space:nowrap;animation:rc2tk 64s linear infinite;}
     .rc2-tkview:hover .rc2-tktrack{animation-play-state:paused;}
     .rc2-tktrack .it{font-size:13.5px;color:var(--ink2);cursor:pointer;}
     .rc2-tktrack .it b{color:var(--ink);font-weight:600;}
@@ -3174,8 +3172,8 @@ return {robots:R,byId:byId,glow:CAT_GLOW,axes:AXES,categories:CATEGORIES,posts:P
     .rc2-rail{display:grid;grid-template-columns:repeat(4,1fr);gap:20px;}
     .rc2-pc{background:#fff;border:1px solid var(--line);border-radius:14px;overflow:hidden;cursor:pointer;transition:.15s;display:flex;flex-direction:column;}
     .rc2-pc:hover{border-color:var(--line2);transform:translateY(-3px);}
-    .rc2-pc__im{height:178px;background:#fff;display:grid;place-items:center;border-bottom:1px solid var(--line);position:relative;overflow:hidden;}
-    .rc2-pc__im img{max-width:78%;max-height:78%;object-fit:contain;}
+    .rc2-pc__im{height:178px;background:#fff;display:grid;place-items:center;border-bottom:1px solid var(--line);position:relative;overflow:hidden;padding:14px;}
+    .rc2-pc__im img{width:100%;height:100%;object-fit:contain;display:block;}
     .rc2-pc__im .emo{font-size:44px;}
     .rc2-pc__sc{position:absolute;top:12px;right:12px;background:var(--ink);color:#fff;font-size:12.5px;font-weight:600;width:34px;height:34px;border-radius:50%;display:grid;place-items:center;}
     .rc2-pc__bd{padding:15px 16px 16px;display:flex;flex-direction:column;flex:1;}
@@ -3543,17 +3541,14 @@ return {robots:R,byId:byId,glow:CAT_GLOW,axes:AXES,categories:CATEGORIES,posts:P
     ];
     const PriceBlk = (r) => {
       if (isQuote(r)) return <div className="rc2-pc__qt">Contact for quote</div>;
-      const b = bestOf(r.prices); const mv = _num(r.price);
-      if (!b) return <div className="rc2-pc__best" style={{ color: "var(--ink)" }}>{r.price}</div>;
-      const rt = realRetailer(b.ch) ? <span className="rt"> · {b.ch}</span> : null;
-      const discount = mv != null && b.n < mv - 0.01;
-      if (discount) return (
+      const b = bestOf(r.prices);
+      const rt = b && realRetailer(b.ch) ? <span className="rt"> · {b.ch}</span> : null;
+      return (
         <React.Fragment>
-          <div className="rc2-pc__msrp">MSRP <s>{r.price}</s></div>
-          <div className="rc2-pc__best">{b.p}{rt}</div>
+          <div className="rc2-pc__msrp">MSRP {r.price}</div>
+          <div className="rc2-pc__best">{b ? b.p : r.price}{rt}</div>
         </React.Fragment>
       );
-      return <div className="rc2-pc__best" style={{ color: "var(--ink)" }}>{b.p}{rt}</div>;
     };
     const Card = (r) => {
       const q = isQuote(r); const b = q ? null : bestOf(r.prices);
@@ -3595,12 +3590,12 @@ return {robots:R,byId:byId,glow:CAT_GLOW,axes:AXES,categories:CATEGORIES,posts:P
               <div className="rc2-himg">{heroPick.image ? <img src={heroPick.image} alt={heroPick.name} /> : <span className="emo">{heroPick.emoji || "🤖"}</span>}</div>
               <div className="rc2-hcbot">
                 <span className="rc2-scorepill">★ {heroPick.score} Roboclan score</span>
-                <div className="rc2-priceblk">{(() => { const b = bestOf(heroPick.prices); const mv = _num(heroPick.price); if (!b) return <div className="rc2-best" style={{ color: "var(--ink)" }}>{heroPick.price}</div>; const rt = realRetailer(b.ch) ? <span className="rt"> · {b.ch}</span> : null; const disc = mv != null && b.n < mv - 0.01; return disc ? (
+                <div className="rc2-priceblk">{(() => { const b = bestOf(heroPick.prices); const rt = b && realRetailer(b.ch) ? <span className="rt"> · {b.ch}</span> : null; return (
                   <React.Fragment>
-                    <div className="rc2-msrp">MSRP <s>{heroPick.price}</s></div>
-                    <div className="rc2-best">{b.p}{rt}</div>
+                    <div className="rc2-msrp">MSRP {heroPick.price}</div>
+                    <div className="rc2-best">{b ? b.p : heroPick.price}{rt}</div>
                   </React.Fragment>
-                ) : <div className="rc2-best" style={{ color: "var(--ink)" }}>{b.p}{rt}</div>; })()}</div>
+                ); })()}</div>
               </div>
             </div>
           )}
@@ -3927,8 +3922,8 @@ return {robots:R,byId:byId,glow:CAT_GLOW,axes:AXES,categories:CATEGORIES,posts:P
     _candsD.sort((a, b) => a.n - b.n);
     const _bestD = (!isQuote && _candsD.length) ? _candsD[0] : null;
     const _msrpND = _numD(r.price);
-    // 只有真的比首发价更低，才显示独立的 best 行（否则和 MSRP 一样，重复无意义）
-    const best = (_bestD && _msrpND && _bestD.n < _msrpND - 0.01) ? _bestD : null;
+    // MSRP（首发价，参考）+ best price（当前最低价，带商家）并列显示
+    const best = _bestD;
     return (
       <div className="rc-dt">
         <span className="rc-dt__back" onClick={onBack}>‹ Back to catalog</span>
@@ -3958,8 +3953,8 @@ return {robots:R,byId:byId,glow:CAT_GLOW,axes:AXES,categories:CATEGORIES,posts:P
               {isQuote
                 ? <span className="rc-dt__quotelbl">Priced by quote</span>
                 : <div className="rc-dt__pricebox">
-                    <StatReadout label="MSRP" value={r.price} accent size="lg" />
-                    {best && <span className="rc-dt__best">Best <b>{best.p}</b>{_realChD(best.ch) ? " · " + best.ch : ""}</span>}
+                    <StatReadout label="MSRP" value={r.price} size="lg" />
+                    {best && <span className="rc-dt__best">Best <b>{best.p}</b>{_realChD(best.ch) ? <React.Fragment> · {bestUrl ? <a href={bestUrl} target="_blank" rel="noopener" onClick={(e) => e.stopPropagation()} style={{ color: "var(--success)" }}>{best.ch}</a> : best.ch}</React.Fragment> : null}</span>}
                   </div>}
               <div style={{ marginLeft: "auto", display: "flex", gap: 10, flexWrap: "wrap" }}>
                 {isQuote
