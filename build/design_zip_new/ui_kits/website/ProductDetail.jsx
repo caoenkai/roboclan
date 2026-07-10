@@ -134,8 +134,13 @@
     const _pr = (r.prices || []).map((row) => Array.isArray(row)
       ? { ch: row[0], p: row[1], best: row[2], url: row[3] }
       : { ch: row.retailer || row.channel || row.ch, p: row.price || row.p, best: row.best, url: row.url });
-    const bestEntry = _pr.find((x) => x.best) || _pr[0] || null;
     const bestUrl = (_pr.find((x) => x.best && x.url) || _pr.find((x) => x.url) || {}).url || null;
+    // best price = 首发价 + 各零售/品牌价里的最低价（含渠道名）；每个有价产品都显示，统一
+    const _numD = (s) => { const n = parseFloat(String(s).replace(/[^0-9.]/g, "")); return isFinite(n) && n > 0 ? n : 0; };
+    const _candsD = [];
+    if (!isQuote) { if (_numD(r.price)) _candsD.push({ n: _numD(r.price), p: r.price, ch: null }); _pr.forEach((x) => { if (_numD(x.p)) _candsD.push({ n: _numD(x.p), p: x.p, ch: x.ch }); }); }
+    _candsD.sort((a, b) => a.n - b.n);
+    const best = _candsD[0] || null;
     return (
       <div className="rc-dt">
         <span className="rc-dt__back" onClick={onBack}>‹ Back to catalog</span>
@@ -165,9 +170,8 @@
               {isQuote
                 ? <span className="rc-dt__quotelbl">Priced by quote</span>
                 : <div className="rc-dt__pricebox">
-                    <StatReadout label={r.priceFrom ? "From" : "Launch MSRP"} value={r.price} accent size="lg" />
-                    {bestEntry && bestEntry.p && String(bestEntry.p) !== String(r.price) &&
-                      <span className="rc-dt__best">Best: <b>{bestEntry.p}</b>{bestEntry.ch ? " · " + bestEntry.ch : ""}</span>}
+                    <StatReadout label="MSRP" value={r.price} accent size="lg" />
+                    {best && <span className="rc-dt__best">Best <b>{best.p}</b>{best.ch ? " · " + best.ch : ""}</span>}
                   </div>}
               <div style={{ marginLeft: "auto", display: "flex", gap: 10, flexWrap: "wrap" }}>
                 {isQuote
@@ -177,7 +181,7 @@
               </div>
             </div>
             {!isQuote && r.prices && r.prices.length > 0 &&
-              <p className="rc-dt__note" style={{ marginTop: 10 }}>Price shown for reference — check the retailer for the current price. As an Amazon Associate, Roboclan earns from qualifying purchases.</p>}
+              <p className="rc-dt__note" style={{ marginTop: 10 }}>Prices are shown for reference — check the retailer for the latest. Some links are affiliate links, and Roboclan may earn a commission on qualifying purchases through our retail and brand partners, including as an Amazon Associate. This never affects our ratings.</p>}
           </div>
         </div>
 

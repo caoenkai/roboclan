@@ -738,7 +738,7 @@ function App(){
         </div>
         <div className="rc-ft__bar">
           <span className="rc-ft__sig"><span className="rc-ft__word">Roboclan</span><span>© 2026 · All rights reserved.</span></span>
-          <span className="rc-ft__dis">Every robot is rated on its official specs across five categories, each scored out of 5. Value scores are based on each product's original launch price (US MSRP), kept fixed so ratings stay consistent over time — live retail prices and promotions change, so check the retailer for the latest price before buying. Roboclan may earn a commission on purchases made through our links. As an Amazon Associate, Roboclan earns from qualifying purchases.</span>
+          <span className="rc-ft__dis">Every robot is rated on its official specs across five categories, each scored out of 5. Value scores are based on each product's original launch price (US MSRP), kept fixed so ratings stay consistent over time — live retail prices and promotions change, so check the retailer for the latest price before buying. Some links on Roboclan are affiliate links, and Roboclan may earn a commission on qualifying purchases made through our retail and brand partners, including as an Amazon Associate. This never affects our ratings.</span>
         </div>
       </footer>
     </div>
