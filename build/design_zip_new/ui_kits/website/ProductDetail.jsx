@@ -137,9 +137,14 @@
     const bestUrl = (_pr.find((x) => x.best && x.url) || _pr.find((x) => x.url) || {}).url || null;
     // best price = 你在后台填的零售/品牌链接里的最低价（一定带渠道名）；首发价只作参考、不参与
     const _numD = (s) => { const n = parseFloat(String(s).replace(/[^0-9.]/g, "")); return isFinite(n) && n > 0 ? n : 0; };
-    const _candsD = _pr.filter((x) => _numD(x.p) && (x.ch || x.url)).map((x) => ({ n: _numD(x.p), p: x.p, ch: x.ch }));
+    const _GEN = { "best tracked price": 1, "pricing": 1, "price": 1, "msrp": 1 };
+    const _realChD = (ch) => ch && _GEN[String(ch).toLowerCase()] !== 1 && !/\(msrp\)/i.test(ch);
+    const _candsD = _pr.filter((x) => _numD(x.p)).map((x) => ({ n: _numD(x.p), p: x.p, ch: x.ch }));
     _candsD.sort((a, b) => a.n - b.n);
-    const best = (!isQuote && _candsD.length) ? _candsD[0] : null;
+    const _bestD = (!isQuote && _candsD.length) ? _candsD[0] : null;
+    const _msrpND = _numD(r.price);
+    // 只有真的比首发价更低，才显示独立的 best 行（否则和 MSRP 一样，重复无意义）
+    const best = (_bestD && _msrpND && _bestD.n < _msrpND - 0.01) ? _bestD : null;
     return (
       <div className="rc-dt">
         <span className="rc-dt__back" onClick={onBack}>‹ Back to catalog</span>
@@ -170,7 +175,7 @@
                 ? <span className="rc-dt__quotelbl">Priced by quote</span>
                 : <div className="rc-dt__pricebox">
                     <StatReadout label="MSRP" value={r.price} accent size="lg" />
-                    {best && <span className="rc-dt__best">Best <b>{best.p}</b>{best.ch ? " · " + best.ch : ""}</span>}
+                    {best && <span className="rc-dt__best">Best <b>{best.p}</b>{_realChD(best.ch) ? " · " + best.ch : ""}</span>}
                   </div>}
               <div style={{ marginLeft: "auto", display: "flex", gap: 10, flexWrap: "wrap" }}>
                 {isQuote

@@ -826,7 +826,7 @@ ReactDOM.createRoot(document.getElementById("root")).render(<App/>);
 '''
 
 HTML = """<!doctype html>
-<html lang="en" data-theme="dark">
+<html lang="en" data-theme="light">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">

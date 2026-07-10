@@ -739,14 +739,19 @@ function ProductCard({
 }) {
   injectPcStyles();
   const _isQuote = /quote|contact/i.test(String(price || ""));
-  const _bu = (prices || []).map((row) => Array.isArray(row) ? { p: row[1], best: row[2], url: row[3] } : { p: row.price, best: row.best, url: row.url });
-  const _bestBuy = _bu.find((x) => x.best && x.url) || _bu.find((x) => x.url) || null;
-  const _buyUrl = _bestBuy ? _bestBuy.url : null;
-  // best price = 你填的零售/品牌链接里的最低价（一定带渠道名）；首发价只作参考
   const _num = (s) => { const n = parseFloat(String(s).replace(/[^0-9.]/g, "")); return isFinite(n) && n > 0 ? n : 0; };
-  const _cands = (!_isQuote) ? _bu.filter((x) => _num(x.p) && (x.ch || x.url)).map((x) => ({ n: _num(x.p), p: x.p, ch: x.ch })) : [];
+  const _GEN = { "best tracked price": 1, "pricing": 1, "price": 1, "msrp": 1 };
+  const _realCh = (ch) => ch && _GEN[String(ch).toLowerCase()] !== 1 && !/\(msrp\)/i.test(ch);
+  // prices 行格式 [零售商, 价格, (可选)链接]；取有效价里最低的作 best，真实零售商名才展示，首发价只作参考
+  const _bu = (prices || []).map((row) => Array.isArray(row)
+    ? { ch: row[0], p: row[1], url: [row[2], row[3]].find((v) => typeof v === "string" && /^https?:/.test(v)) || null }
+    : { ch: row.ch, p: (row.price != null ? row.price : row.p), url: row.url });
+  const _cands = (!_isQuote) ? _bu.filter((x) => _num(x.p)).map((x) => ({ n: _num(x.p), p: x.p, ch: x.ch, url: x.url })) : [];
   _cands.sort((a, b) => a.n - b.n);
   const _best = _cands.length ? _cands[0] : null;
+  const _buyUrl = (_best && _best.url) || (_bu.find((x) => x.url) || {}).url || null;
+  const _msrpN = _num(price);
+  const _hasDiscount = _best && _msrpN && _best.n < _msrpN - 0.01;
   const _ctaLabel = _isQuote ? "Contact ↗" : (_buyUrl ? "View deal ↗" : "View details");
   const _ctaAct = (e) => {
     e.stopPropagation();
@@ -796,11 +801,11 @@ function ProductCard({
     className: "rc-pc__price"
   }, _isQuote
     ? /*#__PURE__*/React.createElement("span", { className: "rc-pc__qlbl" }, "Contact Sales")
-    : _best
+    : _hasDiscount
       ? /*#__PURE__*/React.createElement(React.Fragment, null,
-          /*#__PURE__*/React.createElement("span", { className: "rc-pc__msrp" }, "MSRP ", price),
-          /*#__PURE__*/React.createElement("span", { className: "rc-pc__bestp" }, "Best ", _best.p, _best.ch ? " · " + _best.ch : ""))
-      : /*#__PURE__*/React.createElement("span", { className: "rc-pc__bestp" }, price)
+          /*#__PURE__*/React.createElement("span", { className: "rc-pc__msrp struck" }, "MSRP ", price),
+          /*#__PURE__*/React.createElement("span", { className: "rc-pc__bestp" }, _best.p, _realCh(_best.ch) ? " · " + _best.ch : ""))
+      : /*#__PURE__*/React.createElement("span", { className: "rc-pc__bestp" }, _best ? _best.p : price, (_best && _realCh(_best.ch)) ? " · " + _best.ch : "")
   ), status && /*#__PURE__*/React.createElement(__ds_scope.Badge, {
     tone: status.tone || "neutral"
   }, status.label)), /*#__PURE__*/React.createElement("div", {

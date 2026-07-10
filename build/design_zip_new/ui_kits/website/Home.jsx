@@ -6,6 +6,11 @@
   let injected = false;
   function inject() {
     if (injected) return; injected = true;
+    if (!document.getElementById("rc2-font")) {
+      const l = document.createElement("link"); l.id = "rc2-font"; l.rel = "stylesheet";
+      l.href = "https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&display=swap";
+      document.head.appendChild(l);
+    }
     const s = document.createElement("style");
     s.textContent = `
     .rc-home{max-width:var(--container);margin:0 auto;padding:0 24px 80px;}
@@ -129,6 +134,95 @@
     .rc-hgcard__read{font-size:13px;font-weight:600;color:#8fa8ff;margin-top:2px;}
     @media(max-width:900px){.rc-hero{grid-template-columns:1fr}.rc-bot{display:none}}
     @media(max-width:640px){.rc-hero h1{font-size:40px}.rc-hero p{font-size:15px}.rc-hero{padding-top:40px}}
+
+    /* ===== v2 editorial (light) homepage — matches approved mockup ===== */
+    .rc2{--ink:#17171a;--ink2:#55555c;--ink3:#8a8a92;--line:#e7e6e2;--line2:#d9d8d3;--bg2:#f5f4f1;--green:#16a34a;--greenbg:#eafaf0;--accent:#4f46e5;--accent2:#eef0ff;--serif:'Fraunces',Georgia,serif;}
+    .rc2 *{box-sizing:border-box;}
+    .rc2-eyebrow{font-size:13px;font-weight:600;letter-spacing:.09em;text-transform:uppercase;color:var(--accent);margin-bottom:16px;}
+    .rc2-hero{display:grid;grid-template-columns:1.05fr .95fr;gap:52px;align-items:center;padding:56px 0 44px;}
+    .rc2-hero h1{font-family:var(--serif);font-weight:500;font-size:56px;line-height:1.02;letter-spacing:-.025em;margin:0 0 18px;color:var(--ink);}
+    .rc2-hero p.sub{font-size:18px;color:var(--ink2);max-width:450px;line-height:1.55;margin:0 0 26px;}
+    .rc2-btnrow{display:flex;gap:12px;flex-wrap:wrap;}
+    .rc2-btn{display:inline-flex;align-items:center;gap:8px;background:var(--ink);color:#fff;font-weight:500;font-size:15px;padding:13px 26px;border-radius:999px;cursor:pointer;border:none;font-family:inherit;}
+    .rc2-btn.ghost{background:transparent;color:var(--ink);border:1px solid var(--line2);}
+    .rc2-herocard{background:var(--bg2);border:1px solid var(--line);border-radius:18px;padding:24px;cursor:pointer;}
+    .rc2-herocard .tagn{font-size:12.5px;color:var(--ink3);font-weight:600;letter-spacing:.05em;text-transform:uppercase;}
+    .rc2-herocard h3{font-family:var(--serif);font-size:24px;font-weight:600;margin:4px 0 2px;color:var(--ink);}
+    .rc2-herocard .brand{font-size:14px;color:var(--ink2);}
+    .rc2-himg{height:186px;background:#fff;border-radius:12px;border:1px solid var(--line);display:grid;place-items:center;margin:16px 0;overflow:hidden;}
+    .rc2-himg img{max-width:82%;max-height:82%;object-fit:contain;}
+    .rc2-himg .emo{font-size:52px;}
+    .rc2-hcbot{display:flex;align-items:flex-end;justify-content:space-between;}
+    .rc2-scorepill{display:inline-flex;align-items:center;gap:6px;background:var(--ink);color:#fff;font-size:13px;font-weight:600;padding:5px 12px;border-radius:999px;}
+    .rc2-priceblk{text-align:right;}
+    .rc2-msrp{font-size:12.5px;color:var(--ink3);font-weight:500;}
+    .rc2-msrp s{color:var(--ink3);}
+    .rc2-best{font-family:var(--serif);font-size:21px;font-weight:600;color:var(--green);}
+    .rc2-best .rt{font-family:var(--font-sans,'Inter',sans-serif);font-size:12.5px;font-weight:500;}
+
+    /* ticker */
+    .rc2-ticker{background:var(--bg2);border-top:1px solid var(--line);border-bottom:1px solid var(--line);overflow:hidden;margin:0 -24px;}
+    .rc2-tkin{display:flex;align-items:center;gap:18px;height:44px;padding:0 24px;max-width:100%;}
+    .rc2-tklbl{font-size:12px;font-weight:600;letter-spacing:.09em;color:var(--accent);flex-shrink:0;}
+    .rc2-tkview{overflow:hidden;flex:1;}
+    .rc2-tktrack{display:inline-flex;gap:40px;white-space:nowrap;animation:rc2tk 36s linear infinite;}
+    .rc2-tkview:hover .rc2-tktrack{animation-play-state:paused;}
+    .rc2-tktrack .it{font-size:13.5px;color:var(--ink2);cursor:pointer;}
+    .rc2-tktrack .it b{color:var(--ink);font-weight:600;}
+    @keyframes rc2tk{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+
+    /* section heads */
+    .rc2-sec{padding:50px 0 6px;}
+    .rc2-sechd{display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:24px;gap:16px;}
+    .rc2-sechd h2{font-family:var(--serif);font-weight:500;font-size:33px;letter-spacing:-.02em;margin:0;color:var(--ink);}
+    .rc2-sechd p{font-size:15px;color:var(--ink2);margin:6px 0 0;}
+    .rc2-more{font-size:14.5px;font-weight:500;color:var(--ink2);white-space:nowrap;cursor:pointer;}
+    .rc2-more:hover{color:var(--ink);}
+
+    /* matrix */
+    .rc2-matrix{display:grid;gap:1px;background:var(--line);border:1px solid var(--line);border-radius:16px;overflow:hidden;}
+    .rc2-mrow{display:grid;grid-template-columns:230px 1fr;background:#fff;}
+    .rc2-mcat{padding:18px 22px;background:var(--bg2);border-right:1px solid var(--line);}
+    .rc2-mcat .nm{font-weight:600;font-size:16px;display:flex;align-items:center;gap:10px;color:var(--ink);}
+    .rc2-mcat .ic{width:30px;height:30px;border-radius:8px;background:#fff;border:1px solid var(--line);display:grid;place-items:center;color:var(--accent);}
+    .rc2-mcat .ic svg{width:17px;height:17px;}
+    .rc2-mcat .ct{font-size:12.5px;color:var(--ink3);margin-top:5px;padding-left:40px;}
+    .rc2-mlinks{display:flex;flex-wrap:wrap;align-content:center;gap:9px;padding:15px 22px;}
+    .rc2-chip{font-size:13.5px;font-weight:500;color:var(--ink2);background:var(--bg2);border:1px solid var(--line);border-radius:999px;padding:7px 14px;cursor:pointer;transition:.12s;}
+    .rc2-chip:hover{color:var(--ink);border-color:var(--ink);background:#fff;}
+
+    /* product rail cards */
+    .rc2-rail{display:grid;grid-template-columns:repeat(4,1fr);gap:20px;}
+    .rc2-pc{background:#fff;border:1px solid var(--line);border-radius:14px;overflow:hidden;cursor:pointer;transition:.15s;display:flex;flex-direction:column;}
+    .rc2-pc:hover{border-color:var(--line2);transform:translateY(-3px);}
+    .rc2-pc__im{height:178px;background:#fff;display:grid;place-items:center;border-bottom:1px solid var(--line);position:relative;overflow:hidden;}
+    .rc2-pc__im img{max-width:78%;max-height:78%;object-fit:contain;}
+    .rc2-pc__im .emo{font-size:44px;}
+    .rc2-pc__sc{position:absolute;top:12px;right:12px;background:var(--ink);color:#fff;font-size:12.5px;font-weight:600;width:34px;height:34px;border-radius:50%;display:grid;place-items:center;}
+    .rc2-pc__bd{padding:15px 16px 16px;display:flex;flex-direction:column;flex:1;}
+    .rc2-pc__br{font-size:12.5px;color:var(--ink3);font-weight:500;}
+    .rc2-pc__pn{font-weight:500;font-size:15.5px;margin:2px 0 12px;line-height:1.3;color:var(--ink);}
+    .rc2-pc__msrp{font-size:12.5px;color:var(--ink3);font-weight:500;}
+    .rc2-pc__msrp s{color:var(--ink3);}
+    .rc2-pc__best{font-family:var(--serif);font-size:19px;font-weight:600;color:var(--green);margin-top:1px;}
+    .rc2-pc__best .rt{font-family:var(--font-sans,'Inter',sans-serif);font-size:12px;font-weight:500;}
+    .rc2-pc__qt{font-family:var(--serif);font-size:16px;font-weight:600;color:var(--ink);}
+    .rc2-pc__cta{margin-top:auto;padding-top:13px;}
+    .rc2-pc__cta span{display:block;text-align:center;background:var(--greenbg);color:var(--green);border:1px solid #c7ebd3;font-weight:600;font-size:14px;padding:10px;border-radius:9px;}
+    .rc2-pc__cta.quote span{background:var(--accent2);color:var(--accent);border-color:#dfe2ff;}
+
+    /* guide module */
+    .rc2-guide{display:grid;grid-template-columns:1.5fr 1fr;border:1px solid var(--line);border-radius:18px;overflow:hidden;background:#fff;cursor:pointer;}
+    .rc2-guide .gimg{background:linear-gradient(135deg,#dfe7ea,#c7d2d6);min-height:340px;display:grid;place-items:center;color:#8ea0a6;font-size:52px;overflow:hidden;}
+    .rc2-guide .gimg img{width:100%;height:100%;object-fit:cover;}
+    .rc2-guide .gbody{padding:38px 36px;display:flex;flex-direction:column;}
+    .rc2-guide .gcat{font-size:12.5px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--accent);margin-bottom:12px;}
+    .rc2-guide .gbody h3{font-family:var(--serif);font-weight:500;font-size:30px;line-height:1.12;letter-spacing:-.02em;margin:0 0 12px;color:var(--ink);}
+    .rc2-guide .gbody p{font-size:15px;color:var(--ink2);line-height:1.6;margin:0 0 22px;}
+    .rc2-guide .rc2-btn{align-self:flex-start;margin-top:auto;}
+
+    @media(max-width:900px){.rc2-hero,.rc2-guide{grid-template-columns:1fr}.rc2-rail{grid-template-columns:repeat(2,1fr)}.rc2-mrow{grid-template-columns:1fr}.rc2-mcat{border-right:none;border-bottom:1px solid var(--line)}}
+    @media(max-width:640px){.rc2-hero h1{font-size:40px}.rc2-rail{grid-template-columns:1fr 1fr}.rc2-sechd h2{font-size:26px}}
     `;
     document.head.appendChild(s);
   }
@@ -443,79 +537,152 @@
       }
       if (!any) break;
     }
-    return (
-      <div className="rc-home">
-        <section className="rc-hero">
-          <div className="rc-hero__copy">
-            <span className="rc-hero__ey"><Badge tone="accent">◆ 1–5 radar scoring</Badge></span>
-            <h1>Every robot,<br /><span className="g">compared.</span></h1>
-            <p>Specs<span className="dot">·</span>5-point radar ratings<span className="dot">·</span>aggregated reviews<span className="dot">·</span>live price tracking — across every robot category.</p>
-            <div className="rc-hero__cta">
-              <Button variant="primary" size="lg" onClick={() => onOpenCategory(null)}>Browse all robots</Button>
+    const SCORED = { "Robot Vacuums": 1, "Robot Lawn Mowers": 1, "Pool Cleaners": 1 };
+    const _num = (s) => { const v = parseFloat(String(s == null ? "" : s).replace(/[^0-9.]/g, "")); return isNaN(v) ? null : v; };
+    const isQuote = (r) => { const p = String(r.price || "").toLowerCase(); return p.indexOf("quote") >= 0 || p.indexOf("contact") >= 0; };
+    const GENERIC = { "best tracked price": 1, "pricing": 1, "price": 1, "msrp": 1 };
+    const realRetailer = (ch) => ch && GENERIC[String(ch).toLowerCase()] !== 1 && !/\(msrp\)/i.test(ch);
+    const bestOf = (prices) => {
+      if (!prices || !prices.length) return null;
+      const c = prices.map((x) => Array.isArray(x)
+        ? { ch: x[0], p: x[1], url: (typeof x[2] === "string" && /^https?:/.test(x[2])) ? x[2] : null }
+        : { ch: x.ch, p: x.p, url: x.url })
+        .filter((x) => _num(x.p) != null).map((x) => ({ ch: x.ch, p: x.p, url: x.url, n: _num(x.p) }));
+      if (!c.length) return null;
+      c.sort((a, b) => a.n - b.n);
+      return c[0];
+    };
+    const topScored = DATA.robots.filter((r) => SCORED[r.cat] && r.score != null).sort((a, b) => (b.score || 0) - (a.score || 0)).slice(0, 8);
+    const heroPick = topScored[0] || top[0];
+    const MATRIX = [
+      { cat: "Robot Vacuums", note: "scored", chips: ["Under $500", "$500–1,000", "$1,000–1,500", "$1,500+"] },
+      { cat: "Robot Lawn Mowers", note: "scored", chips: ["Under $1,500", "$1,500–2,200", "$2,200+"] },
+      { cat: "Pool Cleaners", note: "scored", chips: ["Under $500", "$500–1,200", "$1,200+"] },
+      { cat: "Humanoids", note: "by brand", chips: ["Unitree", "LimX", "AgiBot"] },
+      { cat: "Quadrupeds", note: "by brand", chips: ["Unitree", "DEEP Robotics", "AgiBot"] },
+      { cat: "Commercial & Industrial", note: "by use-case", chips: ["Service", "Cleaning", "Delivery", "Manipulation"] },
+    ];
+    const PriceBlk = (r) => {
+      if (isQuote(r)) return <div className="rc2-pc__qt">Contact for quote</div>;
+      const b = bestOf(r.prices); const mv = _num(r.price);
+      if (!b) return <div className="rc2-pc__best" style={{ color: "var(--ink)" }}>{r.price}</div>;
+      const rt = realRetailer(b.ch) ? <span className="rt"> · {b.ch}</span> : null;
+      const discount = mv != null && b.n < mv - 0.01;
+      if (discount) return (
+        <React.Fragment>
+          <div className="rc2-pc__msrp">MSRP <s>{r.price}</s></div>
+          <div className="rc2-pc__best">{b.p}{rt}</div>
+        </React.Fragment>
+      );
+      return <div className="rc2-pc__best" style={{ color: "var(--ink)" }}>{b.p}{rt}</div>;
+    };
+    const Card = (r) => {
+      const q = isQuote(r); const b = q ? null : bestOf(r.prices);
+      const showScore = SCORED[r.cat] && r.score != null;
+      return (
+        <div className="rc2-pc" key={r.id} onClick={() => onOpen(r.id)}>
+          <div className="rc2-pc__im">
+            {showScore && <span className="rc2-pc__sc">{r.score}</span>}
+            {r.image ? <img src={r.image} alt={r.name} /> : <span className="emo">{r.emoji || "🤖"}</span>}
+          </div>
+          <div className="rc2-pc__bd">
+            <div className="rc2-pc__br">{r.brand}</div>
+            <div className="rc2-pc__pn">{r.name}</div>
+            {PriceBlk(r)}
+            <div className={"rc2-pc__cta" + (q ? " quote" : "")}>
+              <span onClick={(e) => { e.stopPropagation(); if (q) { onQuote && onQuote(r.name); } else if (b && b.url) { window.open(b.url, "_blank", "noopener"); } else { onOpen(r.id); } }}>{q ? "Contact ↗" : (b && b.url) ? "View deal ↗" : "View details"}</span>
             </div>
           </div>
-          <FactoryHero />
+        </div>
+      );
+    };
+    return (
+      <div className="rc-home rc2">
+        <section className="rc2-hero">
+          <div>
+            <div className="rc2-eyebrow">Every robot, one scoring system</div>
+            <h1>Find the right robot,<br />compared honestly.</h1>
+            <p className="sub">188 robots across 6 categories, each scored on the same framework from official specs. No paid placements, no hype — just data you can compare.</p>
+            <div className="rc2-btnrow">
+              <button className="rc2-btn" onClick={() => onOpenCategory(null)}>Browse robots →</button>
+              {DATA.posts && DATA.posts.length > 0 && <button className="rc2-btn ghost" onClick={() => onOpenGuides && onOpenGuides()}>Read the guides</button>}
+            </div>
+          </div>
+          {heroPick && (
+            <div className="rc2-herocard" onClick={() => onOpen(heroPick.id)}>
+              <div className="tagn">Top rated · {heroPick.cat}</div>
+              <h3>{heroPick.name}</h3>
+              <div className="brand">{heroPick.brand}</div>
+              <div className="rc2-himg">{heroPick.image ? <img src={heroPick.image} alt={heroPick.name} /> : <span className="emo">{heroPick.emoji || "🤖"}</span>}</div>
+              <div className="rc2-hcbot">
+                <span className="rc2-scorepill">★ {heroPick.score} Roboclan score</span>
+                <div className="rc2-priceblk">{(() => { const b = bestOf(heroPick.prices); const mv = _num(heroPick.price); if (!b) return <div className="rc2-best" style={{ color: "var(--ink)" }}>{heroPick.price}</div>; const rt = realRetailer(b.ch) ? <span className="rt"> · {b.ch}</span> : null; const disc = mv != null && b.n < mv - 0.01; return disc ? (
+                  <React.Fragment>
+                    <div className="rc2-msrp">MSRP <s>{heroPick.price}</s></div>
+                    <div className="rc2-best">{b.p}{rt}</div>
+                  </React.Fragment>
+                ) : <div className="rc2-best" style={{ color: "var(--ink)" }}>{b.p}{rt}</div>; })()}</div>
+              </div>
+            </div>
+          )}
         </section>
 
-        <div className="rc-news">
-          <Badge tone="live">LIVE</Badge>
-          <div className="rc-news__vp">
-            <div className="rc-news__track">
-              {news.concat([news[0]]).map((n, i) => (
-                <div className="rc-news__line" key={i} style={{ cursor: n && n.url ? "pointer" : "default" }}
-                  onClick={() => { if (n && n.url) window.open(n.url, "_blank", "noopener"); }}>
-                  <b>{n && n.b}</b> {n && n.t}
+        <div className="rc2-ticker"><div className="rc2-tkin">
+          <span className="rc2-tklbl">⚡ NEWS</span>
+          <div className="rc2-tkview"><div className="rc2-tktrack">
+            {news.concat(news).map((n, i) => (
+              <span className="it" key={i} onClick={() => { if (n && n.url) window.open(n.url, "_blank", "noopener"); }}>
+                <b>{n && n.b}</b> {n && n.t}
+              </span>
+            ))}
+          </div></div>
+        </div></div>
+
+        <div className="rc2-sec">
+          <div className="rc2-sechd">
+            <div><h2>Browse by category &amp; budget</h2><p>Jump straight to the list that fits — the fastest way to shortlist.</p></div>
+            <span className="rc2-more" onClick={() => onOpenCategory(null)}>All categories →</span>
+          </div>
+          <div className="rc2-matrix">
+            {MATRIX.map((m) => (
+              <div className="rc2-mrow" key={m.cat}>
+                <div className="rc2-mcat">
+                  <div className="nm"><span className="ic"><svg viewBox="0 0 32 32">{RC_ICONS[m.cat]}</svg></span>{m.cat === "Commercial & Industrial" ? "Commercial" : m.cat}</div>
+                  <div className="ct">{(counts[m.cat] || 0) + " models · " + m.note}</div>
                 </div>
-              ))}
-            </div>
+                <div className="rc2-mlinks">
+                  {m.chips.map((ch) => <span className="rc2-chip" key={ch} onClick={() => onOpenCategory(m.cat)}>{ch}</span>)}
+                </div>
+              </div>
+            ))}
           </div>
         </div>
 
-        <div className="rc-sec"><h2>Browse by category</h2></div>
-        <div className="rc-tiles">
-          {DATA.categories.map((c) => (
-            <GlassCard key={c.name} hover padded={false} className="rc-tile" onClick={() => onOpenCategory(c.name)}>
-              <span className="rc-tile__glow" style={{ background: DATA.glow[c.name] }} />
-              <span className="rc-tile__ico" style={{ color: DATA.glow[c.name] }}><svg viewBox="0 0 32 32">{RC_ICONS[c.name]}</svg></span>
-              <span className="rc-tile__name">{c.name}</span>
-              <span className="rc-tile__count">{counts[c.name] ? counts[c.name] + " models ›" : "Coming soon"}</span>
-            </GlassCard>
-          ))}
+        <div className="rc2-sec">
+          <div className="rc2-sechd">
+            <div><h2>Top rated this month</h2><p>Highest Roboclan scores across scored categories.</p></div>
+            <span className="rc2-more" onClick={() => onOpenCategory(null)}>See all robots →</span>
+          </div>
+          <div className="rc2-rail">{topScored.map(Card)}</div>
         </div>
 
-        <div className="rc-sec"><h2>Products</h2><span className="rc-sec__lnk" onClick={() => onOpenCategory(null)}>See all ›</span></div>
-        <div className="rc-rail">
-          {top.map((r) => (
-            <ProductCard key={r.id}
-              name={r.name} brand={r.brand} category={r.cat} emoji={r.emoji} image={r.image}
-              glow={DATA.glow[r.cat]} price={r.price} priceFrom={r.priceFrom}
-              prices={r.prices} onQuote={onQuote}
-              specs={r.cardSpecs} radar={r.radar} axes={r.axes || DATA.axes[r.cat]}
-              status={r.status}
-              added={compare.has(r.id)} onAdd={() => onAdd(r.id)} onOpen={() => onOpen(r.id)} />
-          ))}
-        </div>
-
-        {(DATA.posts && DATA.posts.length > 0) && (
-          <React.Fragment>
-            <div className="rc-sec"><h2>Guides &amp; comparisons</h2><span className="rc-sec__lnk" onClick={() => onOpenGuides && onOpenGuides()}>See all ›</span></div>
-            <div className="rc-hgrid">
-              {DATA.posts.slice(0, 3).map((p) => (
-                <GlassCard key={p.id} className="rc-hgcard" onClick={() => onOpenPost && onOpenPost(p.id)}>
-                  <div className="rc-hgcard__cov" style={{ background: p.cover_image ? `#0b1020 url(${p.cover_image}) center/cover` : "linear-gradient(135deg,#1a2036,#0e1424)" }}>
-                    {!p.cover_image && <span className="rc-hgcard__badge">{p.category || "Guide"}</span>}
-                  </div>
-                  <div className="rc-hgcard__body">
-                    {p.category && <span className="rc-hgcard__cat">{p.category}</span>}
-                    <h3 className="rc-hgcard__ttl">{p.title}</h3>
-                    {p.excerpt && <p className="rc-hgcard__ex">{p.excerpt}</p>}
-                    <span className="rc-hgcard__read">Read guide ›</span>
-                  </div>
-                </GlassCard>
-              ))}
+        {DATA.posts && DATA.posts.length > 0 && (() => { const p = DATA.posts[0]; return (
+          <div className="rc2-sec">
+            <div className="rc2-sechd">
+              <div><h2>Guides &amp; comparisons</h2><p>Real buying advice, backed by our data.</p></div>
+              <span className="rc2-more" onClick={() => onOpenGuides && onOpenGuides()}>All guides →</span>
             </div>
-          </React.Fragment>
-        )}
+            <div className="rc2-guide" onClick={() => onOpenPost && onOpenPost(p.id)}>
+              <div className="gimg">{p.cover_image ? <img src={p.cover_image} alt={p.title} /> : "📷"}</div>
+              <div className="gbody">
+                <div className="gcat">{p.category || "Guide"}</div>
+                <h3>{p.title}</h3>
+                {p.excerpt && <p>{p.excerpt}</p>}
+                <span className="rc2-btn">Read the guide →</span>
+              </div>
+            </div>
+          </div>
+        ); })()}
       </div>
     );
   }
