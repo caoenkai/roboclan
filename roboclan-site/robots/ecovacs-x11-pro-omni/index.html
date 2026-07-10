@@ -3143,7 +3143,7 @@ return {robots:R,byId:byId,glow:CAT_GLOW,axes:AXES,categories:CATEGORIES,posts:P
     .rc2-tkin{display:flex;align-items:center;gap:18px;height:44px;padding:0 24px;max-width:100%;}
     .rc2-tklbl{font-size:12px;font-weight:600;letter-spacing:.09em;color:var(--accent);flex-shrink:0;}
     .rc2-tkview{overflow:hidden;flex:1;}
-    .rc2-tktrack{display:inline-flex;gap:40px;white-space:nowrap;animation:rc2tk 64s linear infinite;}
+    .rc2-tktrack{display:inline-flex;gap:40px;white-space:nowrap;animation:rc2tk 92s linear infinite;}
     .rc2-tkview:hover .rc2-tktrack{animation-play-state:paused;}
     .rc2-tktrack .it{font-size:13.5px;color:var(--ink2);cursor:pointer;}
     .rc2-tktrack .it b{color:var(--ink);font-weight:600;}
@@ -3540,10 +3540,10 @@ return {robots:R,byId:byId,glow:CAT_GLOW,axes:AXES,categories:CATEGORIES,posts:P
       { cat: "Quadrupeds", note: "by brand", chips: ["Unitree", "DEEP Robotics", "AgiBot"] },
       { cat: "Commercial & Industrial", note: "by use-case", chips: ["Service", "Cleaning", "Delivery", "Manipulation"] },
     ];
-    // 绿色永远是"最低可得价"：零售商行与首发价里取最低；只有真实商家名才附上
+    // 绿色 = best price = 零售/品牌各行里的最低价（MSRP 只作参考、不参与）；真实商家名才附上
     const greenPrice = (r) => {
-      const b = bestOf(r.prices); const mv = _num(r.price);
-      if (b && (mv == null || b.n <= mv)) return { p: b.p, ch: realRetailer(b.ch) ? b.ch : null };
+      const b = bestOf(r.prices);
+      if (b) return { p: b.p, ch: realRetailer(b.ch) ? b.ch : null };
       return { p: r.price, ch: null };
     };
     const PriceBlk = (r) => {
@@ -3873,7 +3873,10 @@ return {robots:R,byId:byId,glow:CAT_GLOW,axes:AXES,categories:CATEGORIES,posts:P
     .rc-dt__name{font-family:var(--font-display);font-weight:600;font-size:42px;letter-spacing:-.03em;margin:6px 0 12px;line-height:1.05;}
     .rc-dt__tags{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:18px;}
     .rc-dt__priced{display:flex;align-items:flex-end;gap:26px;flex-wrap:wrap;margin-top:4px;}
-    .rc-dt__pricebox{display:flex;flex-direction:column;gap:6px;}
+    .rc-dt__pricebox{display:flex;flex-direction:column;gap:2px;}
+    .rc-dt__bestbig{font-family:var(--font-mono);font-size:40px;font-weight:600;color:#16a34a;line-height:1;}
+    .rc-dt__bestch{font-family:var(--font-sans);font-size:15px;font-weight:500;color:#16a34a;}
+    .rc-dt__msrpref{font-family:var(--font-mono);font-size:13px;color:var(--text-3);letter-spacing:.02em;}
     .rc-dt__best{font-family:var(--font-mono);font-size:13px;color:#16a34a;}
     .rc-dt__best b{color:#16a34a;}
     .rc-dt__speccard{margin-top:18px;}
@@ -3928,8 +3931,8 @@ return {robots:R,byId:byId,glow:CAT_GLOW,axes:AXES,categories:CATEGORIES,posts:P
     _candsD.sort((a, b) => a.n - b.n);
     const _bestD = (!isQuote && _candsD.length) ? _candsD[0] : null;
     const _msrpND = _numD(r.price);
-    // 详情页 MSRP 已醒目展示；仅当零售商真的更低才另起 Best 行（否则重复无意义）
-    const best = (_bestD && _msrpND && _bestD.n < _msrpND - 0.01) ? _bestD : null;
+    // best price = 零售/品牌各行里的最低价；永远展示（哪怕等于 MSRP），且比 MSRP 醒目
+    const _gp = _bestD ? { p: _bestD.p, ch: _realChD(_bestD.ch) ? _bestD.ch : null } : { p: r.price, ch: null };
     return (
       <div className="rc-dt">
         <span className="rc-dt__back" onClick={onBack}>‹ Back to catalog</span>
@@ -3959,8 +3962,8 @@ return {robots:R,byId:byId,glow:CAT_GLOW,axes:AXES,categories:CATEGORIES,posts:P
               {isQuote
                 ? <span className="rc-dt__quotelbl">Priced by quote</span>
                 : <div className="rc-dt__pricebox">
-                    <StatReadout label="MSRP" value={r.price} size="lg" />
-                    {best && <span className="rc-dt__best">Best <b>{best.p}</b>{_realChD(best.ch) ? <React.Fragment> · {bestUrl ? <a href={bestUrl} target="_blank" rel="noopener" onClick={(e) => e.stopPropagation()} style={{ color: "#16a34a" }}>{best.ch}</a> : best.ch}</React.Fragment> : null}</span>}
+                    <span className="rc-dt__bestbig">{_gp.p}{_gp.ch ? <span className="rc-dt__bestch"> · {bestUrl ? <a href={bestUrl} target="_blank" rel="noopener" onClick={(e) => e.stopPropagation()} style={{ color: "#16a34a" }}>{_gp.ch}</a> : _gp.ch}</span> : null}</span>
+                    <span className="rc-dt__msrpref">MSRP {r.price}</span>
                   </div>}
               <div style={{ marginLeft: "auto", display: "flex", gap: 10, flexWrap: "wrap" }}>
                 {isQuote
