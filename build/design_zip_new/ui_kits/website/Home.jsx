@@ -212,9 +212,9 @@
     .rc2-pc__cta.quote span{background:var(--accent2);color:var(--accent);border-color:#dfe2ff;}
 
     /* guide module */
-    .rc2-guide{display:grid;grid-template-columns:1.5fr 1fr;border:1px solid var(--line);border-radius:18px;overflow:hidden;background:#fff;cursor:pointer;}
-    .rc2-guide .gimg{background:linear-gradient(135deg,#dfe7ea,#c7d2d6);min-height:340px;display:grid;place-items:center;color:#8ea0a6;font-size:52px;overflow:hidden;}
-    .rc2-guide .gimg img{width:100%;height:100%;object-fit:cover;}
+    .rc2-guide{display:grid;grid-template-columns:1.5fr 1fr;align-items:start;border:1px solid var(--line);border-radius:18px;overflow:hidden;background:#fff;cursor:pointer;}
+    .rc2-guide .gimg{aspect-ratio:3/2;background:linear-gradient(135deg,#dfe7ea,#c7d2d6);display:flex;align-items:center;justify-content:center;color:#8ea0a6;font-size:52px;overflow:hidden;}
+    .rc2-guide .gimg img{width:100%;height:100%;object-fit:cover;display:block;}
     .rc2-guide .gbody{padding:38px 36px;display:flex;flex-direction:column;}
     .rc2-guide .gcat{font-size:12.5px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--accent);margin-bottom:12px;}
     .rc2-guide .gbody h3{font-family:var(--serif);font-weight:500;font-size:30px;line-height:1.12;letter-spacing:-.02em;margin:0 0 12px;color:var(--ink);}
