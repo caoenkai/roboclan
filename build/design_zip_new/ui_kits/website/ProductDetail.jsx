@@ -10,6 +10,37 @@
   // 通用规则，未来新标签也自动处理；in 后面若是数字(如"5 in 1")则不动。
   const tidyTag = (t) => String(t).replace(/(\d[\d.,]*)\s+in\s+(?=[A-Za-z])/g, "$1‑in ");
 
+  // 名字下的标签 = 每根雷达轴对应的真实数据值（如 "Suction 35,000 Pa"）
+  const AXIS_ALIAS = {
+    "Suction": ["suction"], "Runtime": ["runtime", "battery life", "battery"],
+    "Threshold": ["obstacle crossing", "obstacle", "threshold"], "Mop-lift": ["mop lift", "mop-lift"],
+    "Payload": ["payload", "max payload", "cabin payload"], "Speed": ["speed"],
+    "DOF": ["total dof", "dof"], "Battery": ["battery", "runtime", "battery life"],
+    "Cut": ["cut width", "cut"], "Cut width": ["cut width"], "Slope": ["max slope", "slope"],
+    "Cleaning": ["coverage", "cleaning", "clean water"], "Capacity": ["basket", "capacity", "dustbin"],
+    "Filtration": ["filtration", "filter"], "Mobility": ["max speed", "speed"],
+    "Autonomy": ["navigation", "autonomy", "mapping"], "Efficiency": ["coverage", "throughput", "speed"],
+    "Intelligence": ["compute", "sensing", "ai"]
+  };
+  function specVal(r, keys) {
+    const rows = [].concat(r.specs || [], r.cardSpecs || [], r.info || []);
+    for (const key of keys) {
+      const hit = rows.find((row) => Array.isArray(row) && String(row[0]).toLowerCase().includes(key));
+      if (hit) return String(hit[1]);
+    }
+    return null;
+  }
+  function radarTags(r) {
+    const ax = r.axes || DATA.axes[r.cat] || [];
+    const out = [];
+    ax.forEach((a) => {
+      if (a === "Value") return;                       // 性价比无实测值，跳过
+      const v = specVal(r, AXIS_ALIAS[a] || [a.toLowerCase()]);
+      if (v) out.push(a + " " + v);
+    });
+    return out;
+  }
+
   // Title-case feature phrases: capitalize each word, but leave units,
   // acronyms and product names (anything already containing an uppercase
   // letter, or a known unit token) untouched.
@@ -52,6 +83,10 @@
     .rc-dt__name{font-family:var(--font-display);font-weight:600;font-size:42px;letter-spacing:-.03em;margin:6px 0 12px;line-height:1.05;}
     .rc-dt__tags{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:18px;}
     .rc-dt__priced{display:flex;align-items:flex-end;gap:26px;flex-wrap:wrap;margin-top:4px;}
+    .rc-dt__pricebox{display:flex;flex-direction:column;gap:6px;}
+    .rc-dt__best{font-family:var(--font-mono);font-size:13px;color:var(--success);}
+    .rc-dt__best b{color:var(--success);}
+    .rc-dt__speccard{margin-top:18px;}
     .rc-dt__panels{display:grid;grid-template-columns:1.1fr .9fr;gap:18px;margin-top:18px;}
     .rc-dt__radarwrap{display:flex;flex-direction:column;align-items:center;gap:6px;}
     .rc-dt__seclbl{font-family:var(--font-mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--text-3);margin:0 0 14px;}
@@ -88,8 +123,11 @@
     const r = robot; const glow = DATA.glow[r.cat]; const axes = r.axes || DATA.axes[r.cat];
     const added = compare.has(r.id);
     const isQuote = /quote|contact/i.test(r.price || "");
-    // 顶部 View deal 链到最优（或第一个有链接的）商家
-    const _pr = (r.prices || []).map((row) => Array.isArray(row) ? { best: row[2], url: row[3] } : { best: row.best, url: row.url });
+    // 多商家价格 → 最优价（含商家、价格、链接）
+    const _pr = (r.prices || []).map((row) => Array.isArray(row)
+      ? { ch: row[0], p: row[1], best: row[2], url: row[3] }
+      : { ch: row.retailer || row.channel || row.ch, p: row.price || row.p, best: row.best, url: row.url });
+    const bestEntry = _pr.find((x) => x.best) || _pr[0] || null;
     const bestUrl = (_pr.find((x) => x.best && x.url) || _pr.find((x) => x.url) || {}).url || null;
     return (
       <div className="rc-dt">
@@ -105,18 +143,24 @@
           <div className="rc-dt__info">
             <div className="rc-dt__brand">{r.brand}</div>
             <h1 className="rc-dt__name">{r.name}</h1>
-            <div className="rc-dt__tags">{(r.highlights || []).map((t) => <Tag key={"hl-" + t} style={{ color: "#F5B14C", background: "rgba(245,177,76,.13)", borderColor: "rgba(245,177,76,.38)" }}>{t}</Tag>)}{r.tags.map((t) => <Tag key={t} style={{ color: "#F5B14C", background: "rgba(245,177,76,.13)", borderColor: "rgba(245,177,76,.38)" }}>{tidyTag(t)}</Tag>)}</div>
+            <div className="rc-dt__tags">{radarTags(r).map((t) => <Tag key={t} style={{ color: "#F5B14C", background: "rgba(245,177,76,.13)", borderColor: "rgba(245,177,76,.38)" }}>{tidyTag(t)}</Tag>)}</div>
             <div className="rc-dt__priced">
               {isQuote
                 ? <span className="rc-dt__quotelbl">Enterprise · priced by quote</span>
-                : <StatReadout label={r.priceFrom ? "From" : "Price"} value={r.price} accent size="lg" />}
-              <div style={{ marginLeft: "auto", display: "flex", gap: 10 }}>
+                : <div className="rc-dt__pricebox">
+                    <StatReadout label={r.priceFrom ? "From" : "Launch MSRP"} value={r.price} accent size="lg" />
+                    {bestEntry && bestEntry.p && String(bestEntry.p) !== String(r.price) &&
+                      <span className="rc-dt__best">Best: <b>{bestEntry.p}</b>{bestEntry.ch ? " · " + bestEntry.ch : ""}</span>}
+                  </div>}
+              <div style={{ marginLeft: "auto", display: "flex", gap: 10, flexWrap: "wrap" }}>
                 <Button variant={added ? "secondary" : "primary"} onClick={() => onAdd(r.id)}>{added ? "✓ In compare" : "＋ Add to compare"}</Button>
                 {isQuote
                   ? <Button variant="primary" onClick={() => onQuote && onQuote(r.name)}>Contact for quote</Button>
-                  : <Button variant="primary" onClick={() => { try { window.rcLog && window.rcLog(r.name, r.cat, "outbound"); } catch (e) {} if (bestUrl) window.open(bestUrl, "_blank", "noopener"); }}>View deal</Button>}
+                  : <Button variant="primary" onClick={() => { try { window.rcLog && window.rcLog(r.name, r.cat, "outbound"); } catch (e) {} if (bestUrl) window.open(bestUrl, "_blank", "noopener"); }}>{bestUrl ? "View deal ↗" : "View deal"}</Button>}
               </div>
             </div>
+            {!isQuote && r.prices && r.prices.length > 0 &&
+              <p className="rc-dt__note" style={{ marginTop: 10 }}>Price shown for reference — check the retailer for the current price. As an Amazon Associate, Roboclan earns from qualifying purchases.</p>}
           </div>
         </div>
 
@@ -128,16 +172,8 @@
             </div>
           </GlassCard>
           <GlassCard>
-            <p className="rc-dt__seclbl">At a glance</p>
-            <div className="rc-dt__chips">
-              {r.info.map(([k, v]) => (
-                <div className="rc-dt__chip" key={k}><StatReadout label={k} value={nbHyph(titleCase(v))} size="sm" /></div>
-              ))}
-            </div>
-            <div className="rc-dt__verdict">
-              <p className="rc-dt__seclbl">The verdict</p>
-              <p>{r.verdict}</p>
-            </div>
+            <p className="rc-dt__seclbl">The verdict</p>
+            <div className="rc-dt__verdict"><p>{r.verdict}</p></div>
           </GlassCard>
         </div>
 
@@ -146,52 +182,22 @@
           <div className="rc-dt__pccol con"><h4>Cons</h4>{r.cons.map((p, i) => <div className="rc-dt__pcli" key={i}><span className="m c">–</span>{p}</div>)}</div>
         </div>
 
-        <div className="rc-dt__cols">
-          <GlassCard>
-            {isQuote ? (
-              <div className="rc-dt__quote">
-                <p className="rc-dt__seclbl">Pricing</p>
-                <p className="rc-dt__quotetext">This model is sold by quote. Tell us about your use case and we’ll connect you with the manufacturer or an authorized distributor — they’ll follow up directly with pricing and availability.</p>
-                <Button variant="primary" onClick={() => onQuote && onQuote(r.name)}>Contact for quote</Button>
-              </div>
-            ) : (
-              <React.Fragment>
-                <p className="rc-dt__seclbl">Compare prices</p>
-                <div className="rc-dt__prices">
-                  {(r.prices || []).map((row, i) => {
-                    // 兼容旧元组 [商家,价格,best,(url)] 和新对象 {retailer,price,url,best}
-                    const pr = Array.isArray(row)
-                      ? { ch: row[0], p: row[1], best: row[2], url: row[3] }
-                      : { ch: row.retailer || row.channel || row.ch, p: row.price || row.p, best: row.best, url: row.url };
-                    return (
-                      <PriceRow key={i} channel={pr.ch} price={pr.p} best={pr.best} url={pr.url}
-                        ctaLabel={pr.url ? "View deal" : (String(pr.p).includes("/mo") ? "View plan" : "View deal")}
-                        onView={() => { try { window.rcLog && window.rcLog(r.name, r.cat, "buy"); } catch (e) {} }} />
-                    );
-                  })}
-                </div>
-                {r.prices && r.prices.length > 0 &&
-                  <p className="rc-dt__note">Prices update periodically and may differ at checkout. We may earn a commission from links above.</p>}
-              </React.Fragment>
-            )}
-          </GlassCard>
-          <GlassCard>
-            <p className="rc-dt__seclbl">Features &amp; Specs</p>
-            <div className="rc-dt__specgrid">
-              {r.specs.map(([k, v], i) => {
-                const parts = String(v).split(/ · | — /).map((p) => p.trim()).filter(Boolean);
-                return (
-                  <div className="rc-sc" key={i}>
-                    <span className="rc-sc__k">{k}</span>
-                    <div className="rc-sc__chips">
-                      {parts.map((p, j) => <span className="rc-feat__chip" key={j}>{nbHyph(titleCase(p))}</span>)}
-                    </div>
+        <GlassCard className="rc-dt__speccard">
+          <p className="rc-dt__seclbl">Features &amp; Specs</p>
+          <div className="rc-dt__specgrid">
+            {r.specs.map(([k, v], i) => {
+              const parts = String(v).split(/ · | — /).map((p) => p.trim()).filter(Boolean);
+              return (
+                <div className="rc-sc" key={i}>
+                  <span className="rc-sc__k">{k}</span>
+                  <div className="rc-sc__chips">
+                    {parts.map((p, j) => <span className="rc-feat__chip" key={j}>{nbHyph(titleCase(p))}</span>)}
                   </div>
-                );
-              })}
-            </div>
-          </GlassCard>
-        </div>
+                </div>
+              );
+            })}
+          </div>
+        </GlassCard>
       </div>
     );
   }

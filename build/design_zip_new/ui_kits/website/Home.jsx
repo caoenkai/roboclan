@@ -406,7 +406,7 @@
     { b: "Dreame A3 AWD Pro", t: "lands in North America — LiDAR mapping, no boundary wire, 4WD slopes" },
     { b: "Cordless pool season", t: "self-emptying dock cleaners headline this year's robot lineup" },
   ];
-  function Home({ onOpenCategory, onOpen, onAdd, compare, onNews }) {
+  function Home({ onOpenCategory, onOpen, onAdd, compare, onNews, onQuote }) {
     inject();
     // 新闻条实时从 Supabase 读（后台加了立即显示，无需重新发布）；失败则用内置兜底
     const [news, setNews] = React.useState(NEWS);
@@ -479,7 +479,7 @@
             <ProductCard key={r.id}
               name={r.name} brand={r.brand} category={r.cat} emoji={r.emoji} image={r.image}
               glow={DATA.glow[r.cat]} price={r.price} priceFrom={r.priceFrom}
-              cta={/quote|contact/i.test(r.price || "") ? "Contact for quote" : "Compare prices"}
+              prices={r.prices} onQuote={onQuote}
               specs={r.cardSpecs} radar={r.radar} axes={r.axes || DATA.axes[r.cat]}
               status={r.status}
               added={compare.has(r.id)} onAdd={() => onAdd(r.id)} onOpen={() => onOpen(r.id)} />

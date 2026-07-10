@@ -689,6 +689,7 @@ function injectPcStyles() {
   .rc-pc__priced{display:flex;align-items:flex-end;justify-content:space-between;gap:10px;margin-top:12px;}
   .rc-pc__price{font-family:var(--font-mono);font-size:19px;font-weight:600;color:var(--text-1);}
   .rc-pc__price .from{font-size:11px;color:var(--text-3);font-weight:500;margin-right:5px;letter-spacing:.06em;text-transform:uppercase;}
+  .rc-pc__best{font-family:var(--font-mono);font-size:12px;color:var(--success);white-space:nowrap;}
   .rc-pc__specs{display:flex;flex-direction:column;gap:5px;margin-top:13px;}
   .rc-pc__spec{display:flex;justify-content:space-between;gap:12px;font-size:12.5px;color:var(--text-3);}
   .rc-pc__spec b{font-family:var(--font-mono);color:var(--text-2);font-weight:500;}
@@ -696,6 +697,8 @@ function injectPcStyles() {
     margin-top:14px;padding-top:13px;border-top:1px solid var(--line);}
   .rc-pc__cta{display:inline-flex;align-items:center;gap:5px;font-size:12.5px;font-weight:600;
     color:var(--accent-ink);cursor:pointer;}
+  .rc-pc__cta.is-buy{background:var(--grad-accent);color:var(--text-on-accent);padding:8px 14px;border-radius:var(--r-pill);box-shadow:var(--glow-accent-sm);}
+  .rc-pc__cta.is-buy:hover{box-shadow:var(--glow-accent-md);}
   .rc-pc__mini{flex-shrink:0;}
   `;
   document.head.appendChild(s);
@@ -721,7 +724,9 @@ function ProductCard({
   axes,
   score,
   scoreMax = 5,
-  cta = "Compare prices",
+  cta = "View details",
+  prices = [],
+  onQuote,
   added = false,
   onAdd,
   onOpen,
@@ -729,6 +734,18 @@ function ProductCard({
   ...rest
 }) {
   injectPcStyles();
+  const _isQuote = /quote|contact/i.test(String(price || ""));
+  const _bu = (prices || []).map((row) => Array.isArray(row) ? { p: row[1], best: row[2], url: row[3] } : { p: row.price, best: row.best, url: row.url });
+  const _bestBuy = _bu.find((x) => x.best && x.url) || _bu.find((x) => x.url) || null;
+  const _bestPrice = (_bu.find((x) => x.best) || _bu[0] || {}).p || null;
+  const _buyUrl = _bestBuy ? _bestBuy.url : null;
+  const _ctaLabel = _isQuote ? "Contact for quote" : (_buyUrl ? "View deal ↗" : "View details");
+  const _ctaAct = (e) => {
+    e.stopPropagation();
+    if (_isQuote) { onQuote && onQuote(name); return; }
+    if (_buyUrl) { try { window.rcLog && window.rcLog(name, category, "buy"); } catch (x) {} window.open(_buyUrl, "_blank", "noopener"); return; }
+    onOpen && onOpen(e);
+  };
   return /*#__PURE__*/React.createElement(__ds_scope.GlassCard, _extends({
     hover: true,
     padded: false,
@@ -771,19 +788,16 @@ function ProductCard({
     className: "rc-pc__price"
   }, priceFrom && /*#__PURE__*/React.createElement("span", {
     className: "from"
-  }, "from"), price), status && /*#__PURE__*/React.createElement(__ds_scope.Badge, {
+  }, "from"), price), _bestPrice && !_isQuote && String(_bestPrice) !== String(price) && /*#__PURE__*/React.createElement("span", {
+    className: "rc-pc__best"
+  }, "Best ", _bestPrice), status && /*#__PURE__*/React.createElement(__ds_scope.Badge, {
     tone: status.tone || "neutral"
   }, status.label)), /*#__PURE__*/React.createElement("div", {
     className: "rc-pc__foot"
   }, /*#__PURE__*/React.createElement("span", {
-    className: "rc-pc__cta",
-    onClick: e => {
-      e.stopPropagation();
-      onOpen && onOpen(e);
-    }
-  }, cta, " ", /*#__PURE__*/React.createElement("span", {
-    "aria-hidden": "true"
-  }, "\u203A")), radar ? /*#__PURE__*/React.createElement("span", {
+    className: "rc-pc__cta" + (_isQuote || _buyUrl ? " is-buy" : ""),
+    onClick: _ctaAct
+  }, _ctaLabel), radar ? /*#__PURE__*/React.createElement("span", {
     className: "rc-pc__mini"
   }, /*#__PURE__*/React.createElement(__ds_scope.Radar, {
     values: radar,

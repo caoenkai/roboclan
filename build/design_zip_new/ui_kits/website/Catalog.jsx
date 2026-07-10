@@ -35,7 +35,7 @@
     return n >= 15000;                   // "$15k+"
   }
 
-  function Catalog({ initialCat, search, onOpen, onAdd, compare }) {
+  function Catalog({ initialCat, search, onOpen, onAdd, compare, onQuote }) {
     inject();
     const q = (search || "").toLowerCase().trim();
     const [cats, setCats] = React.useState(new Set(initialCat ? [initialCat] : []));
@@ -101,7 +101,7 @@
             <ProductCard key={r.id}
               name={r.name} brand={r.brand} category={r.cat} emoji={r.emoji} image={r.image}
               glow={DATA.glow[r.cat]} price={r.price} priceFrom={r.priceFrom}
-              cta={/quote|contact/i.test(r.price || "") ? "Contact for quote" : "Compare prices"}
+              prices={r.prices} onQuote={onQuote}
               specs={r.cardSpecs} radar={r.radar} axes={r.axes || DATA.axes[r.cat]} status={r.status}
               added={compare.has(r.id)} onAdd={() => onAdd(r.id)} onOpen={() => onOpen(r.id)} />
           ))}
