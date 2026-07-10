@@ -687,13 +687,13 @@ function injectPcStyles() {
   .rc-pc__name{font-family:var(--font-display);font-weight:600;font-size:17px;letter-spacing:-.01em;color:var(--text-1);margin:0;}
   .rc-pc__brand{font-size:12.5px;color:var(--text-3);margin-top:2px;}
   .rc-pc__priced{display:flex;align-items:flex-end;justify-content:space-between;gap:10px;margin-top:12px;}
-  .rc-pc__price{display:flex;flex-direction:column;gap:1px;font-family:var(--font-mono);}
+  .rc-pc__price{display:flex;flex-direction:column;justify-content:flex-end;gap:1px;min-height:40px;font-family:var(--font-mono);}
   .rc-pc__msrp{font-size:11.5px;color:var(--text-3);}
   .rc-pc__msrp.struck{text-decoration:line-through;}
   .rc-pc__bestp{font-size:18px;font-weight:600;color:var(--text-1);}
   .rc-pc__price .from{font-size:11px;color:var(--text-3);font-weight:500;margin-right:5px;letter-spacing:.06em;text-transform:uppercase;}
   .rc-pc__best{font-family:var(--font-mono);font-size:12px;color:var(--success);white-space:nowrap;}
-  .rc-pc__qlbl{font-family:var(--font-mono);font-size:14px;color:var(--text-1);text-transform:uppercase;letter-spacing:.05em;}
+  .rc-pc__qlbl{font-family:var(--font-mono);font-size:18px;font-weight:600;color:var(--text-1);text-transform:uppercase;letter-spacing:.03em;}
   .rc-pc__specs{display:flex;flex-direction:column;gap:5px;margin-top:13px;}
   .rc-pc__spec{display:flex;justify-content:space-between;gap:12px;font-size:12.5px;color:var(--text-3);}
   .rc-pc__spec b{font-family:var(--font-mono);color:var(--text-2);font-weight:500;}

@@ -153,10 +153,10 @@
                       <span className="rc-dt__best">Best: <b>{bestEntry.p}</b>{bestEntry.ch ? " · " + bestEntry.ch : ""}</span>}
                   </div>}
               <div style={{ marginLeft: "auto", display: "flex", gap: 10, flexWrap: "wrap" }}>
-                <Button variant={added ? "secondary" : "primary"} style={{ boxShadow: added ? "none" : "0 0 16px rgba(110,139,255,.45)" }} onClick={() => onAdd(r.id)}>{added ? "✓ In compare" : "＋ Add to compare"}</Button>
                 {isQuote
                   ? <Button variant="primary" style={{ background: "linear-gradient(135deg,#22c55e,#16a34a)", color: "#fff", boxShadow: "0 0 16px rgba(34,197,94,.55)" }} onClick={() => onQuote && onQuote(r.name)}>Contact ↗</Button>
                   : <Button variant="primary" style={{ background: "linear-gradient(135deg,#22c55e,#16a34a)", color: "#fff", boxShadow: "0 0 16px rgba(34,197,94,.55)" }} onClick={() => { try { window.rcLog && window.rcLog(r.name, r.cat, "outbound"); } catch (e) {} if (bestUrl) window.open(bestUrl, "_blank", "noopener"); }}>{bestUrl ? "View deal ↗" : "View deal"}</Button>}
+                <Button variant={added ? "secondary" : "primary"} style={{ boxShadow: added ? "none" : "0 0 16px rgba(110,139,255,.45)" }} onClick={() => onAdd(r.id)}>{added ? "✓ In compare" : "＋ Add to compare"}</Button>
               </div>
             </div>
             {!isQuote && r.prices && r.prices.length > 0 &&
