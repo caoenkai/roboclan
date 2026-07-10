@@ -165,7 +165,7 @@
     .rc2-tkin{display:flex;align-items:center;gap:18px;height:44px;padding:0 24px;max-width:100%;}
     .rc2-tklbl{font-size:12px;font-weight:600;letter-spacing:.09em;color:var(--accent);flex-shrink:0;}
     .rc2-tkview{overflow:hidden;flex:1;}
-    .rc2-tktrack{display:inline-flex;gap:40px;white-space:nowrap;animation:rc2tk 64s linear infinite;}
+    .rc2-tktrack{display:inline-flex;gap:40px;white-space:nowrap;animation:rc2tk 92s linear infinite;}
     .rc2-tkview:hover .rc2-tktrack{animation-play-state:paused;}
     .rc2-tktrack .it{font-size:13.5px;color:var(--ink2);cursor:pointer;}
     .rc2-tktrack .it b{color:var(--ink);font-weight:600;}
@@ -562,10 +562,10 @@
       { cat: "Quadrupeds", note: "by brand", chips: ["Unitree", "DEEP Robotics", "AgiBot"] },
       { cat: "Commercial & Industrial", note: "by use-case", chips: ["Service", "Cleaning", "Delivery", "Manipulation"] },
     ];
-    // 绿色永远是"最低可得价"：零售商行与首发价里取最低；只有真实商家名才附上
+    // 绿色 = best price = 零售/品牌各行里的最低价（MSRP 只作参考、不参与）；真实商家名才附上
     const greenPrice = (r) => {
-      const b = bestOf(r.prices); const mv = _num(r.price);
-      if (b && (mv == null || b.n <= mv)) return { p: b.p, ch: realRetailer(b.ch) ? b.ch : null };
+      const b = bestOf(r.prices);
+      if (b) return { p: b.p, ch: realRetailer(b.ch) ? b.ch : null };
       return { p: r.price, ch: null };
     };
     const PriceBlk = (r) => {

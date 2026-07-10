@@ -88,7 +88,10 @@
     .rc-dt__name{font-family:var(--font-display);font-weight:600;font-size:42px;letter-spacing:-.03em;margin:6px 0 12px;line-height:1.05;}
     .rc-dt__tags{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:18px;}
     .rc-dt__priced{display:flex;align-items:flex-end;gap:26px;flex-wrap:wrap;margin-top:4px;}
-    .rc-dt__pricebox{display:flex;flex-direction:column;gap:6px;}
+    .rc-dt__pricebox{display:flex;flex-direction:column;gap:2px;}
+    .rc-dt__bestbig{font-family:var(--font-mono);font-size:40px;font-weight:600;color:#16a34a;line-height:1;}
+    .rc-dt__bestch{font-family:var(--font-sans);font-size:15px;font-weight:500;color:#16a34a;}
+    .rc-dt__msrpref{font-family:var(--font-mono);font-size:13px;color:var(--text-3);letter-spacing:.02em;}
     .rc-dt__best{font-family:var(--font-mono);font-size:13px;color:#16a34a;}
     .rc-dt__best b{color:#16a34a;}
     .rc-dt__speccard{margin-top:18px;}
@@ -143,8 +146,8 @@
     _candsD.sort((a, b) => a.n - b.n);
     const _bestD = (!isQuote && _candsD.length) ? _candsD[0] : null;
     const _msrpND = _numD(r.price);
-    // 详情页 MSRP 已醒目展示；仅当零售商真的更低才另起 Best 行（否则重复无意义）
-    const best = (_bestD && _msrpND && _bestD.n < _msrpND - 0.01) ? _bestD : null;
+    // best price = 零售/品牌各行里的最低价；永远展示（哪怕等于 MSRP），且比 MSRP 醒目
+    const _gp = _bestD ? { p: _bestD.p, ch: _realChD(_bestD.ch) ? _bestD.ch : null } : { p: r.price, ch: null };
     return (
       <div className="rc-dt">
         <span className="rc-dt__back" onClick={onBack}>‹ Back to catalog</span>
@@ -174,8 +177,8 @@
               {isQuote
                 ? <span className="rc-dt__quotelbl">Priced by quote</span>
                 : <div className="rc-dt__pricebox">
-                    <StatReadout label="MSRP" value={r.price} size="lg" />
-                    {best && <span className="rc-dt__best">Best <b>{best.p}</b>{_realChD(best.ch) ? <React.Fragment> · {bestUrl ? <a href={bestUrl} target="_blank" rel="noopener" onClick={(e) => e.stopPropagation()} style={{ color: "#16a34a" }}>{best.ch}</a> : best.ch}</React.Fragment> : null}</span>}
+                    <span className="rc-dt__bestbig">{_gp.p}{_gp.ch ? <span className="rc-dt__bestch"> · {bestUrl ? <a href={bestUrl} target="_blank" rel="noopener" onClick={(e) => e.stopPropagation()} style={{ color: "#16a34a" }}>{_gp.ch}</a> : _gp.ch}</span> : null}</span>
+                    <span className="rc-dt__msrpref">MSRP {r.price}</span>
                   </div>}
               <div style={{ marginLeft: "auto", display: "flex", gap: 10, flexWrap: "wrap" }}>
                 {isQuote
