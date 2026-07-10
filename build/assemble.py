@@ -517,6 +517,7 @@ const PAGES = {
     lede: "Roboclan is an independent robot buying guide for the US market — comparing robots across six categories on objective, official specifications.",
     sections: [
       ["What we do", ["We help buyers compare robots the way an informed friend would: side-by-side, on the specs that matter, without hype. We cover robot vacuums, lawn mowers, pool cleaners, humanoids, quadrupeds, and commercial/industrial robots — with more added over time."]],
+      ["Who's behind Roboclan", ["Roboclan is founded and edited by Kai Cao. Kai treats robots the way he treats any product — what ultimately matters is the person buying it. He started Roboclan to save people the hours it takes to find the right robot, comparing every model on the same objective specs so buyers can decide quickly and with confidence."]],
       ["How we stay objective", ["Our radar scores are computed from manufacturers' official specs, not from paid placement. Brands cannot pay to change a score. Where a product is genuinely strong, the radar shows it; where it's weak, the radar shows that too."]],
       ["How we make money", ["Roboclan earns affiliate commissions when you buy through our links, and generates qualified leads for enterprise robot vendors. This never changes how a product is scored. See our Affiliate Disclosure for details."]],
       ["Contact", ["Questions, corrections, or partnership inquiries: hello@roboclan.ai."]],
@@ -526,7 +527,7 @@ const PAGES = {
     title: "Affiliate Disclosure",
     lede: "Roboclan is free to use. When you buy through links on our site, we may earn a commission — at no extra cost to you.",
     sections: [
-      ["Our affiliate relationships", ["Roboclan is funded in part by affiliate partnerships. As an Amazon Associate, Roboclan earns from qualifying purchases. Where we link to a retailer or manufacturer through an affiliate program, we may earn a commission if you make a purchase. As we are accepted into additional retailer and manufacturer programs, we will add any program-specific disclosures they require here."]],
+      ["Our affiliate relationships", ["Roboclan is funded in part by affiliate partnerships. We currently participate in the Amazon Associates Program and in brand affiliate programs with Dreame, Aiper, Eufy, and WyBot. As an Amazon Associate, Roboclan earns from qualifying purchases. Where we link to a retailer or manufacturer through an affiliate program, we may earn a commission if you make a purchase. As we're accepted into additional retailer and manufacturer programs, we'll add any program-specific disclosures they require here."]],
       ["No extra cost to you", ["Affiliate commissions are paid by the retailer out of their margin. You pay the same price whether or not you use our links."]],
       ["It does not affect our scores", ["Commissions never influence our radar scores or rankings. Scores are computed from official manufacturer specs. We link to products because they're relevant to your comparison, not because of commission rates."]],
       ["FTC disclosure", ["In line with the U.S. Federal Trade Commission's guidelines on endorsements, we disclose that some links on Roboclan are affiliate links. Prices and availability shown are for reference and may change; the retailer's page is always the source of truth for current pricing."]],
