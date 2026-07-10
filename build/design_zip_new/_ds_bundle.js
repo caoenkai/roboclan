@@ -690,7 +690,7 @@ function injectPcStyles() {
   .rc-pc__price{display:flex;flex-direction:column;justify-content:flex-end;gap:1px;min-height:40px;font-family:var(--font-mono);}
   .rc-pc__msrp{font-size:11.5px;color:var(--text-3);}
   .rc-pc__msrp.struck{text-decoration:line-through;}
-  .rc-pc__bestp{font-size:18px;font-weight:600;color:var(--success);}
+  .rc-pc__bestp{font-size:18px;font-weight:600;color:#16a34a;}
   .rc-pc__price .from{font-size:11px;color:var(--text-3);font-weight:500;margin-right:5px;letter-spacing:.06em;text-transform:uppercase;}
   .rc-pc__best{font-family:var(--font-mono);font-size:12px;color:var(--success);white-space:nowrap;}
   .rc-pc__qlbl{font-family:var(--font-mono);font-size:18px;font-weight:600;color:var(--text-1);text-transform:uppercase;letter-spacing:.03em;}
@@ -751,7 +751,10 @@ function ProductCard({
   const _best = _cands.length ? _cands[0] : null;
   const _buyUrl = (_best && _best.url) || (_bu.find((x) => x.url) || {}).url || null;
   const _msrpN = _num(price);
-  const _hasDiscount = _best && _msrpN && _best.n < _msrpN - 0.01;
+  // 绿色永远是最低可得价：零售商行与首发价取最低；真实商家名才附上
+  const _grUseBest = _best && (!_msrpN || _best.n <= _msrpN);
+  const _grP = _grUseBest ? _best.p : price;
+  const _grCh = (_grUseBest && _realCh(_best.ch)) ? _best.ch : null;
   const _ctaLabel = _isQuote ? "Contact ↗" : (_buyUrl ? "View deal ↗" : "View details");
   const _ctaAct = (e) => {
     e.stopPropagation();
@@ -803,7 +806,7 @@ function ProductCard({
     ? /*#__PURE__*/React.createElement("span", { className: "rc-pc__qlbl" }, "Contact Sales")
     : /*#__PURE__*/React.createElement(React.Fragment, null,
         /*#__PURE__*/React.createElement("span", { className: "rc-pc__msrp" }, "MSRP ", price),
-        /*#__PURE__*/React.createElement("span", { className: "rc-pc__bestp" }, _best ? _best.p : price, (_best && _realCh(_best.ch)) ? " · " + _best.ch : ""))
+        /*#__PURE__*/React.createElement("span", { className: "rc-pc__bestp" }, _grP, _grCh ? " · " + _grCh : ""))
   ), status && /*#__PURE__*/React.createElement(__ds_scope.Badge, {
     tone: status.tone || "neutral"
   }, status.label)), /*#__PURE__*/React.createElement("div", {

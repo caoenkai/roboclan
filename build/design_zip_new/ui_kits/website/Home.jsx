@@ -149,8 +149,8 @@
     .rc2-herocard .tagn{font-size:12.5px;color:var(--ink3);font-weight:600;letter-spacing:.05em;text-transform:uppercase;}
     .rc2-herocard h3{font-family:var(--serif);font-size:24px;font-weight:600;margin:4px 0 2px;color:var(--ink);}
     .rc2-herocard .brand{font-size:14px;color:var(--ink2);}
-    .rc2-himg{height:210px;background:#fff;border-radius:12px;border:1px solid var(--line);display:grid;place-items:center;margin:16px 0;overflow:hidden;padding:16px;}
-    .rc2-himg img{width:100%;height:100%;object-fit:contain;display:block;}
+    .rc2-himg{height:210px;background:#fff;border-radius:12px;border:1px solid var(--line);display:flex;align-items:center;justify-content:center;margin:16px 0;overflow:hidden;padding:16px;}
+    .rc2-himg img{max-width:100%;max-height:178px;width:auto;height:auto;object-fit:contain;display:block;}
     .rc2-himg .emo{font-size:52px;}
     .rc2-hcbot{display:flex;align-items:flex-end;justify-content:space-between;}
     .rc2-scorepill{display:inline-flex;align-items:center;gap:6px;background:var(--ink);color:#fff;font-size:13px;font-weight:600;padding:5px 12px;border-radius:999px;}
@@ -195,8 +195,8 @@
     .rc2-rail{display:grid;grid-template-columns:repeat(4,1fr);gap:20px;}
     .rc2-pc{background:#fff;border:1px solid var(--line);border-radius:14px;overflow:hidden;cursor:pointer;transition:.15s;display:flex;flex-direction:column;}
     .rc2-pc:hover{border-color:var(--line2);transform:translateY(-3px);}
-    .rc2-pc__im{height:178px;background:#fff;display:grid;place-items:center;border-bottom:1px solid var(--line);position:relative;overflow:hidden;padding:14px;}
-    .rc2-pc__im img{width:100%;height:100%;object-fit:contain;display:block;}
+    .rc2-pc__im{height:178px;background:#fff;display:flex;align-items:center;justify-content:center;border-bottom:1px solid var(--line);position:relative;overflow:hidden;padding:14px;}
+    .rc2-pc__im img{max-width:100%;max-height:150px;width:auto;height:auto;object-fit:contain;display:block;}
     .rc2-pc__im .emo{font-size:44px;}
     .rc2-pc__sc{position:absolute;top:12px;right:12px;background:var(--ink);color:#fff;font-size:12.5px;font-weight:600;width:34px;height:34px;border-radius:50%;display:grid;place-items:center;}
     .rc2-pc__bd{padding:15px 16px 16px;display:flex;flex-direction:column;flex:1;}
@@ -562,14 +562,19 @@
       { cat: "Quadrupeds", note: "by brand", chips: ["Unitree", "DEEP Robotics", "AgiBot"] },
       { cat: "Commercial & Industrial", note: "by use-case", chips: ["Service", "Cleaning", "Delivery", "Manipulation"] },
     ];
+    // 绿色永远是"最低可得价"：零售商行与首发价里取最低；只有真实商家名才附上
+    const greenPrice = (r) => {
+      const b = bestOf(r.prices); const mv = _num(r.price);
+      if (b && (mv == null || b.n <= mv)) return { p: b.p, ch: realRetailer(b.ch) ? b.ch : null };
+      return { p: r.price, ch: null };
+    };
     const PriceBlk = (r) => {
       if (isQuote(r)) return <div className="rc2-pc__qt">Contact for quote</div>;
-      const b = bestOf(r.prices);
-      const rt = b && realRetailer(b.ch) ? <span className="rt"> · {b.ch}</span> : null;
+      const g = greenPrice(r);
       return (
         <React.Fragment>
           <div className="rc2-pc__msrp">MSRP {r.price}</div>
-          <div className="rc2-pc__best">{b ? b.p : r.price}{rt}</div>
+          <div className="rc2-pc__best">{g.p}{g.ch ? <span className="rt"> · {g.ch}</span> : null}</div>
         </React.Fragment>
       );
     };
@@ -613,10 +618,10 @@
               <div className="rc2-himg">{heroPick.image ? <img src={heroPick.image} alt={heroPick.name} /> : <span className="emo">{heroPick.emoji || "🤖"}</span>}</div>
               <div className="rc2-hcbot">
                 <span className="rc2-scorepill">★ {heroPick.score} Roboclan score</span>
-                <div className="rc2-priceblk">{(() => { const b = bestOf(heroPick.prices); const rt = b && realRetailer(b.ch) ? <span className="rt"> · {b.ch}</span> : null; return (
+                <div className="rc2-priceblk">{(() => { const g = greenPrice(heroPick); return (
                   <React.Fragment>
                     <div className="rc2-msrp">MSRP {heroPick.price}</div>
-                    <div className="rc2-best">{b ? b.p : heroPick.price}{rt}</div>
+                    <div className="rc2-best">{g.p}{g.ch ? <span className="rt"> · {g.ch}</span> : null}</div>
                   </React.Fragment>
                 ); })()}</div>
               </div>

@@ -89,8 +89,8 @@
     .rc-dt__tags{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:18px;}
     .rc-dt__priced{display:flex;align-items:flex-end;gap:26px;flex-wrap:wrap;margin-top:4px;}
     .rc-dt__pricebox{display:flex;flex-direction:column;gap:6px;}
-    .rc-dt__best{font-family:var(--font-mono);font-size:13px;color:var(--success);}
-    .rc-dt__best b{color:var(--success);}
+    .rc-dt__best{font-family:var(--font-mono);font-size:13px;color:#16a34a;}
+    .rc-dt__best b{color:#16a34a;}
     .rc-dt__speccard{margin-top:18px;}
     .rc-dt__panels{display:grid;grid-template-columns:.85fr 1.15fr;gap:18px;margin-top:18px;align-items:start;}
     .rc-dt__radarwrap{display:flex;flex-direction:column;align-items:center;gap:6px;}
@@ -143,8 +143,8 @@
     _candsD.sort((a, b) => a.n - b.n);
     const _bestD = (!isQuote && _candsD.length) ? _candsD[0] : null;
     const _msrpND = _numD(r.price);
-    // MSRP（首发价，参考）+ best price（当前最低价，带商家）并列显示
-    const best = _bestD;
+    // 详情页 MSRP 已醒目展示；仅当零售商真的更低才另起 Best 行（否则重复无意义）
+    const best = (_bestD && _msrpND && _bestD.n < _msrpND - 0.01) ? _bestD : null;
     return (
       <div className="rc-dt">
         <span className="rc-dt__back" onClick={onBack}>‹ Back to catalog</span>
@@ -175,7 +175,7 @@
                 ? <span className="rc-dt__quotelbl">Priced by quote</span>
                 : <div className="rc-dt__pricebox">
                     <StatReadout label="MSRP" value={r.price} size="lg" />
-                    {best && <span className="rc-dt__best">Best <b>{best.p}</b>{_realChD(best.ch) ? <React.Fragment> · {bestUrl ? <a href={bestUrl} target="_blank" rel="noopener" onClick={(e) => e.stopPropagation()} style={{ color: "var(--success)" }}>{best.ch}</a> : best.ch}</React.Fragment> : null}</span>}
+                    {best && <span className="rc-dt__best">Best <b>{best.p}</b>{_realChD(best.ch) ? <React.Fragment> · {bestUrl ? <a href={bestUrl} target="_blank" rel="noopener" onClick={(e) => e.stopPropagation()} style={{ color: "#16a34a" }}>{best.ch}</a> : best.ch}</React.Fragment> : null}</span>}
                   </div>}
               <div style={{ marginLeft: "auto", display: "flex", gap: 10, flexWrap: "wrap" }}>
                 {isQuote
