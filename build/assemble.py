@@ -506,7 +506,7 @@ const PAGES = {
     sections: [
       ["Only official data", ["Every score comes from the manufacturer's own published specs (official product pages and spec sheets) for the US market. If a figure isn't officially published, we mark it N/A rather than guess. Where sources conflict, we note it instead of silently picking one."]],
       ["A 5-axis radar, each axis 1–5", ["Each category has its own five axes chosen to be objective and direction-clear (higher is better). A robot vacuum is scored on suction, runtime, obstacle-crossing, mop-lift and value; a lawn mower on coverage, slope, cut width, runtime and value; and so on. Axes like navigation type or brand aren't scored — they're shown as spec details instead."]],
-      ["No total score", ["We deliberately don't combine the axes into a single number. A blended 'overall' score hides trade-offs; the radar shows them. Compare the shapes, then weigh the axes that matter to you."]],
+      ["The Roboclan Score", ["For our complete consumer categories — robot vacuums, lawn mowers and pool cleaners — we publish a single Roboclan Score (out of 5) alongside the radar, derived from the five axes, so you can rank and shortlist at a glance. The radar still shows the trade-offs behind that number. For humanoids, quadrupeds and commercial/industrial robots — where line-ups are still filling out and pricing is often quote-only — we show the radar only, with no overall score, so incomplete data never becomes a misleading number."]],
       ["The Value axis", ["Value is the only price-dependent axis. We anchor it to each product's original launch price (US MSRP), kept fixed so ratings stay consistent even as street prices swing with sales. Retail prices change constantly — always check the retailer for today's price."]],
       ["Enterprise & quote-only products", ["Humanoids and commercial/industrial robots are usually sold by quote. To avoid exposing a vendor's confidential pricing, we don't score a Value axis for them — the radar shows capability only."]],
       ["Updates", ["Scores are recomputed whenever a manufacturer publishes corrected specs. Our scoring rules are versioned internally so changes are traceable."]],
@@ -583,6 +583,8 @@ function _lta(label,key,f,set,req){
     React.createElement("textarea",{className:"rc-lead__in rc-lead__ta",value:f[key],onChange:set(key),required:!!req,rows:4}));
 }
 function LeadModal({product, onClose}){
+  const _adv = product==="__ADVERTISE__";
+  const _label = _adv ? "Advertising / partnership inquiry" : product;
   const [f,setF]=React.useState({name:"",email:"",country:"",phone:"",org:"",message:""});
   const [state,setState]=React.useState("form");
   const set=(k)=>(e)=>setF(v=>Object.assign({},v,{[k]:e.target.value}));
@@ -591,9 +593,9 @@ function LeadModal({product, onClose}){
     setState("sending");
     try{
       const sb=window._sb;
-      const msg=(f.message||"")+"\n\nProduct: "+product+"\nCountry: "+f.country+(f.phone?("\nPhone: "+f.phone):"");
+      const msg=(f.message||"")+"\n\n"+(_adv?"Type: Advertising / partnership":"Product: "+product)+"\nCountry: "+f.country+(f.phone?("\nPhone: "+f.phone):"");
       if(sb){const r=await sb.from("leads").insert({name:f.name,email:f.email,company:f.org||null,message:msg,status:"new"});if(r&&r.error)throw r.error;}
-      try{window.rcLog&&window.rcLog(product,null,"lead");}catch(_){}
+      try{window.rcLog&&window.rcLog(_label,null,"lead");}catch(_){}
       setState("done");
     }catch(err){console.warn("lead error",err);setState("error");}
   };
@@ -604,11 +606,11 @@ function LeadModal({product, onClose}){
         ? React.createElement("div",{className:"rc-lead__done"},
             React.createElement("div",{className:"rc-lead__check"},"✓"),
             React.createElement("h3",{className:"rc-lead__t"},"Request sent"),
-            React.createElement("p",{className:"rc-lead__sub"},"Thanks — your inquiry about "+product+" is in. The manufacturer or an authorized distributor will get back to you directly with pricing, availability, and next steps."),
+            React.createElement("p",{className:"rc-lead__sub"},_adv?"Thanks — your advertising inquiry is in. We’ll get back to you shortly about placements, partnerships, and rates.":("Thanks — your inquiry about "+product+" is in. The manufacturer or an authorized distributor will get back to you directly with pricing, availability, and next steps.")),
             React.createElement("button",{className:"rc-lead__submit",onClick:onClose},"Done"))
         : React.createElement("form",{className:"rc-lead__form",onSubmit:submit},
-            React.createElement("h3",{className:"rc-lead__t"},"Request a quote"),
-            React.createElement("p",{className:"rc-lead__sub"},product+" is sold by quote. Share a few details and we’ll connect you with the brand or an authorized distributor — they’ll follow up with pricing, availability, and configuration options. No obligation, and we never sell your data."),
+            React.createElement("h3",{className:"rc-lead__t"},_adv?"Advertise with Roboclan":"Request a quote"),
+            React.createElement("p",{className:"rc-lead__sub"},_adv?"Tell us about your brand and what you’re looking for — sponsored placements, brand partnerships, or affiliate collaboration. We’ll follow up with options and rates. No obligation, and we never sell your data.":(product+" is sold by quote. Share a few details and we’ll connect you with the brand or an authorized distributor — they’ll follow up with pricing, availability, and configuration options. No obligation, and we never sell your data.")),
             React.createElement("div",{className:"rc-lead__grid"},
               _lf("Name","name",f,set,true),
               _lf("Work email","email",f,set,true,"email"),
@@ -727,6 +729,7 @@ function App(){
   const [query,setQuery]=React.useState("");
   const [lead,setLead]=React.useState(null);
   const openQuote=(name)=>setLead(name);
+  const openAdvertise=()=>setLead("__ADVERTISE__");
   // 浏览器前进/后退：每次切页 pushState；按后退键 popstate 时恢复到上一页（不再跳出到 Google）
   const nav=(v)=>{setView(v);try{
     var u="/";
@@ -785,7 +788,7 @@ function App(){
             <h4>Company</h4>
             <a onClick={()=>openPage("about")}>About Roboclan</a>
             <a onClick={()=>openPage("score")}>How We Score</a>
-            <a onClick={()=>alert("Advertise With Us — coming soon.")}>Advertise With Us</a>
+            <a onClick={openAdvertise}>Advertise With Us</a>
             <a href="mailto:hello@roboclan.ai">Contact</a>
           </div>
           <div className="rc-ft__col">
