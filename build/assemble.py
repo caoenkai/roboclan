@@ -635,15 +635,35 @@ function NewsView({onBack}){
 }
 
 function App(){
-  // 基于 URL 路径路由：/robots/<slug>/ 直接打开该产品（SEO 独立页落地）
-  const routeFromPath=()=>{ try{ var p=location.pathname.replace(/\/+$/,""); var m=p.match(/^\/robots\/([^\/]+)$/); if(m&&DATA.byId[m[1]]) return {name:"detail",id:m[1]}; }catch(e){} return {name:"home"}; };
+  // 每个页面独立 URL：刷新/直达都停在当前页（配合 vercel.json 的 SPA 回退）
+  const _catSlug=(n)=>String(n).toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"");
+  const _slugToCat=(s)=>{ var f=(DATA.categories||[]).find(c=>_catSlug(c.name)===s); return f?f.name:null; };
+  const routeFromPath=()=>{ try{
+    var p=location.pathname.replace(/\/+$/,""); var m;
+    if(!p||p==="/") return {name:"home"};
+    if((m=p.match(/^\/robots\/([^\/]+)$/))&&DATA.byId[m[1]]) return {name:"detail",id:m[1]};
+    if(p==="/robots") return {name:"catalog",cat:null};
+    if((m=p.match(/^\/c\/([^\/]+)$/))){ var cn=_slugToCat(m[1]); if(cn) return {name:"catalog",cat:cn}; }
+    if(p==="/search") return {name:"catalog",cat:null,search:(new URLSearchParams(location.search).get("q")||"")};
+    if(p==="/news") return {name:"news"};
+    if((m=p.match(/^\/p\/([^\/]+)$/))&&PAGES[m[1]]) return {name:"page",key:m[1]};
+    if(p==="/compare") return {name:"compare"};
+  }catch(e){} return {name:"home"}; };
   const [view,setView]=React.useState(routeFromPath());
   const [compare,setCompare]=React.useState(new Set());
   const [query,setQuery]=React.useState("");
   const [lead,setLead]=React.useState(null);
   const openQuote=(name)=>setLead(name);
   // 浏览器前进/后退：每次切页 pushState；按后退键 popstate 时恢复到上一页（不再跳出到 Google）
-  const nav=(v)=>{setView(v);try{var u=(v.name==="detail")?("/robots/"+v.id+"/"):"/";window.history.pushState({rcView:v},"",u);}catch(e){}window.scrollTo(0,0);};
+  const nav=(v)=>{setView(v);try{
+    var u="/";
+    if(v.name==="detail") u="/robots/"+v.id+"/";
+    else if(v.name==="catalog") u=v.search?("/search?q="+encodeURIComponent(v.search)):(v.cat?("/c/"+_catSlug(v.cat)):"/robots");
+    else if(v.name==="news") u="/news";
+    else if(v.name==="page") u="/p/"+v.key;
+    else if(v.name==="compare") u="/compare";
+    window.history.pushState({rcView:v},"",u);
+  }catch(e){}window.scrollTo(0,0);};
   React.useEffect(()=>{
     try{window.history.replaceState({rcView:routeFromPath()},"");}catch(e){}
     const onPop=(e)=>{const v=(e.state&&e.state.rcView)||routeFromPath();setView(v);window.scrollTo(0,0);};
@@ -829,7 +849,11 @@ if _out_arg:
     _sm+="</urlset>\n"
     open(os.path.join(_base,"sitemap.xml"),"w",encoding="utf-8").write(_sm)
     open(os.path.join(_base,"robots.txt"),"w",encoding="utf-8").write("User-agent: *\nAllow: /\nSitemap: "+SITE+"/sitemap.xml\n")
-    print("生成产品独立页:",len(out),"→",os.path.join(_base,"robots")," + sitemap.xml + robots.txt")
+    # SPA 回退：未知路由（非 /robots/ 静态页、非带扩展名的文件）交给 index.html 客户端路由，
+    # 这样刷新 /c/robot-vacuums、/news、/p/about 等页面不会跳回主页。
+    _vj = json.dumps({"rewrites":[{"source":"/((?!robots/|.*\\.).*)","destination":"/index.html"}]}, indent=2)
+    open(os.path.join(_base,"vercel.json"),"w",encoding="utf-8").write(_vj+"\n")
+    print("生成产品独立页:",len(out),"→",os.path.join(_base,"robots")," + sitemap.xml + robots.txt + vercel.json")
 
 # ============== 自检关卡（每次生成后自动运行）==============
 def verify(html):
