@@ -161,6 +161,7 @@ textarea.pinput{height:auto;padding:10px 12px;line-height:1.5;resize:vertical;}
       <button class="tab on" data-tab="leads">Leads</button>
       <button class="tab" data-tab="traffic">Traffic</button>
       <button class="tab" data-tab="products">Products</button>
+      <button class="tab" data-tab="posts">Guides</button>
       <button class="tab" data-tab="news">News</button>
     </div>
 
@@ -230,6 +231,27 @@ textarea.pinput{height:auto;padding:10px 12px;line-height:1.5;resize:vertical;}
       </div>
     </div>
 
+    <!-- POSTS / GUIDES TAB -->
+    <div id="tab-posts" class="hide">
+      <div class="pbar">
+        <span class="muted" style="padding:0">Buying guides &amp; comparison articles. Draft here, mark Published, then Publish to push them live.</span>
+        <button class="btn-sm" id="poNew" style="margin-left:auto">＋ New guide</button>
+      </div>
+      <div class="panel">
+        <div class="tbl-scroll"><table id="postsTbl">
+          <thead><tr><th style="width:40px">#</th><th>Title</th><th>Category</th><th>Slug</th><th>Status</th><th></th></tr></thead>
+          <tbody><tr><td colspan="6" class="empty">Loading…</td></tr></tbody>
+        </table></div>
+      </div>
+      <div class="pubbar">
+        <div>
+          <div style="font-weight:600;color:var(--text-1)">Ready to go live?</div>
+          <div class="muted" style="padding:2px 0 0">Published guides go live after a rebuild. Click Publish, then Run workflow (~1 min).</div>
+        </div>
+        <a class="btn" style="width:auto;height:40px;padding:0 22px;display:inline-flex;align-items:center;text-decoration:none" id="poPublish" target="_blank" rel="noopener">Publish ↗</a>
+      </div>
+    </div>
+
     <!-- NEWS TAB -->
     <div id="tab-news" class="hide">
       <div class="pbar">
@@ -263,6 +285,41 @@ textarea.pinput{height:auto;padding:10px 12px;line-height:1.5;resize:vertical;}
       <div style="margin-left:auto;display:flex;gap:8px">
         <button class="btn-sm ghost" id="ieCancel" type="button">Cancel</button>
         <button class="btn" style="width:auto;height:38px;padding:0 22px" id="ieApply" type="button">Apply</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- POST / GUIDE EDITOR MODAL -->
+<div id="postOv" class="ov hide">
+  <div class="modal" style="max-width:760px">
+    <div class="modal-hd"><h3 id="poTitle">Edit guide</h3><button class="x" id="poClose">✕</button></div>
+    <div class="modal-bd">
+      <div class="grid2">
+        <div><label class="fl" style="margin-top:0">Title</label><input id="poHead" class="pinput w" placeholder="e.g. Roborock vs Dreame (2026): Which Brand Wins?"></div>
+        <div><label class="fl" style="margin-top:0">Category</label><input id="poCat" class="pinput w" placeholder="e.g. Robot Vacuums"></div>
+      </div>
+      <div class="grid2">
+        <div><label class="fl">Slug <span class="muted" style="padding:0">(URL: /guides/&lt;slug&gt;)</span></label><input id="poSlug" class="pinput w" placeholder="roborock-vs-dreame"></div>
+        <div><label class="fl">Author</label><input id="poAuthor" class="pinput w" placeholder="Roboclan Editorial"></div>
+      </div>
+      <label class="fl">Excerpt <span class="muted" style="padding:0">(one-line summary — shows on cards &amp; search)</span></label>
+      <textarea id="poExcerpt" class="pinput w" rows="2"></textarea>
+      <label class="fl">Cover image URL <span class="muted" style="padding:0">(optional)</span></label>
+      <input id="poCover" class="pinput w" placeholder="https://…">
+      <label class="fl">Body <span class="muted" style="padding:0">(HTML — use &lt;h2&gt; &lt;h3&gt; &lt;p&gt; &lt;ul&gt;&lt;li&gt; &lt;a href&gt; &lt;strong&gt;. First paragraph can be &lt;p class="lead"&gt;.)</span></label>
+      <textarea id="poBody" class="pinput w mono" rows="16" spellcheck="false"></textarea>
+      <div class="grid2" style="margin-top:14px">
+        <div><label class="fl">Order</label><input id="poSort" class="pinput w" type="number" value="0"></div>
+        <label class="ck" style="margin-top:22px"><input type="checkbox" id="poPub"> Published (visible on site after rebuild)</label>
+      </div>
+      <div class="ederr" id="poErr"></div>
+    </div>
+    <div class="modal-ft">
+      <button class="btn-sm danger" id="poDelete" type="button">Delete</button>
+      <div style="margin-left:auto;display:flex;gap:8px">
+        <button class="btn-sm ghost" id="poCancel" type="button">Cancel</button>
+        <button class="btn" style="width:auto;height:38px;padding:0 22px" id="poSave" type="button">Save</button>
       </div>
     </div>
   </div>
@@ -372,8 +429,10 @@ document.querySelectorAll('.tab').forEach(t=>t.addEventListener('click',()=>{
   $('tab-leads').classList.toggle('hide', k!=='leads');
   $('tab-traffic').classList.toggle('hide', k!=='traffic');
   $('tab-products').classList.toggle('hide', k!=='products');
+  $('tab-posts').classList.toggle('hide', k!=='posts');
   $('tab-news').classList.toggle('hide', k!=='news');
   if(k==='products' && !prodLoaded) loadProducts();
+  if(k==='posts' && !postsLoaded) loadPosts();
   if(k==='news' && !newsLoaded) loadNews();
 }));
 
@@ -734,6 +793,79 @@ $('edDelete').addEventListener('click',async ()=>{
   const { error }=await sb.from('products').delete().eq('id',edId);
   if(error){ $('edErr').textContent='Delete failed: '+error.message; return; }
   closeEditor(); await loadProducts();
+});
+
+// ---------- posts / guides ----------
+{ const _pb=document.getElementById('poPublish'); if(_pb) _pb.href=GH_ACTIONS_URL; }
+let postsLoaded=false, postsRows=[], poId=null, poIsNew=false;
+function slugify(s){ return String(s||'').toLowerCase().trim().replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,''); }
+async function loadPosts(){
+  postsLoaded=true;
+  const { data, error } = await sb.from('posts').select('id,title,category,author,excerpt,cover_image,published,sort,created_at').order('sort',{ascending:true});
+  const tb=$('postsTbl').querySelector('tbody');
+  if(error){ tb.innerHTML='<tr><td colspan="6" class="empty">Could not load guides — did you run the posts table SQL? ('+esc(error.message)+')</td></tr>'; return; }
+  postsRows=data||[];
+  if(!postsRows.length){ tb.innerHTML='<tr><td colspan="6" class="empty">No guides yet. Write your first one.</td></tr>'; return; }
+  tb.innerHTML=postsRows.map(r=>`<tr>
+    <td class="mono" style="color:var(--text-3)">${r.sort==null?'':r.sort}</td>
+    <td style="font-weight:600">${esc(r.title)}</td>
+    <td>${esc(r.category||'—')}</td>
+    <td class="mono" style="color:var(--text-3)">${esc(r.id)}</td>
+    <td>${r.published?'<span class="pill" style="color:var(--success);border-color:var(--success)">published</span>':'<span class="pill">draft</span>'}</td>
+    <td><span class="edit-lnk" data-id="${esc(r.id)}">Edit ›</span></td>
+  </tr>`).join('');
+  tb.querySelectorAll('.edit-lnk').forEach(el=>el.addEventListener('click',()=>openPost(el.dataset.id)));
+}
+$('poNew').addEventListener('click',()=>openPost(null));
+async function openPost(id){
+  poIsNew=!id; poId=id;
+  let r;
+  if(id){
+    // fetch full record incl. body
+    const { data, error } = await sb.from('posts').select('*').eq('id',id).single();
+    if(error){ alert('Load failed: '+error.message); return; }
+    r=data;
+  } else {
+    r={id:'',title:'',category:'Robot Vacuums',author:'Roboclan Editorial',excerpt:'',cover_image:'',body:'',published:false,sort:(postsRows.reduce((m,x)=>Math.max(m,x.sort||0),0)+1)};
+  }
+  $('poTitle').textContent = poIsNew?'New guide':'Edit guide';
+  $('poDelete').style.visibility = poIsNew?'hidden':'visible';
+  $('poHead').value=r.title||''; $('poCat').value=r.category||''; $('poSlug').value=r.id||'';
+  $('poAuthor').value=r.author||'Roboclan Editorial'; $('poExcerpt').value=r.excerpt||'';
+  $('poCover').value=r.cover_image||''; $('poBody').value=r.body||'';
+  $('poSort').value=r.sort==null?0:r.sort; $('poPub').checked=!!r.published; $('poErr').textContent='';
+  $('poSlug').disabled=!poIsNew; // slug is primary key — don't change after creation
+  $('postOv').classList.remove('hide');
+}
+// auto-suggest slug from title when creating
+$('poHead').addEventListener('input',()=>{ if(poIsNew && !$('poSlug').dataset.touched){ $('poSlug').value=slugify($('poHead').value); } });
+$('poSlug').addEventListener('input',()=>{ $('poSlug').dataset.touched='1'; });
+function closePost(){ $('postOv').classList.add('hide'); $('poSlug').dataset.touched=''; }
+$('poClose').addEventListener('click',closePost); $('poCancel').addEventListener('click',closePost);
+$('postOv').addEventListener('click',e=>{ if(e.target.id==='postOv') closePost(); });
+$('poSave').addEventListener('click',async ()=>{
+  $('poErr').textContent='';
+  const slug=slugify($('poSlug').value);
+  const rec={ title:$('poHead').value.trim(), category:$('poCat').value.trim()||null,
+    author:$('poAuthor').value.trim()||'Roboclan Editorial', excerpt:$('poExcerpt').value.trim()||null,
+    cover_image:$('poCover').value.trim()||null, body:$('poBody').value,
+    sort:parseInt($('poSort').value)||0, published:$('poPub').checked, updated_at:new Date().toISOString() };
+  if(!rec.title){ $('poErr').textContent='Title is required.'; return; }
+  if(!rec.body.trim()){ $('poErr').textContent='Body is required.'; return; }
+  if(poIsNew && !slug){ $('poErr').textContent='A slug is required.'; return; }
+  $('poSave').disabled=true; $('poSave').textContent='Saving…';
+  try{
+    if(poIsNew){ rec.id=slug; const {error}=await sb.from('posts').insert(rec); if(error) throw error; }
+    else { const {error}=await sb.from('posts').update(rec).eq('id',poId); if(error) throw error; }
+    closePost(); await loadPosts();
+  }catch(err){ $('poErr').textContent='Save failed: '+(err.message||err); }
+  $('poSave').disabled=false; $('poSave').textContent='Save';
+});
+$('poDelete').addEventListener('click',async ()=>{
+  if(!confirm('Delete this guide? This cannot be undone.')) return;
+  const {error}=await sb.from('posts').delete().eq('id',poId);
+  if(error){ $('poErr').textContent='Delete failed: '+error.message; return; }
+  closePost(); await loadPosts();
 });
 
 // ---------- news ----------

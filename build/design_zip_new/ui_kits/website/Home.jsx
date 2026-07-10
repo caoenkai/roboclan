@@ -117,6 +117,16 @@
     .rc-tile__blurb{font-size:12.5px;color:var(--text-3);position:relative;}
     .rc-tile__count{margin-top:auto;font-family:var(--font-mono);font-size:11px;color:var(--text-2);position:relative;padding-top:12px;}
     .rc-rail{display:grid;grid-template-columns:repeat(auto-fill,minmax(244px,1fr));gap:18px;}
+    .rc-hgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:18px;}
+    .rc-hgcard{cursor:pointer;overflow:hidden;padding:0;display:flex;flex-direction:column;transition:transform .18s var(--ease-out),box-shadow .18s var(--ease-out);}
+    .rc-hgcard:hover{transform:translateY(-4px);box-shadow:0 16px 40px rgba(0,0,0,.4);}
+    .rc-hgcard__cov{height:150px;position:relative;display:flex;align-items:flex-end;padding:12px;}
+    .rc-hgcard__badge{font-size:12px;font-weight:600;color:#cdd6ff;background:rgba(110,139,255,.18);border:1px solid rgba(110,139,255,.35);padding:3px 10px;border-radius:999px;}
+    .rc-hgcard__body{padding:16px 18px 18px;display:flex;flex-direction:column;gap:8px;flex:1;}
+    .rc-hgcard__cat{font-size:12px;font-weight:600;letter-spacing:.03em;text-transform:uppercase;color:#8fa8ff;}
+    .rc-hgcard__ttl{font-family:var(--font-display);font-weight:700;font-size:19px;line-height:1.25;margin:0;letter-spacing:-.01em;}
+    .rc-hgcard__ex{font-size:14px;line-height:1.5;color:var(--text-2,#9aa3bd);margin:0;flex:1;}
+    .rc-hgcard__read{font-size:13px;font-weight:600;color:#8fa8ff;margin-top:2px;}
     @media(max-width:900px){.rc-hero{grid-template-columns:1fr}.rc-bot{display:none}}
     @media(max-width:640px){.rc-hero h1{font-size:40px}.rc-hero p{font-size:15px}.rc-hero{padding-top:40px}}
     `;
@@ -406,7 +416,7 @@
     { b: "Dreame A3 AWD Pro", t: "lands in North America — LiDAR mapping, no boundary wire, 4WD slopes" },
     { b: "Cordless pool season", t: "self-emptying dock cleaners headline this year's robot lineup" },
   ];
-  function Home({ onOpenCategory, onOpen, onAdd, compare, onNews, onQuote }) {
+  function Home({ onOpenCategory, onOpen, onAdd, compare, onNews, onQuote, onOpenGuides, onOpenPost }) {
     inject();
     // 新闻条实时从 Supabase 读（后台加了立即显示，无需重新发布）；失败则用内置兜底
     const [news, setNews] = React.useState(NEWS);
@@ -485,6 +495,27 @@
               added={compare.has(r.id)} onAdd={() => onAdd(r.id)} onOpen={() => onOpen(r.id)} />
           ))}
         </div>
+
+        {(DATA.posts && DATA.posts.length > 0) && (
+          <React.Fragment>
+            <div className="rc-sec"><h2>Guides &amp; comparisons</h2><span className="rc-sec__lnk" onClick={() => onOpenGuides && onOpenGuides()}>See all ›</span></div>
+            <div className="rc-hgrid">
+              {DATA.posts.slice(0, 3).map((p) => (
+                <GlassCard key={p.id} className="rc-hgcard" onClick={() => onOpenPost && onOpenPost(p.id)}>
+                  <div className="rc-hgcard__cov" style={{ background: p.cover_image ? `#0b1020 url(${p.cover_image}) center/cover` : "linear-gradient(135deg,#1a2036,#0e1424)" }}>
+                    {!p.cover_image && <span className="rc-hgcard__badge">{p.category || "Guide"}</span>}
+                  </div>
+                  <div className="rc-hgcard__body">
+                    {p.category && <span className="rc-hgcard__cat">{p.category}</span>}
+                    <h3 className="rc-hgcard__ttl">{p.title}</h3>
+                    {p.excerpt && <p className="rc-hgcard__ex">{p.excerpt}</p>}
+                    <span className="rc-hgcard__read">Read guide ›</span>
+                  </div>
+                </GlassCard>
+              ))}
+            </div>
+          </React.Fragment>
+        )}
       </div>
     );
   }

@@ -25,6 +25,20 @@ def fetch_products_from_supabase():
     if not rows: raise RuntimeError("Supabase products 表为空——先跑迁移 SQL 灌入数据")
     return [row["data"] for row in rows]
 
+def fetch_posts():
+    # 博客/导购文章：已发布的从 Supabase 读；本地或失败则空（graceful）
+    _local = os.environ.get("RC_POSTS_LOCAL")
+    if _local:
+        try: return json.load(open(_local, encoding="utf-8"))
+        except Exception: return []
+    try:
+        url = SB_URL + "/rest/v1/posts?select=*&published=eq.true&order=created_at.desc"
+        req = urllib.request.Request(url, headers={"apikey":SB_ANON,"Authorization":"Bearer "+SB_ANON})
+        with urllib.request.urlopen(req, timeout=45) as resp:
+            return json.load(resp)
+    except Exception as e:
+        print("posts 跳过（无网络/表不存在）:", e); return []
+
 # --from-supabase 模式：产品数据全部来自 Supabase，本地不需要任何 *_data.json，
 # 故此时 robots 置空（后面的构建/排序/规范化对空列表自然 no-op，再由 Supabase 覆盖 out）。
 # 这样云端发布只需 assemble.py + design_zip_new/，无需带数据文件。
@@ -330,7 +344,10 @@ DATA_JS += ('var CATEGORIES=['
             '{name:"Commercial & Industrial",emoji:"\U0001F9FE",blurb:""}];\n')
 DATA_JS += 'var R=%s;\n'%json.dumps(out,ensure_ascii=False)
 DATA_JS += 'var byId={};R.forEach(function(x){byId[x.id]=x;});\n'
-DATA_JS += 'return {robots:R,byId:byId,glow:CAT_GLOW,axes:AXES,categories:CATEGORIES};\n})();'
+POSTS = fetch_posts()
+DATA_JS += 'var POSTS=%s;\n'%json.dumps(POSTS, ensure_ascii=False)
+DATA_JS += 'var postById={};POSTS.forEach(function(p){postById[p.id]=p;});\n'
+DATA_JS += 'return {robots:R,byId:byId,glow:CAT_GLOW,axes:AXES,categories:CATEGORIES,posts:POSTS,postById:postById};\n})();'
 
 # ---- CSS：内联所有 token + styles.css(去掉@import) ----
 css=""
@@ -367,6 +384,31 @@ FOOT_CSS = """
 .rc-news2__b{font-size:14.5px;color:var(--text-2);margin-top:4px;line-height:1.5;}
 .rc-news2__arw{position:absolute;top:18px;right:18px;color:var(--accent-ink);font-size:15px;}
 .rc-news2__empty{color:var(--text-3);padding:30px 0;}
+/* 导购/文章 */
+.rc-guides{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:18px;}
+.rc-gcard{display:flex;flex-direction:column;border:1px solid var(--line);border-radius:16px;overflow:hidden;background:var(--surface-1);text-decoration:none;transition:border-color .15s,transform .15s;cursor:pointer;}
+.rc-gcard:hover{border-color:rgba(110,139,255,.5);transform:translateY(-2px);}
+.rc-gcard__cover{height:170px;background:#fff;overflow:hidden;}
+.rc-gcard__cover img{width:100%;height:100%;object-fit:cover;}
+.rc-gcard__body{padding:16px 18px;}
+.rc-gcard__cat{font-family:var(--font-mono);font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--accent-ink);margin-bottom:7px;}
+.rc-gcard__t{font-family:var(--font-display);font-weight:600;font-size:18px;line-height:1.25;color:var(--text-1);margin:0;}
+.rc-gcard__ex{font-size:14px;color:var(--text-2);line-height:1.5;margin:8px 0 0;}
+.rc-post{max-width:760px;margin:0 auto;padding:24px 24px 96px;}
+.rc-post__cat{font-family:var(--font-mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--accent-ink);margin:18px 0 8px;}
+.rc-post__title{font-family:var(--font-display);font-weight:600;font-size:38px;letter-spacing:-.025em;line-height:1.1;color:var(--text-1);margin:0 0 12px;}
+.rc-post__meta{font-size:13.5px;color:var(--text-3);margin-bottom:22px;}
+.rc-post__cover{border-radius:16px;overflow:hidden;background:#fff;margin-bottom:26px;}
+.rc-post__cover img{width:100%;display:block;}
+.rc-post__body{font-size:16.5px;line-height:1.75;color:var(--text-2);}
+.rc-post__body h2{font-family:var(--font-display);font-weight:600;font-size:25px;color:var(--text-1);margin:34px 0 12px;letter-spacing:-.02em;}
+.rc-post__body h3{font-family:var(--font-display);font-weight:600;font-size:19px;color:var(--text-1);margin:26px 0 8px;}
+.rc-post__body p{margin:0 0 16px;}
+.rc-post__body ul{margin:0 0 16px;padding-left:22px;}
+.rc-post__body li{margin:7px 0;}
+.rc-post__body a{color:var(--accent-ink);text-decoration:underline;}
+.rc-post__body .lead{font-size:19px;color:var(--text-1);line-height:1.6;}
+.rc-post__body .disclosure{font-size:13px;color:var(--text-3);border-top:1px solid var(--line);padding-top:16px;margin-top:32px;}
 .rc-page__sec{margin-bottom:30px;}
 .rc-page__sec h2{font-family:var(--font-display);font-weight:600;font-size:21px;letter-spacing:-.01em;color:var(--text-1);margin:0 0 10px;}
 .rc-page__sec p{font-size:15px;line-height:1.72;color:var(--text-3);margin:0 0 12px;}
@@ -634,6 +676,34 @@ function NewsView({onBack}){
       })));
 }
 
+// 导购/博客：文章列表页（/guides）与单篇文章页（/guides/<slug>）
+function GuidesView({onBack, onOpenPost}){
+  var posts=(DATA.posts||[]);
+  return React.createElement("div",{className:"rc-page"},
+    React.createElement("a",{className:"rc-page__back",onClick:onBack},"‹ Back"),
+    React.createElement("h1",{className:"rc-page__title"},"Guides"),
+    React.createElement("p",{className:"rc-page__lede"},"Buying guides, brand comparisons and head-to-head breakdowns — every robot scored on the same 5-axis framework."),
+    posts.length===0 ? React.createElement("p",{className:"rc-news2__empty"},"New guides are on the way.")
+    : React.createElement("div",{className:"rc-guides"}, posts.map(function(p){
+        return React.createElement("a",{key:p.id,className:"rc-gcard",onClick:function(e){e.preventDefault();onOpenPost(p.id);},href:"/guides/"+p.id+"/"},
+          p.cover_image?React.createElement("div",{className:"rc-gcard__cover"},React.createElement("img",{src:p.cover_image,alt:"",loading:"lazy"})):null,
+          React.createElement("div",{className:"rc-gcard__body"},
+            p.category?React.createElement("div",{className:"rc-gcard__cat"},p.category):null,
+            React.createElement("h3",{className:"rc-gcard__t"},p.title),
+            p.excerpt?React.createElement("p",{className:"rc-gcard__ex"},p.excerpt):null));
+      })));
+}
+function PostView({post, onBack}){
+  if(!post) return React.createElement("div",{className:"rc-page"},React.createElement("a",{className:"rc-page__back",onClick:onBack},"‹ Back"),React.createElement("p",{className:"rc-page__lede"},"Article not found."));
+  return React.createElement("article",{className:"rc-post"},
+    React.createElement("a",{className:"rc-page__back",onClick:onBack},"‹ All guides"),
+    post.category?React.createElement("div",{className:"rc-post__cat"},post.category):null,
+    React.createElement("h1",{className:"rc-post__title"},post.title),
+    React.createElement("div",{className:"rc-post__meta"},(post.author||"Roboclan Editors")+(post.created_at?(" · "+new Date(post.created_at).toLocaleDateString(undefined,{year:"numeric",month:"long",day:"numeric"})):"")),
+    post.cover_image?React.createElement("div",{className:"rc-post__cover"},React.createElement("img",{src:post.cover_image,alt:""})):null,
+    React.createElement("div",{className:"rc-post__body",dangerouslySetInnerHTML:{__html:post.body||""}}));
+}
+
 function App(){
   // 每个页面独立 URL：刷新/直达都停在当前页（配合 vercel.json 的 SPA 回退）
   const _catSlug=(n)=>String(n).toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"");
@@ -646,6 +716,8 @@ function App(){
     if((m=p.match(/^\/c\/([^\/]+)$/))){ var cn=_slugToCat(m[1]); if(cn) return {name:"catalog",cat:cn}; }
     if(p==="/search") return {name:"catalog",cat:null,search:(new URLSearchParams(location.search).get("q")||"")};
     if(p==="/news") return {name:"news"};
+    if(p==="/guides") return {name:"guides"};
+    if((m=p.match(/^\/guides\/([^\/]+)$/))&&DATA.postById[m[1]]) return {name:"post",slug:m[1]};
     if((m=p.match(/^\/p\/([^\/]+)$/))&&PAGES[m[1]]) return {name:"page",key:m[1]};
     if(p==="/compare") return {name:"compare"};
   }catch(e){} return {name:"home"}; };
@@ -660,6 +732,8 @@ function App(){
     if(v.name==="detail") u="/robots/"+v.id+"/";
     else if(v.name==="catalog") u=v.search?("/search?q="+encodeURIComponent(v.search)):(v.cat?("/c/"+_catSlug(v.cat)):"/robots");
     else if(v.name==="news") u="/news";
+    else if(v.name==="guides") u="/guides";
+    else if(v.name==="post") u="/guides/"+v.slug+"/";
     else if(v.name==="page") u="/p/"+v.key;
     else if(v.name==="compare") u="/compare";
     window.history.pushState({rcView:v},"",u);
@@ -683,23 +757,27 @@ function App(){
   });
   const goHome=()=>nav({name:"home"});
   const openCategory=(cat)=>nav({name:"catalog",cat});
+  const openGuides=()=>nav({name:"guides"});
+  const openPost=(slug)=>nav({name:"post",slug});
   const onSearchGo=(q)=>{ if(q&&q.trim()) nav({name:"catalog",cat:null,search:q.trim()}); };
   const open=(id)=>{const r=DATA.byId[id];try{window.rcLog&&window.rcLog(r&&r.name,r&&r.cat,"view");}catch(e){}nav({name:"detail",id});};
   const openPage=(key)=>nav({name:"page",key});
   const onCompare=()=>{if(compare.size===0){alert("Add robots with the ＋ on any card (up to 4, same category) to compare.");return;}nav({name:"compare"});};
   const onNews=()=>alert("Robot News (demo) — curated headlines refresh periodically.");
-  const onNav=(it)=>{if(it==="Home")goHome();else if(it==="Robots")openCategory(null);else if(it==="News")nav({name:"news"});else alert(it+" — coming soon.");};
+  const onNav=(it)=>{if(it==="Home")goHome();else if(it==="Robots")openCategory(null);else if(it==="News")nav({name:"news"});else if(it==="Guides")openGuides();else alert(it+" — coming soon.");};
   const Header=window.RCHeader;
   return (
     <div className="rc-app">
       <Header nav={view.name==="home"?"Home":"Robots"} compareCount={compare.size} onHome={goHome} onNav={onNav} onCompare={onCompare} onSearch={setQuery} onSearchGo={onSearchGo} query={query} onCategory={openCategory} />
-      {view.name==="home" && <window.RCHome onOpenCategory={openCategory} onOpen={open} onAdd={onAdd} compare={compare} onNews={onNews} onQuote={openQuote} />}
+      {view.name==="home" && <window.RCHome onOpenCategory={openCategory} onOpen={open} onAdd={onAdd} compare={compare} onNews={onNews} onQuote={openQuote} onOpenGuides={openGuides} onOpenPost={openPost} />}
       {view.name==="catalog" && <window.RCCatalog key={(view.cat||"")+"|"+(view.search||"")} initialCat={view.cat} search={view.search} onOpen={open} onAdd={onAdd} compare={compare} onQuote={openQuote} />}
       {view.name==="detail" && <window.RCDetail robot={DATA.byId[view.id]} onBack={()=>openCategory(DATA.byId[view.id].cat)} onAdd={onAdd} compare={compare} onQuote={openQuote} />}
       {lead && <LeadModal product={lead} onClose={()=>setLead(null)} />}
       {view.name==="page" && <PageView page={PAGES[view.key]} onHome={goHome} />}
       {view.name==="compare" && <CompareView ids={[...compare]} onOpen={open} onBack={goHome} onRemove={onAdd} />}
       {view.name==="news" && <NewsView onBack={goHome} />}
+      {view.name==="guides" && <GuidesView onBack={goHome} onOpenPost={openPost} />}
+      {view.name==="post" && <PostView post={DATA.postById[view.slug]} onBack={openGuides} />}
       <footer className="rc-ft">
         <div className="rc-ft__cols">
           <div className="rc-ft__col">
@@ -844,16 +922,30 @@ if _out_arg:
         _pd=os.path.join(_base,"robots",slug); os.makedirs(_pd,exist_ok=True)
         open(os.path.join(_pd,"index.html"),"w",encoding="utf-8").write(page)
         _urls.append(canon)
+    # 导购/博客文章独立页 /guides/<slug>/（SEO），+ /guides 列表页
+    for _pst in POSTS:
+        _ps=_pst.get("id");
+        if not _ps: continue
+        _pc=SITE+"/guides/"+_ps+"/"
+        _phead=_seo_head((_pst.get("title") or "Guide")+" | Roboclan", (_pst.get("excerpt") or _pst.get("title") or ""), _pc, _abs_img(_pst.get("cover_image")), "article")
+        _ppage=HTML.replace("__SEOHEAD__", _phead)
+        _pdir=os.path.join(_base,"guides",_ps); os.makedirs(_pdir,exist_ok=True)
+        open(os.path.join(_pdir,"index.html"),"w",encoding="utf-8").write(_ppage)
+        _urls.append(_pc)
+    if POSTS:
+        _ghead=_seo_head("Guides — Robot Buying Guides & Comparisons | Roboclan","Buying guides, brand comparisons and head-to-head robot breakdowns, every model scored on the same 5-axis framework.",SITE+"/guides/",SITE+"/apple-touch-icon.png")
+        _gdir=os.path.join(_base,"guides"); os.makedirs(_gdir,exist_ok=True)
+        open(os.path.join(_gdir,"index.html"),"w",encoding="utf-8").write(HTML.replace("__SEOHEAD__",_ghead))
+        _urls.insert(1, SITE+"/guides/")
     _sm='<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
     for _u in _urls: _sm+="<url><loc>"+_u+"</loc></url>\n"
     _sm+="</urlset>\n"
     open(os.path.join(_base,"sitemap.xml"),"w",encoding="utf-8").write(_sm)
     open(os.path.join(_base,"robots.txt"),"w",encoding="utf-8").write("User-agent: *\nAllow: /\nSitemap: "+SITE+"/sitemap.xml\n")
-    # SPA 回退：未知路由（非 /robots/ 静态页、非带扩展名的文件）交给 index.html 客户端路由，
-    # 这样刷新 /c/robot-vacuums、/news、/p/about 等页面不会跳回主页。
-    _vj = json.dumps({"rewrites":[{"source":"/((?!robots/|.*\\.).*)","destination":"/index.html"}]}, indent=2)
+    # SPA 回退：未知路由（非 /robots/、/guides/ 静态页、非带扩展名的文件）交给 index.html 客户端路由。
+    _vj = json.dumps({"rewrites":[{"source":"/((?!robots/|guides/|.*\\.).*)","destination":"/index.html"}]}, indent=2)
     open(os.path.join(_base,"vercel.json"),"w",encoding="utf-8").write(_vj+"\n")
-    print("生成产品独立页:",len(out),"→",os.path.join(_base,"robots")," + sitemap.xml + robots.txt + vercel.json")
+    print("生成产品页:",len(out)," 文章页:",len(POSTS)," + sitemap + robots.txt + vercel.json")
 
 # ============== 自检关卡（每次生成后自动运行）==============
 def verify(html):
