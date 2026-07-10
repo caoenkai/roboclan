@@ -99,6 +99,14 @@ textarea.pinput{height:auto;padding:10px 12px;line-height:1.5;resize:vertical;}
 .imgrow{display:flex;gap:16px;align-items:flex-start;}
 .thumbbox{width:96px;height:96px;border-radius:12px;border:1px solid var(--line-2);background:var(--surface-2);display:grid;place-items:center;font-size:44px;overflow:hidden;flex-shrink:0;}
 .thumbbox img{width:100%;height:100%;object-fit:contain;}
+.imgs-grid{display:flex;gap:10px;flex-wrap:wrap;margin-top:6px;}
+.imgslot{position:relative;width:92px;height:92px;border-radius:10px;border:1px solid var(--line-2);background:#fff;overflow:hidden;}
+.imgslot img{width:100%;height:100%;object-fit:contain;}
+.imgslot .badge1{position:absolute;top:4px;left:4px;background:var(--accent);color:#fff;font-size:9px;font-family:var(--font-mono);padding:1px 5px;border-radius:6px;}
+.imgslot .rm{position:absolute;top:3px;right:3px;width:20px;height:20px;border-radius:50%;background:rgba(0,0,0,.6);color:#fff;border:none;cursor:pointer;font-size:12px;line-height:1;display:grid;place-items:center;}
+.imgslot .rp{position:absolute;bottom:3px;right:3px;background:rgba(0,0,0,.6);color:#fff;border:none;cursor:pointer;font-size:10px;border-radius:6px;padding:2px 6px;}
+.imgadd{width:92px;height:92px;border-radius:10px;border:1.5px dashed var(--line-2);background:transparent;color:var(--text-3);cursor:pointer;font-size:28px;display:grid;place-items:center;}
+.imgadd:hover{border-color:var(--accent);color:var(--accent);}
 .ck{display:flex;align-items:center;gap:8px;margin-top:16px;font-size:14px;color:var(--text-2);cursor:pointer;}
 .adv{margin-top:18px;border-top:1px solid var(--line);padding-top:8px;}
 .adv summary{cursor:pointer;font-weight:600;font-size:13.5px;color:var(--accent-ink);padding:8px 0;}
@@ -292,19 +300,11 @@ textarea.pinput{height:auto;padding:10px 12px;line-height:1.5;resize:vertical;}
   <div class="modal">
     <div class="modal-hd"><h3 id="edTitle">Edit product</h3><button class="x" id="edClose">✕</button></div>
     <div class="modal-bd">
-      <div class="imgrow">
-        <div class="thumbbox" id="edThumb"></div>
-        <div style="flex:1">
-          <label class="fl">Product image</label>
-          <div style="display:flex;gap:8px;flex-wrap:wrap">
-            <label class="btn-sm" style="cursor:pointer">Upload…<input id="edFile" type="file" accept="image/*" class="hide"></label>
-            <button class="btn-sm ghost" id="edReposition" type="button">Re-position</button>
-            <button class="btn-sm ghost" id="edImgClear" type="button">Remove</button>
-          </div>
-          <label class="ck" style="margin-top:8px;font-size:13px"><input type="checkbox" id="edRmBg" checked> Auto-remove background (cut out the product)</label>
-          <div class="muted" id="edImgHint" style="padding:6px 0 0">Upload any photo — even a dark background. It's cut out and compressed automatically.</div>
-        </div>
-      </div>
+      <label class="fl" style="margin-top:0">Product images <span class="muted" style="padding:0">(up to 5 · first one shows on the card)</span></label>
+      <div id="edImages" class="imgs-grid"></div>
+      <input id="edFile" type="file" accept="image/*" class="hide">
+      <label class="ck" style="margin-top:10px;font-size:13px"><input type="checkbox" id="edRmBg" checked> Auto-remove background (cut out the product)</label>
+      <div class="muted" id="edImgHint" style="padding:6px 0 0">Click ＋ to add a photo — even a dark background works. You'll position it, then it's saved on white.</div>
       <div class="grid2">
         <div><label class="fl">Name</label><input id="edName" class="pinput w"></div>
         <div><label class="fl">Brand</label><input id="edBrand" class="pinput w"></div>
@@ -488,9 +488,26 @@ $('pSearch').addEventListener('input',renderProducts);
 $('pCat').addEventListener('change',renderProducts);
 $('pNew').addEventListener('click',()=>openEditor(null));
 
-function renderThumb(){
-  $('edThumb').innerHTML = edData.image ? `<img src="${esc(edData.image)}" alt="">` : esc(edData.emoji||'🤖');
+// 多图管理（最多 5 张，第一张显示在卡片上）
+let edImages=[];
+function renderImages(){
+  const box=$('edImages'); box.innerHTML='';
+  edImages.forEach((u,i)=>{
+    const d=document.createElement('div'); d.className='imgslot';
+    d.innerHTML=`<img src="${esc(u)}" alt="">${i===0?'<span class="badge1">1st</span>':''}<button class="rm" type="button" title="Remove">✕</button><button class="rp" type="button" title="Re-position">⟳</button>`;
+    d.querySelector('.rm').onclick=()=>{ edImages.splice(i,1); syncImages(); };
+    d.querySelector('.rp').onclick=async ()=>{
+      try{ $('edImgHint').textContent='Loading image…';
+        const resp=await fetch(u,{mode:'cors',cache:'no-store'}); const blob=await resp.blob();
+        const framed=await openImgEditor(blob); if(!framed){ $('edImgHint').textContent='Cancelled.'; return; }
+        const nu=await uploadFramed(framed); edImages[i]=nu; syncImages();
+      }catch(err){ $('edImgHint').textContent='Re-position failed: '+(err.message||err); }
+    };
+    box.appendChild(d);
+  });
+  if(edImages.length<5){ const a=document.createElement('button'); a.type='button'; a.className='imgadd'; a.textContent='＋'; a.onclick=()=>$('edFile').click(); box.appendChild(a); }
 }
+function syncImages(){ edData.images=edImages.slice(); if(edImages.length) edData.image=edImages[0]; else delete edData.image; renderImages(); syncFromFields(); }
 // 价格多商家行编辑
 function normPrices(arr){
   return (arr||[]).map(row=> Array.isArray(row)
@@ -537,7 +554,9 @@ function openEditor(id){
   $('edTags').value=(edData.tags||[]).join('\n'); $('edVerdict').value=edData.verdict||'';
   $('edFeatured').checked=!!edData.featured; $('edErr').textContent='';
   renderPrices(edData.prices);
-  $('edJson').value=JSON.stringify(edData,null,2); renderThumb();
+  edImages = (edData.images && edData.images.length) ? edData.images.slice() : (edData.image ? [edData.image] : []);
+  renderImages();
+  $('edJson').value=JSON.stringify(edData,null,2);
   $('editOv').classList.remove('hide');
 }
 function closeEditor(){ $('editOv').classList.add('hide'); }
@@ -551,16 +570,17 @@ function syncFromFields(){
   obj.price=$('edPrice').value; obj.verdict=$('edVerdict').value; obj.featured=$('edFeatured').checked;
   obj.tags=$('edTags').value.split('\n').map(s=>s.trim()).filter(Boolean);
   obj.prices=collectPrices();
-  if(edData.image) obj.image=edData.image; else delete obj.image;
+  if(edImages.length){ obj.images=edImages.slice(); obj.image=edImages[0]; } else { delete obj.images; delete obj.image; }
   edData=obj; $('edJson').value=JSON.stringify(obj,null,2);
 }
 ['edName','edBrand','edCat','edPrice','edVerdict','edTags'].forEach(id=>$(id).addEventListener('change',syncFromFields));
 $('edFeatured').addEventListener('change',syncFromFields);
 
-// image upload → Supabase Storage
+// 加一张图：选文件 → (可选抠图) → 定位 → 上传 → 加入图组
 $('edFile').addEventListener('change',async e=>{
   const file=e.target.files[0]; if(!file) return;
   try{
+    if(edImages.length>=5){ $('edImgHint').textContent='Max 5 images.'; e.target.value=''; return; }
     let src=file;
     if($('edRmBg').checked){
       $('edImgHint').textContent='Removing background… (first time loads a model, ~15–30s)';
@@ -568,38 +588,27 @@ $('edFile').addEventListener('change',async e=>{
         const mod=await import('https://esm.sh/@imgly/background-removal@1.5.5');
         const removeBackground=mod.removeBackground||(mod.default&&mod.default.removeBackground);
         if(!removeBackground) throw new Error('library entry not found');
-        src=await removeBackground(file);   // Blob PNG，透明背景
+        src=await removeBackground(file);
       }catch(bgErr){ console.warn('bg removal failed',bgErr); $('edImgHint').textContent='Auto-cutout unavailable — using original image…'; src=file; }
     }
     $('edImgHint').textContent='Position the product…';
     const blob=await openImgEditor(src);
     if(!blob){ $('edImgHint').textContent='Cancelled.'; e.target.value=''; return; }
-    await uploadFramed(blob);
+    const url=await uploadFramed(blob);
+    edImages.push(url); syncImages();
   }catch(err){ $('edImgHint').textContent='Upload failed: '+(err.message||err); }
   e.target.value='';
 });
 async function uploadFramed(blob){
   $('edImgHint').textContent='Uploading…';
   const slug=(($('edName').value||edData.id||'product').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,''))||'product';
-  const path=slug+'-'+Date.now()+'.webp';
+  const path=slug+'-'+Date.now()+'-'+Math.random().toString(36).slice(2,6)+'.webp';
   const { error }=await sb.storage.from('product-images').upload(path,blob,{contentType:'image/webp',upsert:true});
   if(error) throw error;
   const { data:{ publicUrl } }=sb.storage.from('product-images').getPublicUrl(path);
-  edData.image=publicUrl; syncFromFields(); renderThumb();
   $('edImgHint').textContent='Uploaded ✓';
+  return publicUrl;
 }
-// 重新编辑已上传的图（拖拽缩放重新定位，不用重新上传源图）
-$('edReposition').addEventListener('click',async ()=>{
-  if(!edData.image){ $('edImgHint').textContent='No image to re-position yet.'; return; }
-  try{
-    $('edImgHint').textContent='Loading image…';
-    const resp=await fetch(edData.image,{mode:'cors',cache:'no-store'}); const blob=await resp.blob();
-    const framed=await openImgEditor(blob);
-    if(!framed){ $('edImgHint').textContent='Cancelled.'; return; }
-    await uploadFramed(framed);
-  }catch(err){ $('edImgHint').textContent='Re-position failed: '+(err.message||err); }
-});
-$('edImgClear').addEventListener('click',()=>{ delete edData.image; syncFromFields(); renderThumb(); $('edImgHint').textContent='Image removed.'; });
 
 // client-side compress → webp, max 1000px
 // ---------- 手动图片定位编辑器（拖拽 + 缩放，白底自动补）----------
@@ -703,7 +712,7 @@ $('edSave').addEventListener('click',async ()=>{
   obj.price=$('edPrice').value.trim(); obj.verdict=$('edVerdict').value; obj.featured=$('edFeatured').checked;
   obj.tags=$('edTags').value.split('\n').map(s=>s.trim()).filter(Boolean);
   obj.prices=collectPrices();
-  if(edData.image) obj.image=edData.image; else delete obj.image;
+  if(edImages.length){ obj.images=edImages.slice(); obj.image=edImages[0]; } else { delete obj.images; delete obj.image; }
   if(!obj.name){ $('edErr').textContent='Name is required.'; return; }
   if(!obj.id){ obj.id=obj.name.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,''); }
   $('edSave').disabled=true; $('edSave').textContent='Saving…';
