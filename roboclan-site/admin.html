@@ -665,7 +665,7 @@ $('edFile').addEventListener('change',async e=>{
 });
 async function uploadFramed(blob){
   $('edImgHint').textContent='Uploading…';
-  const slug=(($('edName').value||edData.id||'product').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,''))||'product';
+  const slug=(($('edName').value||(edData&&edData.id)||'image').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,''))||'image';
   const path=slug+'-'+Date.now()+'-'+Math.random().toString(36).slice(2,6)+'.webp';
   const { error }=await sb.storage.from('product-images').upload(path,blob,{contentType:'image/webp',upsert:true});
   if(error) throw error;
