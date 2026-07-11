@@ -3142,10 +3142,9 @@ return {robots:R,byId:byId,glow:CAT_GLOW,axes:AXES,categories:CATEGORIES,posts:P
     .rc2-ticker{background:var(--bg2);border-top:1px solid var(--line);border-bottom:1px solid var(--line);overflow:hidden;margin:0 -24px;}
     .rc2-tkin{display:flex;align-items:center;gap:18px;height:44px;padding:0 24px;max-width:100%;}
     .rc2-tklbl{font-size:12px;font-weight:600;letter-spacing:.09em;color:var(--accent);flex-shrink:0;}
-    .rc2-tkview{overflow:hidden;flex:1;}
-    .rc2-tktrack{display:inline-flex;gap:40px;white-space:nowrap;animation:rc2tk 92s linear infinite;}
-    .rc2-tkview:hover .rc2-tktrack{animation-play-state:paused;}
-    .rc2-tktrack .it{font-size:13.5px;color:var(--ink2);cursor:pointer;}
+    .rc2-tkview{overflow:hidden;flex:1;min-width:0;}
+    .rc2-tktrack{display:flex;width:max-content;flex-wrap:nowrap;gap:40px;white-space:nowrap;}
+    .rc2-tktrack .it{font-size:13.5px;color:var(--ink2);cursor:pointer;flex:0 0 auto;white-space:nowrap;}
     .rc2-tktrack .it b{color:var(--ink);font-weight:600;}
     @keyframes rc2tk{from{transform:translateX(0)}to{transform:translateX(-50%)}}
 
@@ -3512,6 +3511,28 @@ return {robots:R,byId:byId,glow:CAT_GLOW,axes:AXES,categories:CATEGORIES,posts:P
           });
       } catch (e) {}
     }, []);
+    // 新闻滚动：用 JS 原生 scrollLeft，不用 CSS transform（避免 iOS 超宽图层变空白）
+    const tkViewRef = React.useRef(null);
+    React.useEffect(() => {
+      const view = tkViewRef.current; if (!view) return;
+      let raf = 0, last = 0, paused = false;
+      const speed = 42; // px/秒
+      const tick = (now) => {
+        if (!last) last = now;
+        const dt = Math.min(0.05, (now - last) / 1000); last = now;
+        const half = view.scrollWidth / 2;
+        if (!paused && half > 1) {
+          let x = view.scrollLeft + speed * dt;
+          if (x >= half) x -= half;
+          view.scrollLeft = x;
+        }
+        raf = requestAnimationFrame(tick);
+      };
+      raf = requestAnimationFrame(tick);
+      const enter = () => { paused = true; }, leave = () => { paused = false; last = 0; };
+      view.addEventListener("mouseenter", enter); view.addEventListener("mouseleave", leave);
+      return () => { cancelAnimationFrame(raf); view.removeEventListener("mouseenter", enter); view.removeEventListener("mouseleave", leave); };
+    }, [news]);
     const counts = {};
     DATA.robots.forEach((r) => { counts[r.cat] = (counts[r.cat] || 0) + 1; });
     // 跨品类轮流取（否则前几台全是扫地机），首页 Products 混排更丰富
@@ -3618,16 +3639,24 @@ return {robots:R,byId:byId,glow:CAT_GLOW,axes:AXES,categories:CATEGORIES,posts:P
           )}
         </section>
 
-        <div className="rc2-ticker"><div className="rc2-tkin">
-          <span className="rc2-tklbl">⚡ NEWS</span>
-          <div className="rc2-tkview"><div className="rc2-tktrack">
-            {news.concat(news).map((n, i) => (
-              <span className="it" key={i} onClick={() => { if (n && n.url) window.open(n.url, "_blank", "noopener"); }}>
-                <b>{n && n.b}</b> {n && n.t}
-              </span>
-            ))}
-          </div></div>
-        </div></div>
+        {(() => {
+          // 重复足够多份，保证滚动条永远填满屏幕（尤其新闻只有 1 条时），不会滚走留白
+          const base = (news && news.length) ? news : NEWS;
+          const reps = Math.max(2, Math.ceil(10 / base.length));
+          const half = []; for (let r = 0; r < reps; r++) base.forEach((x) => half.push(x));
+          return (
+            <div className="rc2-ticker"><div className="rc2-tkin">
+              <span className="rc2-tklbl">⚡ NEWS</span>
+              <div className="rc2-tkview" ref={tkViewRef}><div className="rc2-tktrack">
+                {half.concat(half).map((n, i) => (
+                  <span className="it" key={i} onClick={() => { if (n && n.url) window.open(n.url, "_blank", "noopener"); }}>
+                    <b>{n && n.b}</b> {n && n.t}
+                  </span>
+                ))}
+              </div></div>
+            </div></div>
+          );
+        })()}
 
         <div className="rc2-sec">
           <div className="rc2-sechd">
