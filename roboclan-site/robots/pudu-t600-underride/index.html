@@ -3512,17 +3512,18 @@ return {robots:R,byId:byId,glow:CAT_GLOW,axes:AXES,categories:CATEGORIES,posts:P
           });
       } catch (e) {}
     }, []);
-    // 新闻滚动：用 JS 原生 scrollLeft，不用 CSS transform（避免 iOS 超宽图层变空白）
+    // 新闻滚动：用 JS 原生 scrollLeft（不用 CSS transform，避免 iOS 超宽图层空白；
+    // 也不用 hover 暂停，避免手机上模拟 mouseenter 把它冻住）
     const tkViewRef = React.useRef(null);
     React.useEffect(() => {
       const view = tkViewRef.current; if (!view) return;
-      let raf = 0, last = 0, paused = false;
+      let raf = 0, last = 0;
       const speed = 42; // px/秒
       const tick = (now) => {
         if (!last) last = now;
         const dt = Math.min(0.05, (now - last) / 1000); last = now;
         const half = view.scrollWidth / 2;
-        if (!paused && half > 1) {
+        if (half > 1) {
           let x = view.scrollLeft + speed * dt;
           if (x >= half) x -= half;
           view.scrollLeft = x;
@@ -3530,9 +3531,7 @@ return {robots:R,byId:byId,glow:CAT_GLOW,axes:AXES,categories:CATEGORIES,posts:P
         raf = requestAnimationFrame(tick);
       };
       raf = requestAnimationFrame(tick);
-      const enter = () => { paused = true; }, leave = () => { paused = false; last = 0; };
-      view.addEventListener("mouseenter", enter); view.addEventListener("mouseleave", leave);
-      return () => { cancelAnimationFrame(raf); view.removeEventListener("mouseenter", enter); view.removeEventListener("mouseleave", leave); };
+      return () => cancelAnimationFrame(raf);
     }, [news]);
     const counts = {};
     DATA.robots.forEach((r) => { counts[r.cat] = (counts[r.cat] || 0) + 1; });
