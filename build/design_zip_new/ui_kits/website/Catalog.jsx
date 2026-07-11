@@ -35,12 +35,18 @@
     return n >= 15000;                   // "$15k+"
   }
 
-  function Catalog({ initialCat, search, onOpen, onAdd, compare, onQuote }) {
+  function Catalog({ initialCat, search, initialBrand, initialPriceMin, initialPriceMax, initialTag, filterLabel, onOpen, onAdd, compare, onQuote }) {
     inject();
     const q = (search || "").toLowerCase().trim();
     const [cats, setCats] = React.useState(new Set(initialCat ? [initialCat] : []));
-    const [brands, setBrands] = React.useState(new Set());
+    const [brands, setBrands] = React.useState(new Set(initialBrand ? [initialBrand] : []));
     const [price, setPrice] = React.useState(new Set());
+    // 首页矩阵带来的精确筛选：价格区间 / 用途标签
+    const [pRange, setPRange] = React.useState((initialPriceMin != null || initialPriceMax != null) ? { min: initialPriceMin, max: initialPriceMax } : null);
+    const [uTag, setUTag] = React.useState(initialTag || null);
+    const _pnum = (p) => { const c = String(p).replace(/[^0-9.]/g, ""); return c ? Number(c) : null; };
+    const inRange = (p) => { if (!pRange) return true; const n = _pnum(p); if (n == null) return false; if (pRange.min != null && n < pRange.min) return false; if (pRange.max != null && n >= pRange.max) return false; return true; };
+    const tagMatch = (r) => { if (!uTag) return true; return (r.tags || []).some((t) => String(t).toLowerCase().indexOf(uTag.toLowerCase()) >= 0); };
     const buckets = ["Under $1k", "$1k–$3k", "$3k–$5k", "$5k–$15k", "$15k+", "Contact"];
     const toggle = (set, setter, v) => { const n = new Set(set); n.has(v) ? n.delete(v) : n.add(v); setter(n); };
     // Brands present in the (category-filtered) catalog, alphabetical.
@@ -62,14 +68,15 @@
       (cats.size === 0 || cats.has(r.cat)) &&
       (brands.size === 0 || brands.has(r.brand)) &&
       (price.size === 0 || [...price].some((b) => inBucket(r.price, b))) &&
+      inRange(r.price) && tagMatch(r) &&
       (!q || (r.name + " " + r.brand + " " + r.cat).toLowerCase().includes(q)));
-    const active = cats.size + brands.size + price.size > 0;
+    const active = cats.size + brands.size + price.size > 0 || pRange || uTag;
 
     return (
       <div className="rc-cat">
         <div className="rc-cat__head">
           <div className="rc-cat__ey">Catalog</div>
-          <h1>{q ? ("Search: “" + search + "”") : (cats.size === 1 ? [...cats][0] : "All robots")}</h1>
+          <h1>{q ? ("Search: “" + search + "”") : (cats.size === 1 ? [...cats][0] : "All robots")}{(filterLabel && (pRange || uTag)) ? (" · " + filterLabel) : ""}</h1>
         </div>
         <div className="rc-cat__filters">
           <div className="rc-cat__row">
@@ -93,7 +100,7 @@
         </div>
         <div className="rc-cat__bar">
           <span>{list.length} robot{list.length !== 1 ? "s" : ""}</span>
-          {active && <span className="rc-cat__reset" onClick={() => { setCats(new Set()); setBrands(new Set()); setPrice(new Set()); }}>✕ Reset filters</span>}
+          {active && <span className="rc-cat__reset" onClick={() => { setCats(new Set()); setBrands(new Set()); setPrice(new Set()); setPRange(null); setUTag(null); }}>✕ Reset filters</span>}
         </div>
         <div className="rc-cat__grid">
           {list.length === 0 && <div className="rc-cat__empty">No matches — try removing a filter.</div>}

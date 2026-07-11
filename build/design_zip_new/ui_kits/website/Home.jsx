@@ -520,7 +520,7 @@
     { b: "Dreame A3 AWD Pro", t: "lands in North America — LiDAR mapping, no boundary wire, 4WD slopes" },
     { b: "Cordless pool season", t: "self-emptying dock cleaners headline this year's robot lineup" },
   ];
-  function Home({ onOpenCategory, onOpen, onAdd, compare, onNews, onQuote, onOpenGuides, onOpenPost }) {
+  function Home({ onOpenCategory, onOpen, onAdd, compare, onNews, onQuote, onOpenGuides, onOpenPost, onBrowse }) {
     inject();
     // 新闻条实时从 Supabase 读（后台加了立即显示，无需重新发布）；失败则用内置兜底
     const [news, setNews] = React.useState(NEWS);
@@ -566,12 +566,19 @@
     const topScored = DATA.robots.filter((r) => SCORED[r.cat] && r.score != null).sort((a, b) => (b.score || 0) - (a.score || 0)).slice(0, 8);
     const heroPick = topScored[0] || top[0];
     const MATRIX = [
-      { cat: "Robot Vacuums", note: "scored", chips: ["Under $500", "$500–1,000", "$1,000–1,500", "$1,500+"] },
-      { cat: "Robot Lawn Mowers", note: "scored", chips: ["Under $1,500", "$1,500–2,200", "$2,200+"] },
-      { cat: "Pool Cleaners", note: "scored", chips: ["Under $500", "$500–1,200", "$1,200+"] },
-      { cat: "Humanoids", note: "by brand", chips: ["Unitree", "LimX", "AgiBot"] },
-      { cat: "Quadrupeds", note: "by brand", chips: ["Unitree", "DEEP Robotics", "AgiBot"] },
-      { cat: "Commercial & Industrial", note: "by use-case", chips: ["Service", "Cleaning", "Delivery", "Manipulation"] },
+      { cat: "Robot Vacuums", note: "scored", chips: [
+        { l: "Under $500", f: { max: 500 } }, { l: "$500–1,000", f: { min: 500, max: 1000 } },
+        { l: "$1,000–1,500", f: { min: 1000, max: 1500 } }, { l: "$1,500+", f: { min: 1500 } } ] },
+      { cat: "Robot Lawn Mowers", note: "scored", chips: [
+        { l: "Under $1,500", f: { max: 1500 } }, { l: "$1,500–2,200", f: { min: 1500, max: 2200 } }, { l: "$2,200+", f: { min: 2200 } } ] },
+      { cat: "Pool Cleaners", note: "scored", chips: [
+        { l: "Under $500", f: { max: 500 } }, { l: "$500–1,200", f: { min: 500, max: 1200 } }, { l: "$1,200+", f: { min: 1200 } } ] },
+      { cat: "Humanoids", note: "by brand", chips: [
+        { l: "Unitree", f: { brand: "Unitree" } }, { l: "LimX", f: { brand: "LimX" } }, { l: "AgiBot", f: { brand: "AgiBot" } } ] },
+      { cat: "Quadrupeds", note: "by brand", chips: [
+        { l: "Unitree", f: { brand: "Unitree" } }, { l: "DEEP Robotics", f: { brand: "DEEP Robotics" } }, { l: "AgiBot", f: { brand: "AgiBot" } } ] },
+      { cat: "Commercial & Industrial", note: "by use-case", chips: [
+        { l: "Service", f: { tag: "Service" } }, { l: "Cleaning", f: { tag: "Cleaning" } }, { l: "Delivery", f: { tag: "Delivery" } }, { l: "Manipulation", f: { tag: "Manipulation" } } ] },
     ];
     // 绿色 = best price = 零售/品牌各行里的最低价（MSRP 只作参考、不参与）；真实商家名才附上
     const greenPrice = (r) => {
@@ -673,7 +680,7 @@
                   <div className="ct">{(counts[m.cat] || 0) + " models · " + m.note}</div>
                 </div>
                 <div className="rc2-mlinks">
-                  {m.chips.map((ch) => <span className="rc2-chip" key={ch} onClick={() => onOpenCategory(m.cat)}>{ch}</span>)}
+                  {m.chips.map((ch) => <span className="rc2-chip" key={ch.l} onClick={() => onBrowse(m.cat, ch.f, ch.l)}>{ch.l}</span>)}
                 </div>
               </div>
             ))}
