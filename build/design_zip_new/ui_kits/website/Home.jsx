@@ -621,7 +621,7 @@
         <section className="rc2-hero">
           <div>
             <div className="rc2-eyebrow">Every robot, one scoring system</div>
-            <h1>Find the right robot,<br />compared honestly.</h1>
+            <h1>The right robot,<br />compared honestly.</h1>
             <p className="sub">188 robots across 6 categories, each scored on the same framework from official specs. No paid placements, no hype — just data you can compare.</p>
             <div className="rc2-btnrow">
               <button className="rc2-btn" onClick={() => onOpenCategory(null)}>Browse robots →</button>
