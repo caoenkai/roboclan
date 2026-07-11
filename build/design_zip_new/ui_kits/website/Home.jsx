@@ -164,7 +164,8 @@
     .rc2-ticker{background:var(--bg2);border-top:1px solid var(--line);border-bottom:1px solid var(--line);overflow:hidden;margin:0 -24px;}
     .rc2-tkin{display:flex;align-items:center;gap:18px;height:44px;padding:0 24px;max-width:100%;}
     .rc2-tklbl{font-size:12px;font-weight:600;letter-spacing:.09em;color:var(--accent);flex-shrink:0;}
-    .rc2-tkview{overflow:hidden;flex:1;min-width:0;}
+    .rc2-tkview{overflow-x:auto;overflow-y:hidden;flex:1;min-width:0;scrollbar-width:none;-ms-overflow-style:none;-webkit-overflow-scrolling:touch;}
+    .rc2-tkview::-webkit-scrollbar{display:none;width:0;height:0;}
     .rc2-tktrack{display:flex;width:max-content;flex-wrap:nowrap;gap:40px;white-space:nowrap;}
     .rc2-tktrack .it{font-size:13.5px;color:var(--ink2);cursor:pointer;flex:0 0 auto;white-space:nowrap;}
     .rc2-tktrack .it b{color:var(--ink);font-weight:600;}
