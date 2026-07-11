@@ -409,6 +409,19 @@ FOOT_CSS = """
 .rc-post__body a{color:var(--accent-ink);text-decoration:underline;}
 .rc-post__body .lead{font-size:19px;color:var(--text-1);line-height:1.6;}
 .rc-post__body .disclosure{font-size:13px;color:var(--text-3);border-top:1px solid var(--line);padding-top:16px;margin-top:32px;}
+.rc-post__body .rc-pc2{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:16px 0 26px;}
+.rc-post__body .rc-pc2>div{border:1px solid var(--line);border-radius:12px;padding:14px 16px;}
+.rc-post__body .rc-pc2__pros{background:rgba(22,163,74,.07);border-color:rgba(22,163,74,.30);}
+.rc-post__body .rc-pc2__cons{background:rgba(192,57,43,.05);border-color:rgba(192,57,43,.22);}
+.rc-post__body .rc-pc2__h{font-family:var(--font-display);font-weight:600;font-size:13.5px;letter-spacing:.04em;text-transform:uppercase;margin-bottom:8px;display:flex;align-items:center;gap:6px;}
+.rc-post__body .rc-pc2__pros .rc-pc2__h{color:#16a34a;}
+.rc-post__body .rc-pc2__cons .rc-pc2__h{color:#c0392b;}
+.rc-post__body .rc-pc2 ul{margin:0;padding:0;list-style:none;}
+.rc-post__body .rc-pc2 li{position:relative;margin:6px 0;padding-left:23px;font-size:14.5px;line-height:1.5;color:var(--text-1);}
+.rc-post__body .rc-pc2 li::before{position:absolute;left:0;top:0;font-weight:700;}
+.rc-post__body .rc-pc2__pros li::before{content:"\2713";color:#16a34a;}
+.rc-post__body .rc-pc2__cons li::before{content:"\2715";color:#c0392b;}
+@media(max-width:560px){.rc-post__body .rc-pc2{grid-template-columns:1fr;}}
 .rc-page__sec{margin-bottom:30px;}
 .rc-page__sec h2{font-family:var(--font-display);font-weight:600;font-size:21px;letter-spacing:-.01em;color:var(--text-1);margin:0 0 10px;}
 .rc-page__sec p{font-size:15px;line-height:1.72;color:var(--text-3);margin:0 0 12px;}
@@ -934,6 +947,15 @@ if _out_arg:
         if not _ps: continue
         _pc=SITE+"/guides/"+_ps+"/"
         _phead=_seo_head((_pst.get("title") or "Guide")+" | Roboclan", (_pst.get("excerpt") or _pst.get("title") or ""), _pc, _abs_img(_pst.get("cover_image")), "article")
+        # JSON-LD 结构化数据（BlogPosting）：帮 Google 出富结果、认作者/发布时间
+        _ld={"@context":"https://schema.org","@type":"BlogPosting",
+             "headline":_pst.get("title") or "Guide","description":_pst.get("excerpt") or "",
+             "author":{"@type":"Person","name":_pst.get("author") or "Roboclan Editorial"},
+             "publisher":{"@type":"Organization","name":"Roboclan","logo":{"@type":"ImageObject","url":SITE+"/apple-touch-icon.png"}},
+             "image":_abs_img(_pst.get("cover_image")),"mainEntityOfPage":_pc,"url":_pc,"inLanguage":"en-US"}
+        if _pst.get("created_at"): _ld["datePublished"]=str(_pst.get("created_at"))
+        if _pst.get("updated_at"): _ld["dateModified"]=str(_pst.get("updated_at"))
+        _phead=_phead+'\n<script type="application/ld+json">'+json.dumps(_ld,ensure_ascii=False)+'</script>'
         _ppage=HTML.replace("__SEOHEAD__", _phead)
         _pdir=os.path.join(_base,"guides",_ps); os.makedirs(_pdir,exist_ok=True)
         open(os.path.join(_pdir,"index.html"),"w",encoding="utf-8").write(_ppage)
