@@ -168,6 +168,7 @@
     .rc2-tktrack{display:flex;width:max-content;flex-wrap:nowrap;gap:40px;white-space:nowrap;animation:rc2tk 60s linear infinite;}
     .rc2-tktrack .it{font-size:13.5px;color:var(--ink2);cursor:pointer;flex:0 0 auto;white-space:nowrap;}
     .rc2-tktrack .it b{color:var(--ink);font-weight:600;}
+    .rc2-tktrack .it .dt{display:inline-block;font-size:11.5px;font-weight:600;color:var(--accent);background:var(--accent2);border-radius:5px;padding:1px 7px;margin-right:8px;vertical-align:1px;}
     @keyframes rc2tk{from{transform:translateX(0)}to{transform:translateX(-50%)}}
 
     /* section heads */
@@ -527,9 +528,9 @@
     React.useEffect(() => {
       try {
         const sb = window._sb; if (!sb) return;
-        sb.from("news").select("title,body,url,sort").eq("active", true).order("sort", { ascending: true })
+        sb.from("news").select("title,body,url,sort,created_at").eq("active", true).order("sort", { ascending: true })
           .then(({ data, error }) => {
-            if (!error && data && data.length) setNews(data.map((n) => ({ b: n.title, t: n.body || "", url: n.url })));
+            if (!error && data && data.length) setNews(data.map((n) => ({ b: n.title, t: n.body || "", url: n.url, date: n.created_at })));
           });
       } catch (e) {}
     }, []);
@@ -653,13 +654,14 @@
           const reps = Math.max(2, Math.ceil(10 / base.length));
           const half = []; for (let r = 0; r < reps; r++) base.forEach((x) => half.push(x));
           const dur = Math.max(40, half.length * 7); // 每条约 7s，速度稳定
+          const fmtDate = (s) => { if (!s) return ""; try { return new Date(s).toLocaleDateString("en-US", { month: "short", day: "numeric" }); } catch (e) { return ""; } };
           return (
             <div className="rc2-ticker"><div className="rc2-tkin">
               <span className="rc2-tklbl">⚡ NEWS</span>
               <div className="rc2-tkview"><div className="rc2-tktrack" style={{ animationDuration: dur + "s" }}>
                 {half.concat(half).map((n, i) => (
                   <span className="it" key={i} onClick={() => { if (n && n.url) window.open(n.url, "_blank", "noopener"); }}>
-                    <b>{n && n.b}</b> {n && n.t}
+                    {n && n.date ? <span className="dt">{fmtDate(n.date)}</span> : null}<b>{n && n.b}</b> {n && n.t}
                   </span>
                 ))}
               </div></div>
