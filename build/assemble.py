@@ -941,6 +941,19 @@ if _out_arg:
     for r in out:
         slug=r["id"]; canon=SITE+"/robots/"+slug+"/"
         head=_seo_head(r["name"]+" — Specs, Ratings & Price | Roboclan", _prod_desc(r), canon, _abs_img(r.get("image")), "product")
+        # Product + Review 结构化数据：评分品类用 Roboclan Score 作编辑评分（可在 Google 出星级）
+        _pld={"@context":"https://schema.org","@type":"Product","name":r["name"],
+              "image":_abs_img(r.get("image")),"description":_prod_desc(r),
+              "brand":{"@type":"Brand","name":r.get("brand") or ""},"category":r.get("cat") or "","url":canon}
+        _sc=r.get("score")
+        if _sc is not None:
+            _pld["review"]={"@type":"Review","author":{"@type":"Organization","name":"Roboclan"},
+                            "reviewRating":{"@type":"Rating","ratingValue":_sc,"bestRating":5,"worstRating":1}}
+        _pnum=re.sub(r"[^0-9.]","",str(r.get("price") or ""))
+        _isq=("quote" in str(r.get("price") or "").lower()) or ("contact" in str(r.get("price") or "").lower())
+        if _pnum and not _isq:
+            _pld["offers"]={"@type":"Offer","price":_pnum,"priceCurrency":"USD","availability":"https://schema.org/InStock","url":canon}
+        head=head+'\n<script type="application/ld+json">'+json.dumps(_pld,ensure_ascii=False)+'</script>'
         page=HTML.replace("__SEOHEAD__", head)
         _pd=os.path.join(_base,"robots",slug); os.makedirs(_pd,exist_ok=True)
         open(os.path.join(_pd,"index.html"),"w",encoding="utf-8").write(page)
