@@ -419,8 +419,8 @@ FOOT_CSS = """
 .rc-post__body .rc-pc2 ul{margin:0;padding:0;list-style:none;}
 .rc-post__body .rc-pc2 li{position:relative;margin:6px 0;padding-left:23px;font-size:14.5px;line-height:1.5;color:var(--text-1);}
 .rc-post__body .rc-pc2 li::before{position:absolute;left:0;top:0;font-weight:700;}
-.rc-post__body .rc-pc2__pros li::before{content:"\2713";color:#16a34a;}
-.rc-post__body .rc-pc2__cons li::before{content:"\2715";color:#c0392b;}
+.rc-post__body .rc-pc2__pros li::before{content:"\\2713";color:#16a34a;}
+.rc-post__body .rc-pc2__cons li::before{content:"\\2715";color:#c0392b;}
 @media(max-width:560px){.rc-post__body .rc-pc2{grid-template-columns:1fr;}}
 .rc-page__sec{margin-bottom:30px;}
 .rc-page__sec h2{font-family:var(--font-display);font-weight:600;font-size:21px;letter-spacing:-.01em;color:var(--text-1);margin:0 0 10px;}
