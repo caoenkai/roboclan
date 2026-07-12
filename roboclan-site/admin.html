@@ -262,8 +262,8 @@ textarea.pinput{height:auto;padding:10px 12px;line-height:1.5;resize:vertical;}
       </div>
       <div class="panel">
         <div class="tbl-scroll"><table id="newsTbl">
-          <thead><tr><th style="width:40px">#</th><th>Headline</th><th>Detail</th><th>Link</th><th>Live</th><th></th></tr></thead>
-          <tbody><tr><td colspan="6" class="empty">Loading…</td></tr></tbody>
+          <thead><tr><th style="width:40px">#</th><th style="width:82px">Date</th><th>Headline</th><th>Detail</th><th>Link</th><th>Live</th><th></th></tr></thead>
+          <tbody><tr><td colspan="7" class="empty">Loading…</td></tr></tbody>
         </table></div>
       </div>
     </div>
@@ -342,9 +342,10 @@ textarea.pinput{height:auto;padding:10px 12px;line-height:1.5;resize:vertical;}
       <label class="fl">Link URL <span class="muted" style="padding:0">(optional — clicking the headline opens it)</span></label>
       <input id="nUrl" class="pinput w" placeholder="https://…">
       <div class="grid2" style="margin-top:14px">
+        <div><label class="fl">Date <span class="muted" style="padding:0">(auto-set to today; editable)</span></label><input id="nDate" class="pinput w" type="date"></div>
         <div><label class="fl">Order</label><input id="nSort" class="pinput w" type="number" value="0"></div>
-        <label class="ck" style="margin-top:22px"><input type="checkbox" id="nActive" checked> Show on site</label>
       </div>
+      <label class="ck" style="margin-top:12px"><input type="checkbox" id="nActive" checked> Show on site</label>
       <div class="ederr" id="nErr"></div>
     </div>
     <div class="modal-ft">
@@ -901,11 +902,12 @@ async function loadNews(){
   newsLoaded=true;
   const { data, error } = await sb.from('news').select('*').order('sort',{ascending:true});
   const tb=$('newsTbl').querySelector('tbody');
-  if(error){ tb.innerHTML='<tr><td colspan="6" class="empty">Could not load news — did you run the news table SQL? ('+esc(error.message)+')</td></tr>'; return; }
+  if(error){ tb.innerHTML='<tr><td colspan="7" class="empty">Could not load news — did you run the news table SQL? ('+esc(error.message)+')</td></tr>'; return; }
   newsRows=data||[];
-  if(!newsRows.length){ tb.innerHTML='<tr><td colspan="6" class="empty">No headlines yet. Add one.</td></tr>'; return; }
+  if(!newsRows.length){ tb.innerHTML='<tr><td colspan="7" class="empty">No headlines yet. Add one.</td></tr>'; return; }
   tb.innerHTML=newsRows.map(r=>`<tr>
     <td class="mono" style="color:var(--text-3)">${r.sort}</td>
+    <td class="mono" style="color:var(--text-3);font-size:12px">${r.created_at?new Date(r.created_at).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'2-digit'}):''}</td>
     <td style="font-weight:600">${esc(r.title)}</td>
     <td class="msg">${esc(r.body)}</td>
     <td>${r.url?`<a class="em" href="${esc(r.url)}" target="_blank" rel="noopener">link ↗</a>`:'<span class="pill">—</span>'}</td>
@@ -922,6 +924,9 @@ function openNews(id){
   $('nDelete').style.visibility = nIsNew?'hidden':'visible';
   $('nHead').value=r.title||''; $('nBody').value=r.body||''; $('nUrl').value=r.url||'';
   $('nSort').value=r.sort||0; $('nActive').checked=r.active!==false; $('nErr').textContent='';
+  // 日期：编辑时用已有 created_at，新建默认今天（都可改）
+  const _d=(id&&r.created_at)?new Date(r.created_at):new Date();
+  $('nDate').value=(_d instanceof Date && !isNaN(_d))?_d.toISOString().slice(0,10):'';
   $('newsOv').classList.remove('hide');
 }
 function closeNews(){ $('newsOv').classList.add('hide'); }
@@ -931,6 +936,7 @@ $('nSave').addEventListener('click',async ()=>{
   $('nErr').textContent='';
   const rec={ title:$('nHead').value.trim(), body:$('nBody').value.trim()||null, url:$('nUrl').value.trim()||null,
     sort:parseInt($('nSort').value)||0, active:$('nActive').checked };
+  if($('nDate').value){ rec.created_at=new Date($('nDate').value+'T12:00:00').toISOString(); }
   if(!rec.title){ $('nErr').textContent='Headline is required.'; return; }
   $('nSave').disabled=true; $('nSave').textContent='Saving…';
   try{
