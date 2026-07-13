@@ -66,12 +66,12 @@
     .rc-dt__back{display:inline-flex;align-items:center;gap:7px;font-size:13.5px;color:var(--text-2);cursor:pointer;margin-bottom:22px;}
     .rc-dt__back:hover{color:var(--text-1);}
     .rc-dt__top{display:grid;grid-template-columns:300px 1fr;gap:28px;align-items:stretch;}
-    .rc-dt__hero{position:relative;display:grid;place-items:center;min-height:280px;overflow:hidden;}
+    .rc-dt__hero{position:relative;display:grid;place-items:center;min-height:420px;overflow:hidden;}
     /* 有图时整块 hero 铺成白底（和卡片一致），产品居中充满 */
     .rc-dt__hero:has(.rc-dt__img){background:#ffffff;}
     .rc-dt__heroglow{position:absolute;width:280px;height:280px;border-radius:50%;filter:blur(50px);opacity:.5;}
     .rc-dt__emoji{position:relative;font-size:120px;filter:drop-shadow(0 16px 40px rgba(0,0,0,.6));}
-    .rc-dt__img{position:relative;z-index:1;width:100%;height:100%;max-height:320px;object-fit:contain;padding:26px;box-sizing:border-box;}
+    .rc-dt__img{position:relative;z-index:1;width:100%;height:100%;max-height:460px;object-fit:contain;padding:28px;box-sizing:border-box;}
     .rc-dt__gallery{display:flex;flex-direction:column;gap:10px;}
     .rc-dt__thumbs{display:flex;gap:8px;flex-wrap:wrap;}
     .rc-dt__thumb{width:56px;height:56px;border-radius:9px;border:1px solid var(--line);background:#fff;overflow:hidden;cursor:pointer;padding:4px;flex-shrink:0;}
