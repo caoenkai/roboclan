@@ -528,7 +528,7 @@
     React.useEffect(() => {
       try {
         const sb = window._sb; if (!sb) return;
-        sb.from("news").select("title,body,url,sort,created_at").eq("active", true).order("sort", { ascending: true })
+        sb.from("news").select("title,body,url,sort,created_at").eq("active", true).order("created_at", { ascending: false })
           .then(({ data, error }) => {
             if (!error && data && data.length) setNews(data.map((n) => ({ b: n.title, t: n.body || "", url: n.url, date: n.created_at })));
           });
