@@ -35,15 +35,22 @@
     return n >= 15000;                   // "$15k+"
   }
 
-  function Catalog({ initialCat, search, initialBrand, initialPriceMin, initialPriceMax, initialTag, filterLabel, onOpen, onAdd, compare, onQuote }) {
+  function Catalog({ initialCat, search, initialBrand, initialPriceMin, initialPriceMax, initialTag, filterLabel, initialFilters, onOpen, onAdd, compare, onQuote, onFilterChange }) {
     inject();
     const q = (search || "").toLowerCase().trim();
-    const [cats, setCats] = React.useState(new Set(initialCat ? [initialCat] : []));
-    const [brands, setBrands] = React.useState(new Set(initialBrand ? [initialBrand] : []));
-    const [price, setPrice] = React.useState(new Set());
+    // 若从浏览器历史恢复（back/forward），用完整筛选快照初始化；否则用来自首页矩阵/品类的初始 props
+    const _if = initialFilters || null;
+    const [cats, setCats] = React.useState(new Set(_if ? (_if.cats || []) : (initialCat ? [initialCat] : [])));
+    const [brands, setBrands] = React.useState(new Set(_if ? (_if.brands || []) : (initialBrand ? [initialBrand] : [])));
+    const [price, setPrice] = React.useState(new Set(_if ? (_if.price || []) : []));
     // 首页矩阵带来的精确筛选：价格区间 / 用途标签
-    const [pRange, setPRange] = React.useState((initialPriceMin != null || initialPriceMax != null) ? { min: initialPriceMin, max: initialPriceMax } : null);
-    const [uTag, setUTag] = React.useState(initialTag || null);
+    const [pRange, setPRange] = React.useState(_if ? (_if.pRange || null) : ((initialPriceMin != null || initialPriceMax != null) ? { min: initialPriceMin, max: initialPriceMax } : null));
+    const [uTag, setUTag] = React.useState(_if ? (_if.uTag || null) : (initialTag || null));
+    // 每次筛选变化，把完整快照上报给 App → 写进浏览器历史，保证 back 能恢复
+    React.useEffect(() => {
+      if (!onFilterChange) return;
+      onFilterChange({ cats: [...cats], brands: [...brands], price: [...price], pRange: pRange, uTag: uTag });
+    }, [cats, brands, price, pRange, uTag]);
     const _pnum = (p) => { const c = String(p).replace(/[^0-9.]/g, ""); return c ? Number(c) : null; };
     const inRange = (p) => { if (!pRange) return true; const n = _pnum(p); if (n == null) return false; if (pRange.min != null && n < pRange.min) return false; if (pRange.max != null && n >= pRange.max) return false; return true; };
     const tagMatch = (r) => { if (!uTag) return true; return (r.tags || []).some((t) => String(t).toLowerCase().indexOf(uTag.toLowerCase()) >= 0); };

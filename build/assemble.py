@@ -743,6 +743,14 @@ function App(){
     if(p==="/compare") return {name:"compare"};
   }catch(e){} return {name:"home"}; };
   const [view,setView]=React.useState(routeFromPath());
+  const viewRef=React.useRef(view); viewRef.current=view;
+  // 目录页筛选变化时，把完整快照写进当前历史条目（不重挂载目录），保证浏览器后退能恢复筛选
+  const onCatalogFilter=(f)=>{try{
+    var cur=viewRef.current; if(!cur||cur.name!=="catalog") return;
+    var nv=Object.assign({},cur,{f:f}); viewRef.current=nv;
+    var u=cur.search?("/search?q="+encodeURIComponent(cur.search)):(cur.cat?("/c/"+_catSlug(cur.cat)):"/robots");
+    window.history.replaceState({rcView:nv},"",u);
+  }catch(e){}};
   const [compare,setCompare]=React.useState(new Set());
   const [query,setQuery]=React.useState("");
   const [lead,setLead]=React.useState(null);
@@ -793,7 +801,7 @@ function App(){
     <div className="rc-app">
       <Header nav={view.name==="home"?"Home":(view.name==="guides"||view.name==="post")?"Guides":view.name==="news"?"News":"Robots"} compareCount={compare.size} onHome={goHome} onNav={onNav} onCompare={onCompare} onSearch={setQuery} onSearchGo={onSearchGo} query={query} onCategory={openCategory} />
       {view.name==="home" && <window.RCHome onOpenCategory={openCategory} onOpen={open} onAdd={onAdd} compare={compare} onNews={onNews} onQuote={openQuote} onOpenGuides={openGuides} onOpenPost={openPost} onBrowse={openBrowse} />}
-      {view.name==="catalog" && <window.RCCatalog key={(view.cat||"")+"|"+(view.search||"")+"|"+(view.brand||"")+"|"+(view.priceMin||"")+"|"+(view.priceMax||"")+"|"+(view.tag||"")} initialCat={view.cat} search={view.search} initialBrand={view.brand} initialPriceMin={view.priceMin} initialPriceMax={view.priceMax} initialTag={view.tag} filterLabel={view.flabel} onOpen={open} onAdd={onAdd} compare={compare} onQuote={openQuote} />}
+      {view.name==="catalog" && <window.RCCatalog key={(view.cat||"")+"|"+(view.search||"")+"|"+(view.brand||"")+"|"+(view.priceMin||"")+"|"+(view.priceMax||"")+"|"+(view.tag||"")+"|"+(view.f?JSON.stringify(view.f):"")} initialCat={view.cat} search={view.search} initialBrand={view.brand} initialPriceMin={view.priceMin} initialPriceMax={view.priceMax} initialTag={view.tag} filterLabel={view.flabel} initialFilters={view.f} onFilterChange={onCatalogFilter} onOpen={open} onAdd={onAdd} compare={compare} onQuote={openQuote} />}
       {view.name==="detail" && <window.RCDetail robot={DATA.byId[view.id]} onBack={()=>openCategory(DATA.byId[view.id].cat)} onAdd={onAdd} compare={compare} onQuote={openQuote} />}
       {lead && <LeadModal product={lead} onClose={()=>setLead(null)} />}
       {view.name==="page" && <PageView page={PAGES[view.key]} onHome={goHome} />}
