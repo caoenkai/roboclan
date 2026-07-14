@@ -3915,7 +3915,7 @@ return {robots:R,byId:byId,glow:CAT_GLOW,axes:AXES,categories:CATEGORIES,posts:P
     .rc-dt{max-width:var(--container);margin:0 auto;padding:24px 24px 96px;}
     .rc-dt__back{display:inline-flex;align-items:center;gap:7px;font-size:13.5px;color:var(--text-2);cursor:pointer;margin-bottom:22px;}
     .rc-dt__back:hover{color:var(--text-1);}
-    .rc-dt__top{display:grid;grid-template-columns:300px 1fr;gap:28px;align-items:stretch;}
+    .rc-dt__top{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,1fr);gap:28px;align-items:stretch;}
     .rc-dt__hero{position:relative;display:grid;place-items:center;min-height:420px;overflow:hidden;}
     /* 有图时整块 hero 铺成白底（和卡片一致），产品居中充满 */
     .rc-dt__hero:has(.rc-dt__img){background:#ffffff;}
