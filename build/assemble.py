@@ -83,6 +83,24 @@ AXES={
     "Quadrupeds":["Mobility","Payload","Battery","Intelligence"],
 }
 
+# 消费三类总分权重（Kai 2026-07 定：消费三类都有对外单一总分 0–5）。
+# 扫地机沿用既有存储分（吸25/续20/越20/抬15/性20），割草/泳池按下方权重由 5 轴实时加权：
+# 割草：Coverage30/Slope20/Cut15/Runtime15/Value20；泳池：Coverage25/Capacity15/Filtration20/Runtime20/Value20。
+# 缺失轴(None)按可用轴重新归一，避免个别未知规格拉低总分；四舍五入 1 位小数，夹在 0–5。
+SCORE_WEIGHTS={
+    "Robot Lawn Mowers":[0.30,0.20,0.15,0.15,0.20],
+    "Pool Cleaners":[0.25,0.15,0.20,0.20,0.20],
+}
+def _calc_score(cat, rad):
+    w=SCORE_WEIGHTS.get(cat)
+    if not w or not rad: return None
+    num=0.0; den=0.0
+    for i,wt in enumerate(w):
+        if i<len(rad) and rad[i] is not None:
+            num+=wt*rad[i]; den+=wt
+    if den<=0: return None
+    return round(max(0.0,min(5.0,num/den)),1)
+
 # ============================================================
 # 按品类分支的数据处理逻辑。
 # ------------------------------------------------------------
@@ -209,6 +227,13 @@ def build_generic(r):
     # score 可为 None：本站不做「总分」（各轴独立展示），无总分的品类 score 传 null。
     # 前端卡片的分数徽章遇 null 会自动隐藏；详情页 Overall 徽章也已加判空。
     sc=r.get("score")
+    # 割草/泳池：数据未存总分时，按 SCORE_WEIGHTS 由 5 轴实时加权算出（Kai 2026-07：消费三类都有总分）。
+    # B2B 三类不在 SCORE_WEIGHTS 内 → 仍为 None（不做总分）。扫地机走既有存储分，不进这里。
+    if sc is None:
+        sc=_calc_score(cat, r.get("radar"))
+    # B2B 三类（人形/四足/商用）不做对外总分（Kai 2026-07）：即便旧数据里存了总分也清空，保持全站一致。
+    if cat not in ("Robot Vacuums", "Robot Lawn Mowers", "Pool Cleaners"):
+        sc=None
     # tags：数据里给了就用；否则挑得分最高的轴客观生成
     tags=r.get("tags")
     _rv=lambda i: (rad[i] if rad[i] is not None else -1)  # None 轴(N/A)不参与自动挑选

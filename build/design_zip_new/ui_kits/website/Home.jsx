@@ -564,8 +564,18 @@
       c.sort((a, b) => a.n - b.n);
       return c[0];
     };
-    const topScored = DATA.robots.filter((r) => SCORED[r.cat] && r.score != null).sort((a, b) => (b.score || 0) - (a.score || 0)).slice(0, 8);
-    const heroPick = topScored[0] || top[0];
+    // Top rated：三个可评分品类各自按分排序，再轮流取，保证品类多样（否则扫地机分最高会霸榜）
+    const _scoredCats = Object.keys(SCORED);
+    const _byCatScored = {};
+    _scoredCats.forEach((c) => { _byCatScored[c] = DATA.robots.filter((r) => r.cat === c && r.score != null).sort((a, b) => (b.score || 0) - (a.score || 0)); });
+    const topScored = [];
+    for (let i = 0; topScored.length < 8; i++) {
+      let any = false;
+      for (const c of _scoredCats) { if (_byCatScored[c][i]) { topScored.push(_byCatScored[c][i]); any = true; if (topScored.length >= 8) break; } }
+      if (!any) break;
+    }
+    // hero 仍取全站最高分那台（一般是扫地机旗舰）
+    const heroPick = DATA.robots.filter((r) => SCORED[r.cat] && r.score != null).sort((a, b) => (b.score || 0) - (a.score || 0))[0] || top[0];
     const MATRIX = [
       { cat: "Robot Vacuums", note: "scored", chips: [
         { l: "Under $500", f: { max: 500 } }, { l: "$500–1,000", f: { min: 500, max: 1000 } },
