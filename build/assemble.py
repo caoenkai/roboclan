@@ -101,6 +101,25 @@ def _calc_score(cat, rad):
     if den<=0: return None
     return round(max(0.0,min(5.0,num/den)),1)
 
+CONSUMER3=("Robot Vacuums","Robot Lawn Mowers","Pool Cleaners")
+def normalize_record(rec):
+    """把评分/雷达口径应用到「成品记录」上（发布流水线从 Supabase 读的记录不经过 build_generic，
+    必须在这里补：消费三类补总分、B2B 清总分、雷达按 axes 裁掉 B2B 的 Value 轴、清 B2B 规格里的 Value 行）。"""
+    cat=rec.get("cat"); ax=AXES.get(cat)
+    if cat in CONSUMER3:
+        if rec.get("score") is None:
+            rec["score"]=_calc_score(cat, rec.get("radar"))  # 先用完整 radar 算分
+    else:
+        rec["score"]=None
+    if ax and isinstance(rec.get("radar"),list):
+        rec["radar"]=rec["radar"][:len(ax)]                  # 再裁雷达（B2B 去掉第5轴 Value）
+    if cat not in CONSUMER3:
+        for k in ("specs","info","cardSpecs"):
+            v=rec.get(k)
+            if isinstance(v,list):
+                rec[k]=[row for row in v if not (isinstance(row,(list,tuple)) and row and str(row[0]).strip()=="Value")]
+    return rec
+
 # ============================================================
 # 按品类分支的数据处理逻辑。
 # ------------------------------------------------------------
@@ -357,7 +376,8 @@ if DUMP_PRODUCTS:
 # 发布流水线：改用 Supabase 里的成品记录出站（覆盖本地构建结果，Supabase 为唯一真相源）
 if FROM_SUPABASE:
     out = fetch_products_from_supabase()
-    print("已从 Supabase 读取 products：%d 条"%len(out))
+    out = [normalize_record(r) for r in out]   # 成品记录不过 build_generic，这里补评分/雷达口径
+    print("已从 Supabase 读取 products：%d 条（已归一化评分/雷达口径）"%len(out))
 
 DATA_JS = "window.ROBOCLAN_DATA=(function(){\n"
 DATA_JS += 'var CAT_GLOW=%s;\n'%json.dumps(CAT_GLOW)
