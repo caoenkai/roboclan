@@ -74,12 +74,13 @@ CAT_EMOJI={"Humanoids":"\U0001F916","Robot Vacuums":"\U0001F9F9",
 AXES={
     # 人形机 + 商用工业：不放性价比/ROI 轴（Kai 2026-07 定）——这两类厂商多要求"询价"，
     # 性价比由价格反推，会间接泄露定价，故雷达只保留纯能力轴（4 轴）。
-    "Humanoids":["DOF","Payload","Battery","Speed","Value"],
+    # B2B 三类（人形/四足/商用）：询价品、无公开价，去掉 Value 轴（Kai 2026-07 定），只留纯能力轴
+    "Humanoids":["DOF","Payload","Battery","Speed"],
     "Robot Vacuums":["Suction","Runtime","Threshold","Mop-lift","Value"],
     "Robot Lawn Mowers":["Coverage","Slope","Cut width","Runtime","Value"],
     "Pool Cleaners":["Coverage","Capacity","Filtration","Runtime","Value"],
-    "Commercial & Industrial":["Payload","Autonomy","Efficiency","Runtime","Value"],
-    "Quadrupeds":["Mobility","Payload","Battery","Intelligence","Value"],
+    "Commercial & Industrial":["Payload","Autonomy","Efficiency","Runtime"],
+    "Quadrupeds":["Mobility","Payload","Battery","Intelligence"],
 }
 
 # ============================================================
@@ -200,8 +201,10 @@ def build_generic(r):
     """通用逻辑：任何非扫地机品类都走这里。
     优先采用数据文件里已写好的 tags/cardSpecs/info/specs/prices；
     缺省时按该品类的 radar 轴名 + 分数客观兜底，绝不编造评测话术。"""
-    cat=r["cat"]; rad=r["radar"]
+    cat=r["cat"]
     axes=AXES.get(cat, ["A1","A2","A3","A4","A5"])
+    # 雷达按 axes 长度裁剪：B2B 三类去掉了 Value 轴，radar 数据里多出的第 5 位（价格分）不再画出
+    rad=(r["radar"] or [])[:len(axes)]
     pr=r.get("price","See price")
     # score 可为 None：本站不做「总分」（各轴独立展示），无总分的品类 score 传 null。
     # 前端卡片的分数徽章遇 null 会自动隐藏；详情页 Overall 徽章也已加判空。
@@ -744,6 +747,7 @@ function App(){
   }catch(e){} return {name:"home"}; };
   const [view,setView]=React.useState(routeFromPath());
   const viewRef=React.useRef(view); viewRef.current=view;
+  const navDepth=React.useRef(0);  // 站内 pushState 次数：>0 表示有站内上一页，返回键可安全 history.back()（恢复筛选）
   // 目录页筛选变化时，把完整快照写进当前历史条目（不重挂载目录），保证浏览器后退能恢复筛选
   const onCatalogFilter=(f)=>{try{
     var cur=viewRef.current; if(!cur||cur.name!=="catalog") return;
@@ -766,11 +770,13 @@ function App(){
     else if(v.name==="post") u="/guides/"+v.slug+"/";
     else if(v.name==="page") u="/p/"+v.key;
     else if(v.name==="compare") u="/compare";
-    window.history.pushState({rcView:v},"",u);
+    window.history.pushState({rcView:v},"",u);navDepth.current++;
   }catch(e){}window.scrollTo(0,0);};
+  // 返回目录：有站内上一页时走浏览器后退（能恢复品类/品牌/价格筛选）；深链直达详情时回退到该品类目录
+  const goBack=(cat)=>{ if(navDepth.current>0){window.history.back();} else {openCategory(cat);} };
   React.useEffect(()=>{
     try{window.history.replaceState({rcView:routeFromPath()},"");}catch(e){}
-    const onPop=(e)=>{const v=(e.state&&e.state.rcView)||routeFromPath();setView(v);window.scrollTo(0,0);};
+    const onPop=(e)=>{if(navDepth.current>0)navDepth.current--;const v=(e.state&&e.state.rcView)||routeFromPath();setView(v);window.scrollTo(0,0);};
     window.addEventListener("popstate",onPop);
     return ()=>window.removeEventListener("popstate",onPop);
   },[]);
@@ -802,7 +808,7 @@ function App(){
       <Header nav={view.name==="home"?"Home":(view.name==="guides"||view.name==="post")?"Guides":view.name==="news"?"News":"Robots"} compareCount={compare.size} onHome={goHome} onNav={onNav} onCompare={onCompare} onSearch={setQuery} onSearchGo={onSearchGo} query={query} onCategory={openCategory} />
       {view.name==="home" && <window.RCHome onOpenCategory={openCategory} onOpen={open} onAdd={onAdd} compare={compare} onNews={onNews} onQuote={openQuote} onOpenGuides={openGuides} onOpenPost={openPost} onBrowse={openBrowse} />}
       {view.name==="catalog" && <window.RCCatalog key={(view.cat||"")+"|"+(view.search||"")+"|"+(view.brand||"")+"|"+(view.priceMin||"")+"|"+(view.priceMax||"")+"|"+(view.tag||"")+"|"+(view.f?JSON.stringify(view.f):"")} initialCat={view.cat} search={view.search} initialBrand={view.brand} initialPriceMin={view.priceMin} initialPriceMax={view.priceMax} initialTag={view.tag} filterLabel={view.flabel} initialFilters={view.f} onFilterChange={onCatalogFilter} onOpen={open} onAdd={onAdd} compare={compare} onQuote={openQuote} />}
-      {view.name==="detail" && <window.RCDetail robot={DATA.byId[view.id]} onBack={()=>openCategory(DATA.byId[view.id].cat)} onAdd={onAdd} compare={compare} onQuote={openQuote} />}
+      {view.name==="detail" && <window.RCDetail robot={DATA.byId[view.id]} onBack={()=>goBack(DATA.byId[view.id].cat)} onAdd={onAdd} compare={compare} onQuote={openQuote} />}
       {lead && <LeadModal product={lead} onClose={()=>setLead(null)} />}
       {view.name==="page" && <PageView page={PAGES[view.key]} onHome={goHome} />}
       {view.name==="compare" && <CompareView ids={[...compare]} onOpen={open} onBack={goHome} onRemove={onAdd} />}

@@ -17,6 +17,10 @@
     .rc-cat__rowlbl{font-family:var(--font-mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--text-3);width:60px;}
     .rc-cat__bar{display:flex;align-items:center;gap:12px;margin:4px 0 20px;font-size:13px;color:var(--text-3);}
     .rc-cat__reset{color:var(--accent-ink);cursor:pointer;font-weight:600;}
+    .rc-cat__pill{display:inline-flex;align-items:center;gap:6px;padding:4px 11px;border-radius:999px;background:var(--surface-2);border:1px solid var(--line);color:var(--text-1);font-size:12.5px;cursor:pointer;}
+    .rc-cat__pill b{color:var(--text-3);font-weight:700;font-size:13px;line-height:1;}
+    .rc-cat__pill:hover{border-color:var(--accent-ink);}
+    .rc-cat__pill:hover b{color:var(--accent-ink);}
     .rc-cat__grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(252px,1fr));gap:18px;}
     .rc-cat__empty{padding:50px;color:var(--text-3);text-align:center;grid-column:1/-1;}
     `;
@@ -78,6 +82,10 @@
       inRange(r.price) && tagMatch(r) &&
       (!q || (r.name + " " + r.brand + " " + r.cat).toLowerCase().includes(q)));
     const active = cats.size + brands.size + price.size > 0 || pRange || uTag;
+    // 首页矩阵带来的价格区间/用途标签，做成可单独移除的标签（否则用户删不掉，切品类还赖着）
+    const _fmt = (n) => "$" + Number(n).toLocaleString();
+    const pRangeLabel = pRange ? ((filterLabel && /\$/.test(filterLabel)) ? filterLabel
+      : ((pRange.min != null ? _fmt(pRange.min) : "$0") + "–" + (pRange.max != null ? _fmt(pRange.max) : "+"))) : "";
 
     return (
       <div className="rc-cat">
@@ -107,6 +115,8 @@
         </div>
         <div className="rc-cat__bar">
           <span>{list.length} robot{list.length !== 1 ? "s" : ""}</span>
+          {pRange && <span className="rc-cat__pill" onClick={() => setPRange(null)} title="Remove price filter">{pRangeLabel} <b>✕</b></span>}
+          {uTag && <span className="rc-cat__pill" onClick={() => setUTag(null)} title="Remove filter">{uTag} <b>✕</b></span>}
           {active && <span className="rc-cat__reset" onClick={() => { setCats(new Set()); setBrands(new Set()); setPrice(new Set()); setPRange(null); setUTag(null); }}>✕ Reset filters</span>}
         </div>
         <div className="rc-cat__grid">
