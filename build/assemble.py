@@ -1033,6 +1033,16 @@ if _out_arg:
         if _pst.get("updated_at"): _ld["dateModified"]=str(_pst.get("updated_at"))
         _phead=_phead+'\n<script type="application/ld+json">'+json.dumps(_ld,ensure_ascii=False)+'</script>'
         _ppage=HTML.replace("__SEOHEAD__", _phead)
+        # SSR：把文章标题+正文写进静态 HTML（放进 #root，React createRoot 挂载时会清空并接管，用户端不会重复）。
+        # 目的：Google 无需执行 JS 即可抓到全文，收录更快更稳；SSR 文本与 JS 渲染内容一致，不构成 cloaking。
+        _esc=lambda s: str(s or "").replace("&","&amp;").replace("<","&lt;").replace(">","&gt;")
+        _ssr=('<main class="rc-ssr" style="max-width:760px;margin:0 auto;padding:40px 24px;line-height:1.6">'
+              '<nav><a href="/">Roboclan</a> &rsaquo; <a href="/guides/">Guides</a></nav>'
+              '<h1>'+_esc(_pst.get("title") or "Guide")+'</h1>'
+              '<p>By '+_esc(_pst.get("author") or "Roboclan")+'</p>'
+              + (_pst.get("body") or "")
+              + '</main>')
+        _ppage=_ppage.replace('<div id="root"></div>','<div id="root">'+_ssr+'</div>')
         _pdir=os.path.join(_base,"guides",_ps); os.makedirs(_pdir,exist_ok=True)
         open(os.path.join(_pdir,"index.html"),"w",encoding="utf-8").write(_ppage)
         _urls.append(_pc)
