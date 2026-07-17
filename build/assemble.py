@@ -997,6 +997,7 @@ print("机器人数:",len(out),"前3:",[(x['name'],x['score']) for x in out[:3]]
 # 部署构建（有 --out）时：为每个产品生成独立 URL 页 /robots/<slug>/ + sitemap.xml + robots.txt
 if _out_arg:
     _base=os.path.dirname(op); _urls=[SITE+"/"]
+    _esc=lambda s: str(s if s is not None else "").replace("&","&amp;").replace("<","&lt;").replace(">","&gt;")
     for r in out:
         slug=r["id"]; canon=SITE+"/robots/"+slug+"/"
         head=_seo_head(r["name"]+" — Specs, Ratings & Price | Roboclan", _prod_desc(r), canon, _abs_img(r.get("image")), "product")
@@ -1014,6 +1015,18 @@ if _out_arg:
             _pld["offers"]={"@type":"Offer","price":_pnum,"priceCurrency":"USD","availability":"https://schema.org/InStock","url":canon}
         head=head+'\n<script type="application/ld+json">'+json.dumps(_pld,ensure_ascii=False)+'</script>'
         page=HTML.replace("__SEOHEAD__", head)
+        # SSR：产品页摘要写进静态 HTML（#root，React 挂载时接管），让 Google 无需 JS 就读到名称/评分/规格/价格
+        _specrows="".join('<li>'+_esc(x[0])+': '+_esc(x[1])+'</li>' for x in (r.get("specs") or []) if isinstance(x,(list,tuple)) and len(x)>=2)
+        _pssr=('<main class="rc-ssr" style="max-width:820px;margin:0 auto;padding:40px 24px;line-height:1.6">'
+               '<nav><a href="/">Roboclan</a> &rsaquo; <a href="/robots">Robots</a></nav>'
+               '<h1>'+_esc(r["name"])+'</h1>'
+               '<p>'+_esc(r.get("brand") or "")+' &middot; '+_esc(r.get("cat") or "")
+               + ((' &middot; Roboclan Score '+str(_sc)+'/5') if _sc is not None else '')+'</p>'
+               '<p>'+_esc(_prod_desc(r))+'</p>'
+               + (('<p>Price: '+_esc(r.get("price"))+'</p>') if r.get("price") else '')
+               + (('<ul>'+_specrows+'</ul>') if _specrows else '')
+               + '</main>')
+        page=page.replace('<div id="root"></div>','<div id="root">'+_pssr+'</div>')
         _pd=os.path.join(_base,"robots",slug); os.makedirs(_pd,exist_ok=True)
         open(os.path.join(_pd,"index.html"),"w",encoding="utf-8").write(page)
         _urls.append(canon)
