@@ -1030,6 +1030,25 @@ if _out_arg:
         _pd=os.path.join(_base,"robots",slug); os.makedirs(_pd,exist_ok=True)
         open(os.path.join(_pd,"index.html"),"w",encoding="utf-8").write(page)
         _urls.append(canon)
+    # /robots/ 目录页：此前没有静态文件，而 vercel 回退规则又排除了 robots/ 前缀 → 一直 404（GSC 报错）。
+    # 这里生成它，并在 SSR 里静态列出全部产品链接，给 Google 一个能爬到所有产品页的入口（改善"已发现-未收录"）。
+    _rhead=_seo_head("All Robots — Compare Every Robot by Specs & Score | Roboclan",
+                     "Browse and compare every robot on Roboclan: robot vacuums, robotic lawn mowers, pool cleaners, humanoids, quadrupeds and commercial robots, each scored on the same framework from official specifications.",
+                     SITE+"/robots/", SITE+"/apple-touch-icon.png")
+    _bycat={}
+    for _x in out: _bycat.setdefault(_x.get("cat") or "Robots",[]).append(_x)
+    _secs="".join('<h2>'+_esc(_c)+'</h2><ul>'
+                  + "".join('<li><a href="/robots/'+_esc(_i["id"])+'/">'+_esc(_i["name"])+'</a></li>' for _i in _items)
+                  + '</ul>' for _c,_items in _bycat.items())
+    _rssr=('<main class="rc-ssr" style="max-width:900px;margin:0 auto;padding:40px 24px;line-height:1.6">'
+           '<nav><a href="/">Roboclan</a> &rsaquo; Robots</nav>'
+           '<h1>All Robots</h1>'
+           '<p>Every robot on Roboclan, scored on the same framework from official specifications.</p>'
+           + _secs + '</main>')
+    _rpage=HTML.replace("__SEOHEAD__",_rhead).replace('<div id="root"></div>','<div id="root">'+_rssr+'</div>')
+    _rdir=os.path.join(_base,"robots"); os.makedirs(_rdir,exist_ok=True)
+    open(os.path.join(_rdir,"index.html"),"w",encoding="utf-8").write(_rpage)
+    _urls.insert(1, SITE+"/robots/")
     # 导购/博客文章独立页 /guides/<slug>/（SEO），+ /guides 列表页
     for _pst in POSTS:
         _ps=_pst.get("id");
