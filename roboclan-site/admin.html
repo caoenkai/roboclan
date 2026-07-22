@@ -186,6 +186,9 @@ textarea.pinput{height:auto;padding:10px 12px;line-height:1.5;resize:vertical;}
 
     <!-- TRAFFIC TAB -->
     <div id="tab-traffic" class="hide">
+      <div style="display:flex;justify-content:flex-end;margin:-4px 0 12px">
+        <button id="trafficRefresh" type="button" style="cursor:pointer;font:inherit;padding:6px 14px;border-radius:8px;border:1px solid var(--line,#ddd);background:#fff">&#8635; Refresh</button>
+      </div>
       <div class="cards">
         <div class="card"><div class="k">Pageviews</div><div class="v" id="t-pv">–</div></div>
         <div class="card"><div class="k">Product views</div><div class="v plain" id="t-views">–</div></div>
@@ -418,6 +421,7 @@ function showApp(session){
   $('loginView').classList.add('hide'); $('appView').classList.remove('hide');
   $('who').textContent = session.user.email;
   loadLeads(); loadTraffic();
+  try{ const k=localStorage.getItem('rc_admin_tab'); if(k && k!=='leads') activateTab(k); }catch(e){}   // 恢复上次所在标签
 }
 $('loginForm').addEventListener('submit', async (e)=>{
   e.preventDefault(); $('loginErr').textContent=''; $('loginBtn').disabled=true; $('loginBtn').textContent='Signing in…';
@@ -429,9 +433,8 @@ $('loginForm').addEventListener('submit', async (e)=>{
 $('signout').addEventListener('click', async ()=>{ await sb.auth.signOut(); showLogin(); });
 
 // ---------- tabs ----------
-document.querySelectorAll('.tab').forEach(t=>t.addEventListener('click',()=>{
-  document.querySelectorAll('.tab').forEach(x=>x.classList.remove('on')); t.classList.add('on');
-  const k=t.dataset.tab;
+function activateTab(k){
+  document.querySelectorAll('.tab').forEach(x=>x.classList.toggle('on', x.dataset.tab===k));
   $('tab-leads').classList.toggle('hide', k!=='leads');
   $('tab-traffic').classList.toggle('hide', k!=='traffic');
   $('tab-products').classList.toggle('hide', k!=='products');
@@ -440,7 +443,14 @@ document.querySelectorAll('.tab').forEach(t=>t.addEventListener('click',()=>{
   if(k==='products' && !prodLoaded) loadProducts();
   if(k==='posts' && !postsLoaded) loadPosts();
   if(k==='news' && !newsLoaded) loadNews();
-}));
+  try{ localStorage.setItem('rc_admin_tab', k); }catch(e){}   // 记住当前标签，刷新/重开后回到这里
+}
+document.querySelectorAll('.tab').forEach(t=>t.addEventListener('click',()=>activateTab(t.dataset.tab)));
+// Traffic 手动刷新（clicks 表是实时累积的，但看板需重拉才更新）
+$('trafficRefresh') && $('trafficRefresh').addEventListener('click',()=>{
+  const b=$('trafficRefresh'); b.disabled=true; const o=b.innerHTML; b.textContent='Refreshing…';
+  Promise.resolve(loadTraffic()).finally(()=>{ b.disabled=false; b.innerHTML=o; });
+});
 
 // ---------- leads ----------
 const STATUSES=['new','contacted','qualified','closed','spam'];
