@@ -120,6 +120,12 @@ def normalize_record(rec):
                 rec[k]=[row for row in v if not (isinstance(row,(list,tuple)) and row and str(row[0]).strip()=="Value")]
     return rec
 
+# 品牌页数据（各家公司故事/里程碑/旗舰）——顶部加载，供 DATA_JS 输出品牌列表 + 后面生成 /brands/ 页共用
+try:
+    BRANDS_DATA=json.load(open(os.path.join(HERE,"brands_data.json"),encoding="utf-8"))
+except Exception as _e0:
+    BRANDS_DATA={}; print("brands_data.json 未加载:",_e0)
+
 # ============================================================
 # 按品类分支的数据处理逻辑。
 # ------------------------------------------------------------
@@ -395,7 +401,10 @@ DATA_JS += 'var byId={};R.forEach(function(x){byId[x.id]=x;});\n'
 POSTS = fetch_posts()
 DATA_JS += 'var POSTS=%s;\n'%json.dumps(POSTS, ensure_ascii=False)
 DATA_JS += 'var postById={};POSTS.forEach(function(p){postById[p.id]=p;});\n'
-DATA_JS += 'return {robots:R,byId:byId,glow:CAT_GLOW,axes:AXES,categories:CATEGORIES,posts:POSTS,postById:postById};\n})();'
+# 品牌列表（供 Header 的 Brands 下拉）：只列在数据里真有产品的品牌
+_brandlist=[{"slug":_s,"name":_b.get("display",_s),"category":_b.get("category","")} for _s,_b in BRANDS_DATA.items() if any(r.get("brand")==_b.get("match",_b.get("display")) for r in out)]
+DATA_JS += 'var RC_BRANDS=%s;\n'%json.dumps(_brandlist,ensure_ascii=False)
+DATA_JS += 'return {robots:R,byId:byId,glow:CAT_GLOW,axes:AXES,categories:CATEGORIES,posts:POSTS,postById:postById,brands:RC_BRANDS};\n})();'
 
 # ---- CSS：内联所有 token + styles.css(去掉@import) ----
 css=""
@@ -1083,13 +1092,150 @@ if _out_arg:
         _gdir=os.path.join(_base,"guides"); os.makedirs(_gdir,exist_ok=True)
         open(os.path.join(_gdir,"index.html"),"w",encoding="utf-8").write(HTML.replace("__SEOHEAD__",_ghead))
         _urls.insert(1, SITE+"/guides/")
+    # ============== 品牌页 /brands/<slug>/（编辑风 + motion 的独立静态页）==============
+    # 战略无人区：人形/四足/商用品牌页几乎无人做。常青枢纽 → 内链灌权重 → B2B 询价变现。
+    # 是独立静态页（不加载 React 应用），内容直接在 <body> → Google 无需 JS 即可完整抓取。
+    _BRANDS=BRANDS_DATA
+    # 把 hero 透明旗舰图（brand_flagships/）拷进站点输出 /brands/flagships/（不碰 Supabase 产品图，保证全站产品卡背景一致）
+    _fsrc=os.path.join(HERE,"brand_flagships")
+    if os.path.isdir(_fsrc):
+        _fdst=os.path.join(_base,"brands","flagships"); os.makedirs(_fdst,exist_ok=True)
+        import shutil as _shutil
+        for _fn in os.listdir(_fsrc):
+            if _fn.lower().endswith((".webp",".png",".jpg",".jpeg")):
+                _shutil.copy(os.path.join(_fsrc,_fn), os.path.join(_fdst,_fn))
+    _BRAND_CSS=open(os.path.join(HERE,"brand_page.css"),encoding="utf-8").read() if os.path.exists(os.path.join(HERE,"brand_page.css")) else ""
+    def _brand_marquee(_names):
+        _row="".join('<span'+(' class="hl"' if _i%3==0 else '')+'>'+_esc(_n)+'</span>' for _i,_n in enumerate(_names))
+        return '<div class="bmarq"><div class="brow">'+_row+_row+'</div></div>'
+    _brand_urls=[]
+    for _slug,_b in _BRANDS.items():
+        _disp=_b.get("display",_slug); _mt=_b.get("match",_disp)
+        _prod=[r for r in out if r.get("brand")==_mt]
+        if not _prod: continue
+        _prod=sorted(_prod,key=lambda r:(-(r.get("score") or 0), r.get("name","")))
+        _bycat={}
+        for r in _prod: _bycat.setdefault(r.get("cat") or "Robots",[]).append(r)
+        def _gm(p,_disp=_disp,_mt=_mt):
+            t=(p.get("title") or "").lower(); c=(p.get("category") or "")
+            return (_disp.lower() in t) or (_mt.lower() in t) or (c==_disp) or (c==_mt)
+        _gd=[p for p in POSTS if p.get("id") and _gm(p)][:3]
+        _canon=SITE+"/brands/"+_slug+"/"
+        _desc=(_disp+" — company profile, history and every robot we track, scored on the same framework. "+(_b.get("sub") or ""))[:290]
+        _head=_seo_head(_disp+" — Company, Robots & History | Roboclan",_desc,_canon,SITE+"/apple-touch-icon.png","website")
+        _head+='\n<script type="application/ld+json">'+json.dumps({"@context":"https://schema.org","@type":"Organization","name":_disp,"url":_canon},ensure_ascii=False)+'</script>'
+        # stats
+        _yr=""; _mo=re.search(r"(\d{4})",_b.get("founded",""))
+        if _mo: _yr=_mo.group(1)
+        _stats='<div class="stat rv"><div class="n" data-count="'+_yr+'" data-plain="1">'+_yr+'</div><div class="k">Founded</div></div>'
+        _stats+='<div class="stat rv d1"><div class="n" data-count="'+str(len(_prod))+'">0</div><div class="k">Models tracked on Roboclan</div></div>'
+        for _i,_s in enumerate((_b.get("extra_stats") or [])[:2]):
+            _pl=' data-plain="1"' if _s.get("plain") else ''
+            _init=str(_s.get("count")) if _s.get("plain") else "0"
+            _stats+=('<div class="stat rv d'+str(_i+2)+'"><div class="n" data-count="'+str(_s.get("count"))+'" data-prefix="'+_esc(_s.get("prefix",""))+'" data-suffix="'+_esc(_s.get("suffix",""))+'"'+_pl+'>'+_init+'</div><div class="k">'+_esc(_s.get("k",""))+'</div></div>')
+        # story
+        _story="".join('<p>'+_esc(p)+'</p>' for p in (_b.get("story") or []))
+        # milestones
+        _mil="".join('<div class="ev rv d'+str(min(_i,4))+'"><div class="yr">'+_esc(m.get("yr",""))+'</div><h3>'+_esc(m.get("h",""))+'</h3><p>'+_esc(m.get("p",""))+'</p></div>' for _i,m in enumerate(_b.get("milestones") or []))
+        # marquee names (strip brand prefix)
+        _mn=[]
+        for r in _prod:
+            _n=r.get("name","")
+            for _px in (_disp,_mt,"Unitree","DEEP Robotics"):
+                if _n.startswith(_px+" "): _n=_n[len(_px)+1:]
+            _mn.append(_n)
+        _marq=_brand_marquee(_mn[:12])
+        # product grid grouped by category
+        _grid=""
+        for _cat,_items in _bycat.items():
+            _grid+='<div class="grp rv">'+_esc(_cat)+'</div><div class="pgrid">'
+            for _i,r in enumerate(_items):
+                _sc=r.get("score"); _badge=(' &middot; '+str(_sc)+'/5') if _sc is not None else ''
+                _grid+=('<a class="pcard rv d'+str(_i%3)+'" href="/robots/'+_esc(r.get("id"))+'/"><span class="sheen"></span>'
+                        '<div class="tag">'+_esc(_cat)+_badge+'</div><div class="nm">'+_esc(r.get("name"))+'</div>'
+                        '<div class="arw">View specs &amp; score &rarr;</div></a>')
+            _grid+='</div>'
+        # latest guides (optional)
+        _gsec=""
+        if _gd:
+            _cards="".join('<a class="gcard rv d'+str(_i%3)+'" href="/guides/'+_esc(p.get("id"))+'/"><div class="tag">'+_esc(p.get("category") or "Guide")+'</div><div class="gh">'+_esc(p.get("title"))+'</div><div class="arw">Read &rarr;</div></a>' for _i,p in enumerate(_gd))
+            _gsec=('<section class="blk"><div class="wrap"><div class="rv"><div class="kicker">Latest</div><h2>'+_esc(_disp)+' on Roboclan</h2></div><div class="ggrid">'+_cards+'</div></div></section>')
+        _cta_guide=('/guides/'+_gd[0].get("id")+'/') if _gd else '/robots/'
+        _cta_label=('Read: '+_esc(_gd[0].get("title"))) if _gd else 'Browse all robots'
+        # 旗舰产品大图（hero 右侧，带浮动动效）。
+        # 优先用 brands_data 里的 hero_img（Kai 提供的透明无底图，放 /brands/flagships/ 下）；否则用库里产品图（前端会实时抠白）。
+        _flag=next((r for r in _prod if r.get("id")==_b.get("flagship")), None)
+        if _b.get("hero_img"):
+            _flagimg=SITE+_b["hero_img"]
+        else:
+            _flagimg=_abs_img(_flag.get("image")) if (_flag and _flag.get("image")) else ""
+        _flagname=_esc(_flag.get("name")) if _flag else _esc(_disp)
+        # 组装整页
+        _page=('<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">'
+          +_head+
+          '<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>'
+          '<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">'
+          '<style>'+_BRAND_CSS+'</style>'
+          '<noscript><style>.rv{opacity:1!important;transform:none!important}.load{opacity:1!important;transform:none!important}.tl .spine{transform:scaleY(1)!important}</style></noscript>'
+          '</head><body>'
+          '<nav class="bnav"><div class="wrap"><a class="bbrand" href="/"><svg viewBox="0 0 48 48" fill="none"><circle cx="24" cy="24" r="21" stroke="#5B6CFF" stroke-width="2"/><path d="M18 32V16h8a5 5 0 010 10h-4l6 6M18 26h6" stroke="#16160F" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>Roboclan</a>'
+          '<a class="bpill" href="#lineup">See the lineup &rarr;</a></div></nav>'
+          '<header class="bhero"><div class="wrap">'
+          '<div class="bhero__text">'
+          '<div class="eyebrow load"><span class="d"></span><span class="bmono">Brand &middot; '+_esc(_b.get("category",""))+'</span></div>'
+          '<h1 class="bbig load l2">'+_esc(_disp)+'.<br>'+_esc(_b.get("hero_l1",""))+'<br><em>'+_esc(_b.get("hero_em",""))+'</em></h1>'
+          '<p class="bsub load l3">'+_esc(_b.get("sub",""))+'</p>'
+          '<div class="bmeta load l4"><div class="it"><span class="bmono">Founded</span><br><b>'+_esc(_b.get("founded",""))+'</b></div>'
+          '<div class="it"><span class="bmono">Founder</span><br><b>'+_esc(_b.get("founder",""))+'</b></div>'
+          '<div class="it"><span class="bmono">On Roboclan</span><br><b>'+str(len(_prod))+' models, scored on official specs</b></div></div>'
+          '</div>'
+          '<div class="bhero__viz"><div class="orbit"><span></span><span></span><span></span><span class="dot"></span></div><div class="glow"></div>'
+          +('<img class="bhero__img" src="'+_flagimg+'" alt="'+_flagname+'" width="520" height="520" loading="eager" crossorigin="anonymous">' if _flagimg else '')+
+          '</div>'
+          '</div></header>'
+          '<div class="bstats"><div class="wrap"><div class="sgrid">'+_stats+'</div></div></div>'
+          '<section class="blk"><div class="wrap"><div class="rv"><div class="kicker">The Story</div><h2>How '+_esc(_disp)+' got here.</h2></div>'
+          '<div class="two"><div class="rv d1">'+_story+'</div><div class="rv d2"><div class="pull">'+_esc(_b.get("pull",""))+'</div></div></div></div></section>'
+          +('<section class="blk" style="padding-top:0"><div class="wrap"><div class="rv"><div class="kicker">Milestones</div><h2>The story in dates.</h2></div><div class="tl">'+'<div class="spine"></div>'+_mil+'</div></div></section>' if _mil else '')
+          +_marq+
+          '<section class="blk" id="lineup"><div class="wrap"><div class="rv"><div class="kicker">The Lineup</div><h2>Every '+_esc(_disp)+' robot, scored the same way.</h2>'
+          '<p class="blead">We rate each model on the same capability framework from official specifications &mdash; so you can compare them on the same terms.</p></div>'+_grid+'</div></section>'
+          +_gsec+
+          '<section class="blk" style="padding-top:0"><div class="wrap"><div class="bcta rv"><div class="g"></div><h2>See how '+_esc(_disp)+' stacks up.</h2>'
+          '<p>Compare '+_esc(_disp)+"'s robots against every rival we track &mdash; or request a quote on a specific model.</p>"
+          '<div class="btns"><a class="b1" href="'+_cta_guide+'">'+_cta_label+'</a><a class="b2" href="/robots/">Browse all robots</a></div></div></div></section>'
+          '<footer class="bfoot"><div class="wrap">Company facts compiled from public sources. Roboclan rates every robot on the same category framework using official manufacturer specifications, with no paid placements. Humanoid, quadruped and commercial robots are sold by quote. &middot; <a href="/">Roboclan</a></div></footer>'
+          '<script>'
+          'var io=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){e.target.classList.add("in");io.unobserve(e.target);}});},{threshold:.15});'
+          'document.querySelectorAll(".rv,.tl").forEach(function(el){io.observe(el);});'
+          'function ac(el){var end=+el.dataset.count,pre=el.dataset.prefix||"",suf=el.dataset.suffix||"";if(el.dataset.plain){el.textContent=pre+end+suf;return;}var t0=null;function s(t){if(!t0)t0=t;var p=Math.min((t-t0)/1400,1),e=1-Math.pow(1-p,3);el.textContent=pre+Math.round(end*e)+suf;if(p<1)requestAnimationFrame(s);}requestAnimationFrame(s);}'
+          'var io2=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){ac(e.target);io2.unobserve(e.target);}});},{threshold:.6});'
+          'document.querySelectorAll("[data-count]").forEach(function(el){io2.observe(el);});'
+          # 客户端抠白：把 hero 旗舰图的白底实时去掉（边缘 flood-fill，保留机器人自身的白）→ 浮在页面背景上
+          '(function(){var img=document.querySelector(".bhero__img");if(!img)return;'
+          'function proc(){try{var W=img.naturalWidth,H=img.naturalHeight;if(!W)return;var c=document.createElement("canvas");c.width=W;c.height=H;var x=c.getContext("2d");x.drawImage(img,0,0);var id=x.getImageData(0,0,W,H),d=id.data,thr=236;'
+          # skip if already transparent
+          'if(d[3]<250||d[(W-1)*4+3]<250||d[(H-1)*W*4+3]<250){return;}'
+          'function near(i){return d[i]>=thr&&d[i+1]>=thr&&d[i+2]>=thr;}'
+          'var seen=new Uint8Array(W*H),st=[],px,py,i,p;'
+          'for(px=0;px<W;px++){st.push(px);st.push((H-1)*W+px);}for(py=0;py<H;py++){st.push(py*W);st.push(py*W+W-1);}'
+          'while(st.length){p=st.pop();if(seen[p])continue;seen[p]=1;i=p*4;if(!near(i))continue;d[i+3]=0;px=p%W;py=(p/W)|0;if(px>0)st.push(p-1);if(px<W-1)st.push(p+1);if(py>0)st.push(p-W);if(py<H-1)st.push(p+W);}'
+          'x.putImageData(id,0,0);img.removeAttribute("crossorigin");img.src=c.toDataURL("image/png");}catch(e){}}'
+          'if(img.complete&&img.naturalWidth)proc();else img.addEventListener("load",proc,{once:true});})();'
+          '</script></body></html>')
+        _bdir=os.path.join(_base,"brands",_slug); os.makedirs(_bdir,exist_ok=True)
+        open(os.path.join(_bdir,"index.html"),"w",encoding="utf-8").write(_page)
+        _urls.append(_canon); _brand_urls.append((_slug,_disp,len(_prod),_b.get("category","")))
+    # 不生成 /brands/ 索引页（Kai 定：Header 的 Brands 下拉直接进各品牌页）。品牌页各自已进 sitemap，不会成孤儿页。
+    if _brand_urls:
+        print("生成品牌页:",len(_brand_urls),"个（无索引，走 Header 下拉）")
     _sm='<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
     for _u in _urls: _sm+="<url><loc>"+_u+"</loc></url>\n"
     _sm+="</urlset>\n"
     open(os.path.join(_base,"sitemap.xml"),"w",encoding="utf-8").write(_sm)
     open(os.path.join(_base,"robots.txt"),"w",encoding="utf-8").write("User-agent: *\nAllow: /\nSitemap: "+SITE+"/sitemap.xml\n")
     # SPA 回退：未知路由（非 /robots/、/guides/ 静态页、非带扩展名的文件）交给 index.html 客户端路由。
-    _vj = json.dumps({"rewrites":[{"source":"/((?!robots/|guides/|.*\\.).*)","destination":"/index.html"}]}, indent=2)
+    _vj = json.dumps({"rewrites":[{"source":"/((?!robots/|guides/|brands/|.*\\.).*)","destination":"/index.html"}]}, indent=2)
     open(os.path.join(_base,"vercel.json"),"w",encoding="utf-8").write(_vj+"\n")
     print("生成产品页:",len(out)," 文章页:",len(POSTS)," + sitemap + robots.txt + vercel.json")
 

@@ -13,7 +13,9 @@
       display:flex;align-items:center;gap:20px;}
     .rc-hd__logo{display:flex;align-items:center;gap:11px;cursor:pointer;}
     .rc-hd__word{font-family:var(--font-display);font-weight:600;font-size:20px;letter-spacing:-.03em;color:var(--text-1);}
-    .rc-hd__nav{display:flex;gap:24px;margin-left:8px;}
+    .rc-hd__nav{display:flex;gap:24px;margin-left:8px;align-items:center;}
+    .rc-hd__bwrap{display:inline-flex;align-items:center;}
+    .rc-hd__bwrap>a .rc-hd__chev{font-size:10px;opacity:.7;}
     .rc-hd__nav a{font-size:14px;font-weight:500;color:var(--text-2);cursor:pointer;position:relative;padding:6px 0;transition:color var(--dur-fast);}
     .rc-hd__nav a:hover,.rc-hd__nav a.on{color:var(--text-1);}
     .rc-hd__nav a.on::after{content:"";position:absolute;left:0;right:0;bottom:0;height:2px;border-radius:2px;background:var(--grad-accent);}
@@ -73,8 +75,17 @@
     const DATA = window.ROBOCLAN_DATA || {};
     const cats = DATA.categories || [];
     const glow = DATA.glow || {};
+    const brands = DATA.brands || [];
     const [catOpen, setCatOpen] = React.useState(false);
+    const [brandOpen, setBrandOpen] = React.useState(false);
     const catsRef = React.useRef(null);
+    const brandsRef = React.useRef(null);
+    React.useEffect(() => {
+      if (!brandOpen) return;
+      const onDoc = (e) => { if (brandsRef.current && !brandsRef.current.contains(e.target)) setBrandOpen(false); };
+      document.addEventListener("mousedown", onDoc);
+      return () => document.removeEventListener("mousedown", onDoc);
+    }, [brandOpen]);
     // 点下拉外面任意处就关闭（之前用 onMouseLeave，移到菜单项时会误关，导致点不中）
     React.useEffect(() => {
       if (!catOpen) return;
@@ -91,6 +102,20 @@
           </div>
           <nav className="rc-hd__nav">
             {items.map((it) => <a key={it} className={it === nav ? "on" : ""} onClick={() => onNav ? onNav(it) : onHome()}>{it}</a>)}
+            {brands.length > 0 && (
+              <div className="rc-hd__bwrap" ref={brandsRef} style={{ position: "relative" }}>
+                <a className={brandOpen ? "on" : ""} onClick={() => setBrandOpen((o) => !o)} aria-haspopup="true" aria-expanded={brandOpen}>Brands <span className="rc-hd__chev">▾</span></a>
+                {brandOpen && (
+                  <div className="rc-hd__catsmenu" style={{ top: "34px", left: 0, right: "auto" }}>
+                    {brands.map((b) => (
+                      <a key={b.slug} href={"/brands/" + b.slug + "/"} onClick={() => setBrandOpen(false)}>
+                        <span className="rc-hd__catdot" style={{ background: "var(--accent-ink)" }} />{b.name}
+                      </a>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
           </nav>
           <div className="rc-hd__search">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ cursor: "pointer" }} onClick={go}><circle cx="11" cy="11" r="7" /><path d="M21 21l-4-4" /></svg>

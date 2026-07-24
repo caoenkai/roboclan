@@ -1,0 +1,365 @@
+{
+  "unitree": {
+    "display": "Unitree",
+    "match": "Unitree",
+    "flagship": "unitree-g1",
+    "category": "Humanoids & Quadrupeds",
+    "hero_l1": "Legged robots,",
+    "hero_em": "made affordable.",
+    "sub": "The Hangzhou company that turned four-legged and humanoid robots from six-figure lab equipment into machines developers, universities and businesses can actually buy.",
+    "founded": "2016 · Hangzhou, China",
+    "founder": "Wang Xingxing (CEO / CTO)",
+    "story": [
+      "Unitree began with a robot dog. While a postgraduate student at Shanghai University, Wang Xingxing built a low-cost quadruped called XDog for his thesis — a project that went viral and drew the attention of buyers and investors alike.",
+      "In 2016 he founded Hangzhou Unitree Technology to pursue a simple, contrarian idea: that legged robots didn't have to cost as much as a house. Where rivals sold research quadrupeds for six figures, Unitree engineered its own motors and actuators to bring the price down by an order of magnitude.",
+      "That cost advantage reshaped the market. Unitree's quadrupeds became the default choice for developers and universities worldwide, and in 2024 the company carried the same playbook into humanoids — launching a full-size humanoid at a price that undercut everyone."
+    ],
+    "pull": "\"Legged robots didn't have to cost as much as a house.\" That contrarian bet became Unitree's entire strategy — and the reason its machines are in labs on every continent.",
+    "extra_stats": [
+      {
+        "count": 60,
+        "suffix": "%+",
+        "k": "Reported global quadruped share"
+      },
+      {
+        "count": 16,
+        "prefix": "$",
+        "suffix": "k",
+        "k": "Debut price of its first humanoid"
+      }
+    ],
+    "milestones": [
+      {
+        "yr": "2016",
+        "h": "Unitree is founded",
+        "p": "Wang Xingxing turns his viral XDog thesis project into Hangzhou Unitree Technology, betting on affordable legged robots."
+      },
+      {
+        "yr": "2017",
+        "h": "Laikago ships",
+        "p": "Named after Laika the space dog, Laikago is one of the first low-cost quadrupeds aimed squarely at developers rather than defense labs."
+      },
+      {
+        "yr": "2021",
+        "h": "Go1 goes mainstream",
+        "p": "A Spot-class quadruped at a fraction of the price puts capable four-legged robots within reach of hobbyists, classrooms and startups."
+      },
+      {
+        "yr": "2023",
+        "h": "Industrial-grade range",
+        "p": "The B-series broadens the range with payload-carrying, ruggedized quadrupeds built for inspection and industrial work."
+      },
+      {
+        "yr": "2024",
+        "h": "Into humanoids",
+        "p": "Unitree enters the humanoid race, with the G1 debuting at around $16,000 — far below the rest of the field and true to the company's cost-first DNA."
+      },
+      {
+        "yr": "2025–26",
+        "h": "Dexterity & scale",
+        "p": "The H2 humanoid family and an expanding G-series push toward real-world manipulation, tactile hands and higher-payload arms."
+      }
+    ],
+    "hero_img": "/brands/flagships/unitree.webp"
+  },
+  "pudu": {
+    "display": "PUDU",
+    "match": "PUDU",
+    "flagship": "pudu-bellabot",
+    "category": "Commercial & Service Robots",
+    "hero_l1": "Service robots,",
+    "hero_em": "already at work.",
+    "sub": "The Shenzhen company whose delivery, cleaning and service robots are already running the floor in restaurants, hotels and hospitals across more than 60 countries.",
+    "founded": "2016 · Shenzhen, China",
+    "founder": "Felix Zhang (Founder / CEO)",
+    "story": [
+      "Founded in 2016 by Felix Zhang, an alumnus of the Hong Kong University of Science and Technology, PUDU set out to put service robots to work in the places people actually eat, stay and heal — not in labs, but on restaurant floors and in hotel corridors.",
+      "Its cat-faced delivery robots became a familiar sight in dining rooms worldwide, and the lineup grew from food running into commercial cleaning, industrial handling and, more recently, embodied-intelligence and humanoid platforms.",
+      "Today PUDU is one of the world's largest commercial service robotics companies, with a fleet deployed across more than 60 countries and a reported share of roughly a quarter of the global market."
+    ],
+    "pull": "PUDU's bet was never on a demo — it was on the floor. Its robots earn their keep in real restaurants, hotels and hospitals, day after day.",
+    "extra_stats": [
+      {
+        "count": 60,
+        "suffix": "+",
+        "k": "Countries with PUDU robots deployed"
+      },
+      {
+        "count": 23,
+        "suffix": "%",
+        "k": "Reported global service-robot share"
+      }
+    ],
+    "milestones": [
+      {
+        "yr": "2016",
+        "h": "PUDU is founded",
+        "p": "Felix Zhang founds Shenzhen PUDU Technology to commercialize service robots for everyday hospitality and delivery."
+      },
+      {
+        "yr": "Delivery era",
+        "h": "Robots on the restaurant floor",
+        "p": "PUDU's delivery robots — including its iconic cat-faced BellaBot — become a common sight in dining rooms around the world."
+      },
+      {
+        "yr": "Beyond delivery",
+        "h": "Cleaning & industrial",
+        "p": "The lineup expands from food running into commercial cleaning and industrial material handling."
+      },
+      {
+        "yr": "2024–26",
+        "h": "Embodied intelligence",
+        "p": "PUDU moves into embodied-AI and humanoid platforms, extending its service-robot expertise toward general-purpose machines."
+      }
+    ],
+    "hero_img": "/brands/flagships/pudu.webp"
+  },
+  "agibot": {
+    "display": "AgiBot",
+    "match": "AgiBot",
+    "flagship": "agibot-a2-ultra",
+    "category": "Humanoids, Quadrupeds & Commercial",
+    "hero_l1": "Embodied AI,",
+    "hero_em": "built to ship.",
+    "sub": "The Shanghai startup, founded by a former Huawei “Genius Youth” engineer, that went from first prototype to one of the world's highest-volume humanoid makers in barely three years.",
+    "founded": "2023 · Shanghai, China",
+    "founder": "Peng Zhihui (“Zhihui Jun”) & Deng Taihua",
+    "story": [
+      "AgiBot — known in China as Zhiyuan Robotics — was founded in February 2023 by Peng Zhihui, a former member of Huawei's elite “Genius Youth” program and a robotics celebrity online, together with fellow ex-Huawei engineer Deng Taihua.",
+      "The company launched its first humanoid, the Raise A1, within months of forming, and paired its hardware push with a heavy investment in embodied-AI datasets and models — the software layer that decides how quickly humanoids become useful.",
+      "That combination scaled fast: in barely three years AgiBot became one of the world's top-producing humanoid companies, rolling its 10,000th robot off the line by 2026."
+    ],
+    "pull": "AgiBot treated the humanoid like a product to manufacture, not a demo to film — and shipped at a pace almost no one expected.",
+    "extra_stats": [
+      {
+        "count": 10000,
+        "suffix": "+",
+        "k": "Humanoids produced by 2026"
+      },
+      {
+        "count": 3,
+        "prefix": "",
+        "suffix": " yrs",
+        "k": "From founding to volume production"
+      }
+    ],
+    "milestones": [
+      {
+        "yr": "2023",
+        "h": "AgiBot is founded",
+        "p": "Peng Zhihui and Deng Taihua leave Huawei to found Zhiyuan Robotics (AgiBot) in Shanghai, focused on general-purpose embodied AI."
+      },
+      {
+        "yr": "2023",
+        "h": "Raise A1 debuts",
+        "p": "The company launches its first humanoid within its first year — an unusually fast path from founding to working robot."
+      },
+      {
+        "yr": "2024",
+        "h": "Data-first strategy",
+        "p": "AgiBot releases large-scale humanoid datasets, betting that training data is the real bottleneck for useful humanoids."
+      },
+      {
+        "yr": "2026",
+        "h": "10,000th robot",
+        "p": "AgiBot rolls its ten-thousandth humanoid off the production line, ranking among the highest-volume makers in the world."
+      }
+    ],
+    "hero_img": "/brands/flagships/agibot.webp"
+  },
+  "keenon": {
+    "display": "KEENON",
+    "match": "KEENON",
+    "flagship": "keenon-dinerbot-t10",
+    "category": "Commercial & Service Robots",
+    "hero_l1": "The robots",
+    "hero_em": "that deliver.",
+    "sub": "A Shanghai pioneer of autonomous delivery, with tens of thousands of service robots working daily across restaurants, hotels and hospitals in hundreds of cities.",
+    "founded": "2010 · Shanghai, China",
+    "founder": "Tony Li (Founder / CEO)",
+    "story": [
+      "KEENON Robotics was founded in Shanghai in 2010 — early, by service-robot standards — and spent its first years working out how to make autonomous robots genuinely useful in commercial spaces rather than just impressive in demos.",
+      "That patience paid off in 2016 with the DINERBOT T1, billed as the world's first autonomous delivery robot. It became the template for a category that now fills dining rooms and hotel corridors worldwide.",
+      "Today KEENON operates one of the largest commercial service fleets on the planet, with tens of thousands of robots running daily across hundreds of cities and a top global ranking in delivery-robot shipments."
+    ],
+    "pull": "KEENON was building delivery robots before the category had a name — and set the template much of the industry still follows.",
+    "extra_stats": [
+      {
+        "count": 600,
+        "suffix": "+",
+        "k": "Cities with KEENON robots operating"
+      },
+      {
+        "count": 30,
+        "suffix": "%+",
+        "k": "Reported delivery-robot shipment share"
+      }
+    ],
+    "milestones": [
+      {
+        "yr": "2010",
+        "h": "KEENON is founded",
+        "p": "Tony Li founds KEENON in Shanghai's Pudong district to commercialize autonomous service robots."
+      },
+      {
+        "yr": "2016",
+        "h": "DINERBOT T1",
+        "p": "KEENON launches what it bills as the world's first autonomous delivery robot, defining a new commercial category."
+      },
+      {
+        "yr": "Global scale",
+        "h": "Tens of thousands deployed",
+        "p": "KEENON's fleet grows to tens of thousands of robots running daily across hundreds of cities worldwide."
+      },
+      {
+        "yr": "Today",
+        "h": "Category leader",
+        "p": "KEENON holds a top worldwide rank in delivery and food-service robot shipments, backed by a global service network."
+      }
+    ],
+    "hero_img": "/brands/flagships/keenon.webp"
+  },
+  "deep-robotics": {
+    "display": "DEEP Robotics",
+    "match": "DEEP Robotics",
+    "flagship": "deep-robotics-lynx-m20",
+    "category": "Industrial Quadrupeds",
+    "hero_l1": "Quadrupeds",
+    "hero_em": "that go to work.",
+    "sub": "A Hangzhou company founded by two Zhejiang University roboticists, building four-legged robots for the unglamorous, high-value jobs: inspection, security and rescue.",
+    "founded": "2017 · Hangzhou, China",
+    "founder": "Zhu Qiuguo & Li Chao (PhD, Zhejiang Univ.)",
+    "story": [
+      "DEEP Robotics — Hangzhou Yunshenchu Technology — was founded in November 2017 by Zhu Qiuguo and Li Chao, both holders of doctorates from Zhejiang University.",
+      "Rather than chase viral demos, the company aimed its quadrupeds at industrial reality: substation and pipeline inspection, security patrol, and search-and-rescue in places that are dangerous or impractical for people.",
+      "That focus on rugged, deployable machines built DEEP Robotics into one of the strongest names in industrial quadrupeds, with reported revenue in the segment that has drawn comparisons to Boston Dynamics."
+    ],
+    "pull": "DEEP Robotics optimized for the job site, not the highlight reel — quadrupeds built to inspect, patrol and rescue.",
+    "extra_stats": [
+      {
+        "count": 2017,
+        "plain": true,
+        "k": "Founded by two ZJU roboticists"
+      }
+    ],
+    "milestones": [
+      {
+        "yr": "2017",
+        "h": "DEEP Robotics is founded",
+        "p": "Zhu Qiuguo and Li Chao found Hangzhou Yunshenchu Technology to build industrial-grade quadruped robots."
+      },
+      {
+        "yr": "Inspection focus",
+        "h": "Robots for the job site",
+        "p": "The company targets substation, pipeline and industrial inspection — high-value work that is risky or tedious for people."
+      },
+      {
+        "yr": "X-series",
+        "h": "All-terrain platforms",
+        "p": "Ruggedized quadrupeds like the X-series push into search-and-rescue and outdoor patrol across difficult terrain."
+      },
+      {
+        "yr": "Today",
+        "h": "An industrial leader",
+        "p": "DEEP Robotics becomes one of the leading names in commercial quadrupeds, with segment revenue drawing comparisons to Western pioneers."
+      }
+    ],
+    "hero_img": "/brands/flagships/deep-robotics.webp"
+  },
+  "limx": {
+    "display": "LimX Dynamics",
+    "match": "LimX",
+    "flagship": "limx-oli-super",
+    "category": "Humanoids & Legged Robots",
+    "hero_l1": "General-purpose",
+    "hero_em": "legged robots.",
+    "sub": "A Shenzhen company building full-size humanoids and legged platforms around embodied AI — backed by Alibaba, Lenovo and JD to take on the biggest names in the field.",
+    "founded": "2022 · Shenzhen, China",
+    "founder": "Dr. Wei Zhang (Founder / CEO)",
+    "story": [
+      "Founded in 2022 in Shenzhen by Dr. Wei Zhang, LimX Dynamics set out to build general-purpose legged robots — not just humanoids, but a family of biped and quadruped platforms sharing the same motion-control brain.",
+      "The company leans heavily on reinforcement learning for locomotion, the approach that lets a robot learn to walk, balance and recover on its own rather than following scripted motions.",
+      "That technical bet attracted serious backing — including Alibaba, Lenovo Capital and JD.com, and a $200 million funding round — as LimX pushed its full-size Oli humanoid and modular TRON biped toward real work."
+    ],
+    "pull": "LimX's thesis is that one motion-control brain should drive any set of legs — biped, quadruped or full humanoid.",
+    "extra_stats": [
+      {
+        "count": 200,
+        "prefix": "$",
+        "suffix": "M",
+        "k": "Series B funding raised"
+      }
+    ],
+    "milestones": [
+      {
+        "yr": "2022",
+        "h": "LimX is founded",
+        "p": "Dr. Wei Zhang founds LimX Dynamics in Shenzhen to build general-purpose legged robots powered by embodied AI."
+      },
+      {
+        "yr": "Legged platforms",
+        "h": "Biped, quadruped, humanoid",
+        "p": "LimX develops a family of legged robots — including a wheeled quadruped and the modular TRON biped — around one reinforcement-learning core."
+      },
+      {
+        "yr": "Oli",
+        "h": "A full-size humanoid",
+        "p": "The company launches the full-size Oli humanoid (formerly its CL series), aiming at real-world tasks rather than demos."
+      },
+      {
+        "yr": "Backed to scale",
+        "h": "$200M and major backers",
+        "p": "LimX raises a $200 million round with backing from Alibaba, Lenovo Capital and JD.com to expand humanoid development."
+      }
+    ],
+    "hero_img": "/brands/flagships/limx.webp"
+  },
+  "neura": {
+    "display": "NEURA Robotics",
+    "match": "NEURA",
+    "flagship": "neura-mav-1500",
+    "category": "Cognitive & Humanoid Robots",
+    "hero_l1": "Cognitive robots,",
+    "hero_em": "made in Germany.",
+    "sub": "The Metzingen company that coined the term “cognitive robotics” — building machines that sense, think and work alongside people, from collaborative arms to a humanoid designed for series production.",
+    "founded": "2019 · Metzingen, Germany",
+    "founder": "David Reger (Founder / CEO)",
+    "story": [
+      "NEURA Robotics was founded in 2019 by David Reger with a deliberately human-centered goal: technology in service of humanity. Reger coined the term “cognitive robotics” to describe machines that perceive and reason about the world rather than blindly repeating a path.",
+      "The company built that idea into products — MAiRA, billed as the world's first cognitive robot; MiPA, a versatile robotic assistant; and 4NE-1, a humanoid designed from the start for series production rather than one-off demos.",
+      "NEURA also launched the Neuraverse, an app-store-style ecosystem for robot skills, and raised a €120 million round to scale its cognitive and humanoid ambitions from Europe."
+    ],
+    "pull": "NEURA's premise is that a robot should understand its surroundings, not just move through them — the difference it calls “cognitive robotics.”",
+    "extra_stats": [
+      {
+        "count": 120,
+        "prefix": "€",
+        "suffix": "M",
+        "k": "Series B funding raised"
+      }
+    ],
+    "milestones": [
+      {
+        "yr": "2019",
+        "h": "NEURA is founded",
+        "p": "David Reger founds NEURA Robotics in Metzingen, Germany, and coins the term “cognitive robotics.”"
+      },
+      {
+        "yr": "MAiRA",
+        "h": "The first cognitive robot",
+        "p": "NEURA launches MAiRA, billed as the world's first cognitive robot — one that senses and reasons rather than following a fixed script."
+      },
+      {
+        "yr": "4NE-1",
+        "h": "A humanoid for production",
+        "p": "NEURA unveils 4NE-1 (“For Anyone”), a humanoid designed from the outset for series production, not just demonstration."
+      },
+      {
+        "yr": "Neuraverse",
+        "h": "An app store for robots",
+        "p": "NEURA opens the Neuraverse, a scalable ecosystem where developers publish and share robot skills, backed by a €120M round."
+      }
+    ],
+    "hero_img": "/brands/flagships/neura.webp"
+  }
+}
