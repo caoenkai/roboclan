@@ -1,7 +1,7 @@
 {
   "rewrites": [
     {
-      "source": "/((?!robots/|guides/|.*\\.).*)",
+      "source": "/((?!robots/|guides/|brands/|.*\\.).*)",
       "destination": "/index.html"
     }
   ]
