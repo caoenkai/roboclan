@@ -142,6 +142,28 @@
     .rc2-hero{display:grid;grid-template-columns:1.05fr .95fr;gap:52px;align-items:center;padding:56px 0 44px;}
     .rc2-hero h1{font-family:var(--serif);font-weight:500;font-size:56px;line-height:1.02;letter-spacing:-.025em;margin:0 0 18px;color:var(--ink);}
     .rc2-hero p.sub{font-size:18px;color:var(--ink2);max-width:450px;line-height:1.55;margin:0 0 26px;}
+    /* 动态机器人墙 hero */
+    .rc-wall2{position:relative;min-height:600px;display:flex;align-items:center;justify-content:center;overflow:hidden;margin:0 -24px;}
+    .rc-wall2__belt{position:absolute;inset:0;display:flex;flex-direction:column;justify-content:center;gap:22px;z-index:1;}
+    .rc-wall2__row{display:flex;width:max-content;gap:50px;align-items:center;will-change:transform;}
+    .rc-wall2__row.a{animation:rcwallL 62s linear infinite;}
+    .rc-wall2__row.b{animation:rcwallR 76s linear infinite;}
+    @keyframes rcwallL{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+    @keyframes rcwallR{from{transform:translateX(-50%)}to{transform:translateX(0)}}
+    .rc-wall2__it{flex:0 0 auto;height:200px;display:flex;align-items:center;justify-content:center;}
+    .rc-wall2__img{max-height:200px;max-width:280px;object-fit:contain;filter:drop-shadow(0 16px 22px rgba(20,20,25,.14));opacity:.9;}
+    .rc-wall2__it:nth-child(even){height:158px;}.rc-wall2__it:nth-child(even) .rc-wall2__img{max-height:158px;}
+    .rc-wall2__scrim{position:absolute;inset:0;z-index:2;pointer-events:none;background:radial-gradient(ellipse 60% 58% at 50% 50%,#F5F7FB 0%,#F5F7FB 33%,rgba(245,247,251,.72) 55%,rgba(245,247,251,0) 78%);}
+    .rc-wall2__edge{position:absolute;top:0;bottom:0;width:150px;z-index:3;pointer-events:none;}
+    .rc-wall2__edge.l{left:0;background:linear-gradient(90deg,#F5F7FB,transparent);}
+    .rc-wall2__edge.r{right:0;background:linear-gradient(270deg,#F5F7FB,transparent);}
+    .rc-wall2__content{position:relative;z-index:4;text-align:center;padding:48px 28px;}
+    .rc-wall2__h1{font-family:var(--serif);font-weight:500;color:var(--ink);font-size:clamp(44px,6.6vw,80px);line-height:.98;letter-spacing:-.03em;margin:14px 0 0;text-shadow:0 2px 26px rgba(245,247,251,.9);}
+    .rc-wall2__h1 em{font-style:italic;color:var(--accent);}
+    .rc-wall2__sub{max-width:580px;margin:20px auto 0;font-size:18px;color:var(--ink2);line-height:1.5;}
+    .rc-wall2__content .rc2-btnrow{justify-content:center;margin-top:26px;}
+    @media(max-width:640px){.rc-wall2{min-height:470px}.rc-wall2__it{height:120px}.rc-wall2__img{max-height:120px;max-width:160px}.rc-wall2__it:nth-child(even){height:100px}.rc-wall2__it:nth-child(even) .rc-wall2__img{max-height:100px}}
+    @media(prefers-reduced-motion:reduce){.rc-wall2__row.a,.rc-wall2__row.b{animation:none}}
     .rc2-btnrow{display:flex;gap:12px;flex-wrap:wrap;}
     .rc2-btn{display:inline-flex;align-items:center;gap:8px;background:var(--ink);color:#fff;font-weight:500;font-size:15px;padding:13px 26px;border-radius:999px;cursor:pointer;border:none;font-family:inherit;}
     .rc2-btn.ghost{background:transparent;color:var(--ink);border:1px solid var(--line2);}
@@ -534,6 +556,40 @@
           });
       } catch (e) {}
     }, []);
+    // 机器人墙：各品类取带图机型，交错分两排反向流动
+    const _wallCats = ["Robot Vacuums", "Robot Lawn Mowers", "Pool Cleaners", "Quadrupeds", "Humanoids", "Commercial & Industrial"];
+    const _wallPick = [];
+    _wallCats.forEach((c) => {
+      DATA.robots.filter((r) => r.cat === c && r.image).sort((a, b) => (b.score || 0) - (a.score || 0)).slice(0, 3).forEach((r) => _wallPick.push(r));
+    });
+    const _rowA = _wallPick.filter((_, i) => i % 2 === 0);
+    const _rowB = _wallPick.filter((_, i) => i % 2 === 1);
+    // 客户端抠白：把墙里每个产品图的白底去掉（按 data-k 去重，处理一次复用两份）
+    React.useEffect(() => {
+      const cache = {};
+      function strip(img) {
+        const k = img.getAttribute("data-k"); if (!k) return;
+        if (cache[k]) { img.src = cache[k]; return; }
+        try {
+          const W = img.naturalWidth, H = img.naturalHeight; if (!W) return;
+          const c = document.createElement("canvas"); c.width = W; c.height = H;
+          const x = c.getContext("2d"); x.drawImage(img, 0, 0);
+          const id = x.getImageData(0, 0, W, H), d = id.data, thr = 236;
+          if (d[3] < 250) return;
+          const near = (i) => d[i] >= thr && d[i + 1] >= thr && d[i + 2] >= thr;
+          const seen = new Uint8Array(W * H), st = []; let px, py, i, p;
+          for (px = 0; px < W; px++) { st.push(px); st.push((H - 1) * W + px); }
+          for (py = 0; py < H; py++) { st.push(py * W); st.push(py * W + W - 1); }
+          while (st.length) { p = st.pop(); if (seen[p]) continue; seen[p] = 1; i = p * 4; if (!near(i)) continue; d[i + 3] = 0; px = p % W; py = (p / W) | 0; if (px > 0) st.push(p - 1); if (px < W - 1) st.push(p + 1); if (py > 0) st.push(p - W); if (py < H - 1) st.push(p + W); }
+          x.putImageData(id, 0, 0); const u = c.toDataURL("image/png"); cache[k] = u;
+          document.querySelectorAll('.rc-wall2__img[data-k="' + k + '"]').forEach((o) => { o.removeAttribute("crossorigin"); o.src = u; });
+        } catch (e) {}
+      }
+      document.querySelectorAll(".rc-wall2__img").forEach((img) => {
+        if (img.complete && img.naturalWidth) strip(img);
+        else img.addEventListener("load", () => strip(img), { once: true });
+      });
+    }, []);
     // 新闻滚动改回自走的 CSS 动画（独立运行，不依赖页面滚动；手机 scrollLeft 那条路走不通）
     const counts = {};
     DATA.robots.forEach((r) => { counts[r.cat] = (counts[r.cat] || 0) + 1; });
@@ -629,33 +685,26 @@
     };
     return (
       <div className="rc-home rc2">
-        <section className="rc2-hero">
-          <div>
-            <div className="rc2-eyebrow">Every robot, one scoring system</div>
-            <h1>The right robot,<br />compared honestly.</h1>
-            <p className="sub">188 robots across 6 categories, each scored on the same framework from official specs. No paid placements, no hype — just data you can compare.</p>
+        <section className="rc-wall2">
+          <div className="rc-wall2__belt">
+            <div className="rc-wall2__row a">{_rowA.concat(_rowA).map((r, i) => (
+              <span className="rc-wall2__it" key={"wa" + i}><img className="rc-wall2__img" data-k={r.id} crossOrigin="anonymous" src={r.image} alt="" loading="lazy" /></span>
+            ))}</div>
+            <div className="rc-wall2__row b">{_rowB.concat(_rowB).map((r, i) => (
+              <span className="rc-wall2__it" key={"wb" + i}><img className="rc-wall2__img" data-k={r.id} crossOrigin="anonymous" src={r.image} alt="" loading="lazy" /></span>
+            ))}</div>
+          </div>
+          <div className="rc-wall2__scrim" />
+          <div className="rc-wall2__edge l" /><div className="rc-wall2__edge r" />
+          <div className="rc-wall2__content">
+            <div className="rc2-eyebrow">{DATA.robots.length} robots · 6 categories · one framework</div>
+            <h1 className="rc-wall2__h1">Every robot,<br /><em>on one scale.</em></h1>
+            <p className="rc-wall2__sub">Vacuums, mowers, pool cleaners, humanoids, quadrupeds and commercial machines &mdash; scored on the same framework from official specs.</p>
             <div className="rc2-btnrow">
               <button className="rc2-btn" onClick={() => onOpenCategory(null)}>Browse robots →</button>
               {DATA.posts && DATA.posts.length > 0 && <button className="rc2-btn ghost" onClick={() => onOpenGuides && onOpenGuides()}>Read the guides</button>}
             </div>
           </div>
-          {heroPick && (
-            <div className="rc2-herocard" onClick={() => onOpen(heroPick.id)}>
-              <div className="tagn">Top rated · {heroPick.cat}</div>
-              <h3>{heroPick.name}</h3>
-              <div className="brand">{heroPick.brand}</div>
-              <div className="rc2-himg">{heroPick.image ? <img src={heroPick.image} alt={heroPick.name} /> : <span className="emo">{heroPick.emoji || "🤖"}</span>}</div>
-              <div className="rc2-hcbot">
-                <span className="rc2-scorepill">★ {heroPick.score} Roboclan score</span>
-                <div className="rc2-priceblk">{(() => { const g = greenPrice(heroPick); return (
-                  <React.Fragment>
-                    <div className="rc2-msrp">MSRP {heroPick.price}</div>
-                    <div className="rc2-best">{g.p}{g.ch ? <span className="rt"> · {g.ch}</span> : null}</div>
-                  </React.Fragment>
-                ); })()}</div>
-              </div>
-            </div>
-          )}
         </section>
 
         {(() => {

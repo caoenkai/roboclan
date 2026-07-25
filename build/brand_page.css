@@ -77,6 +77,9 @@ h2{font-family:var(--serif);font-weight:500;color:var(--ink);font-size:clamp(30p
 .pgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:22px}
 .pcard{position:relative;display:block;background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:22px 22px 20px;transition:.28s cubic-bezier(.2,.7,.2,1);overflow:hidden}
 .pcard:hover{transform:translateY(-5px);border-color:rgba(91,108,255,.5);box-shadow:0 18px 40px -22px rgba(20,20,15,.4)}
+.pthumb{background:#fff;border:1px solid var(--line);border-radius:12px;height:156px;display:flex;align-items:center;justify-content:center;margin-bottom:16px;overflow:hidden}
+.pthumb img{max-width:86%;max-height:86%;object-fit:contain;transition:transform .3s cubic-bezier(.2,.7,.2,1)}
+.pcard:hover .pthumb img{transform:scale(1.05)}
 .pcard .tag{font-family:var(--mono);font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
 .pcard .nm{font-family:var(--serif);font-weight:600;color:var(--ink);font-size:20px;margin-top:12px;letter-spacing:-.01em}
 .pcard .arw{margin-top:16px;font-size:14px;color:var(--accent);transition:.28s;opacity:.65}

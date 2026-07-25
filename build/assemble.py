@@ -1151,7 +1151,10 @@ if _out_arg:
             _grid+='<div class="grp rv">'+_esc(_cat)+'</div><div class="pgrid">'
             for _i,r in enumerate(_items):
                 _sc=r.get("score"); _badge=(' &middot; '+str(_sc)+'/5') if _sc is not None else ''
+                _pimg=_abs_img(r.get("image")) if r.get("image") else ""
+                _thumb=('<div class="pthumb"><img src="'+_pimg+'" alt="'+_esc(r.get("name"))+'" loading="lazy"></div>') if _pimg else ''
                 _grid+=('<a class="pcard rv d'+str(_i%3)+'" href="/robots/'+_esc(r.get("id"))+'/"><span class="sheen"></span>'
+                        +_thumb+
                         '<div class="tag">'+_esc(_cat)+_badge+'</div><div class="nm">'+_esc(r.get("name"))+'</div>'
                         '<div class="arw">View specs &amp; score &rarr;</div></a>')
             _grid+='</div>'
