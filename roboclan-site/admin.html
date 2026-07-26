@@ -441,7 +441,7 @@ function activateTab(k){
   $('tab-posts').classList.toggle('hide', k!=='posts');
   $('tab-news').classList.toggle('hide', k!=='news');
   if(k==='products' && !prodLoaded) loadProducts();
-  if(k==='posts' && !postsLoaded) loadPosts();
+  if(k==='posts') loadPosts(); // 每次点开 Guides 都重查库，避免看到旧列表
   if(k==='news' && !newsLoaded) loadNews();
   try{ localStorage.setItem('rc_admin_tab', k); }catch(e){}   // 记住当前标签，刷新/重开后回到这里
 }
