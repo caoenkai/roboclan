@@ -3733,7 +3733,7 @@ return {robots:R,byId:byId,glow:CAT_GLOW,axes:AXES,categories:CATEGORIES,posts:P
           const base = (news && news.length) ? news : NEWS;
           const reps = Math.max(2, Math.ceil(10 / base.length));
           const half = []; for (let r = 0; r < reps; r++) base.forEach((x) => half.push(x));
-          const dur = Math.max(40, half.length * 7); // 每条约 7s，速度稳定
+          const dur = Math.max(65, half.length * 12); // 每条约 12s，放慢滚动速度
           const fmtDate = (s) => { if (!s) return ""; try { return new Date(s).toLocaleDateString("en-US", { month: "short", day: "numeric" }); } catch (e) { return ""; } };
           return (
             <div className="rc2-ticker"><div className="rc2-tkin">
