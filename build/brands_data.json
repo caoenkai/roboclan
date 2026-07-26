@@ -191,8 +191,9 @@
       },
       {
         "count": 30,
-        "suffix": "%+",
-        "k": "Reported delivery-robot shipment share"
+        "prefix": "~",
+        "suffix": "%",
+        "k": "Global delivery-robot share (IDC)"
       }
     ],
     "milestones": [
