@@ -261,12 +261,13 @@ textarea.pinput{height:auto;padding:10px 12px;line-height:1.5;resize:vertical;}
     <div id="tab-news" class="hide">
       <div class="pbar">
         <span class="muted" style="padding:0">Headlines shown in the live news ticker. Changes appear on the site instantly — no publish needed.</span>
+        <button class="btn-sm danger hide" id="nBulkDel" type="button">Delete selected</button>
         <button class="btn-sm" id="nNew" style="margin-left:auto">＋ New headline</button>
       </div>
       <div class="panel">
         <div class="tbl-scroll"><table id="newsTbl">
-          <thead><tr><th style="width:40px">#</th><th style="width:82px">Date</th><th>Headline</th><th>Detail</th><th>Link</th><th>Live</th><th></th></tr></thead>
-          <tbody><tr><td colspan="7" class="empty">Loading…</td></tr></tbody>
+          <thead><tr><th style="width:32px"><input type="checkbox" id="nSelAll" title="Select all"></th><th style="width:40px">#</th><th style="width:82px">Date</th><th>Headline</th><th>Detail</th><th>Link</th><th>Live</th><th></th></tr></thead>
+          <tbody><tr><td colspan="8" class="empty">Loading…</td></tr></tbody>
         </table></div>
       </div>
     </div>
@@ -404,7 +405,7 @@ textarea.pinput{height:auto;padding:10px 12px;line-height:1.5;resize:vertical;}
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 const SB_URL='https://vthiulsykmdnatwoqdat.supabase.co';
-const SB_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ0aGl1bHN5a21kbmF0d29xZGF0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODExOTM4NzksImV4cCI6MjA5Njc2OTg3OX0.TOHjT3wswV8F3juerFSci-OAa0Gz66nlbBQh7DwXdug';
+const SB_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ0aGl1bHN5a21kbmF0d29xZGF0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODExOTM0NzksImV4cCI6MjA5Njc2OTg3OX0.TOHjT3wswV8F3juerFSci-OAa0Gz66nlbBQh7DwXdug';
 const sb = supabase.createClient(SB_URL, SB_ANON);
 
 const $ = (id)=>document.getElementById(id);
@@ -912,10 +913,11 @@ async function loadNews(){
   newsLoaded=true;
   const { data, error } = await sb.from('news').select('*').order('sort',{ascending:true});
   const tb=$('newsTbl').querySelector('tbody');
-  if(error){ tb.innerHTML='<tr><td colspan="7" class="empty">Could not load news — did you run the news table SQL? ('+esc(error.message)+')</td></tr>'; return; }
+  if(error){ tb.innerHTML='<tr><td colspan="8" class="empty">Could not load news — did you run the news table SQL? ('+esc(error.message)+')</td></tr>'; return; }
   newsRows=data||[];
-  if(!newsRows.length){ tb.innerHTML='<tr><td colspan="7" class="empty">No headlines yet. Add one.</td></tr>'; return; }
+  if(!newsRows.length){ tb.innerHTML='<tr><td colspan="8" class="empty">No headlines yet. Add one.</td></tr>'; return; }
   tb.innerHTML=newsRows.map(r=>`<tr>
+    <td><input type="checkbox" class="n-sel" data-id="${esc(r.id)}"></td>
     <td class="mono" style="color:var(--text-3)">${r.sort}</td>
     <td class="mono" style="color:var(--text-3);font-size:12px">${r.created_at?new Date(r.created_at).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'2-digit'}):''}</td>
     <td style="font-weight:600">${esc(r.title)}</td>
@@ -925,7 +927,25 @@ async function loadNews(){
     <td><span class="edit-lnk" data-id="${r.id}">Edit ›</span></td>
   </tr>`).join('');
   tb.querySelectorAll('.edit-lnk').forEach(el=>el.addEventListener('click',()=>openNews(el.dataset.id)));
+  $('nSelAll').checked=false;
+  tb.querySelectorAll('.n-sel').forEach(c=>c.addEventListener('change',nSelUpdate));
+  nSelUpdate();
 }
+// 批量选择：维护「Delete selected (n)」按钮的显隐和计数，返回当前勾选的 id 列表
+function nSelUpdate(){
+  const ids=[...document.querySelectorAll('#newsTbl .n-sel:checked')].map(c=>c.dataset.id);
+  const b=$('nBulkDel'); b.classList.toggle('hide',!ids.length); b.textContent='Delete selected ('+ids.length+')';
+  const all=document.querySelectorAll('#newsTbl .n-sel'); $('nSelAll').checked = all.length>0 && ids.length===all.length;
+  return ids;
+}
+$('nSelAll').addEventListener('change',e=>{ document.querySelectorAll('#newsTbl .n-sel').forEach(c=>{c.checked=e.target.checked;}); nSelUpdate(); });
+$('nBulkDel').addEventListener('click',async ()=>{
+  const ids=nSelUpdate(); if(!ids.length) return;
+  if(!confirm('Delete '+ids.length+' headline'+(ids.length>1?'s':'')+'? This cannot be undone.')) return;
+  const {error}=await sb.from('news').delete().in('id',ids);
+  if(error){ alert('Delete failed: '+error.message); return; }
+  await loadNews();
+});
 $('nNew').addEventListener('click',()=>openNews(null));
 function openNews(id){
   nIsNew=!id; nId=id;
